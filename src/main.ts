@@ -1,5 +1,5 @@
 import { Routes } from "./class/component";
-import { AboutPage } from "./pages/home/about.page.ts/about.page";
+import { AboutPage } from "./pages/about.page.ts/about.page";
 import { HomePage } from "./pages/home/home.page";
 import "./style.scss";
 

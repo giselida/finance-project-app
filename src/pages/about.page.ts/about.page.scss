@@ -1,0 +1,5 @@
+@import "/src/scss/reset.scss";
+@import "/src/scss/mixins.scss";
+about-page {
+  @include pageStyle(row);
+}

@@ -1,4 +1,4 @@
-import { AboutPage } from "../pages/home/about.page.ts/about.page";
+import { AboutPage } from "../pages/about.page.ts/about.page";
 import { HomePage } from "../pages/home/home.page";
 
 export class Routes extends HTMLElement {
@@ -9,11 +9,11 @@ export class Routes extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
 <header>
-<span class="material-symbols-outlined">
+<span class="material-symbols-outlined menu">
 menu
 </span>
 </header>
-<div class="sid-bar">
+<div class="side-bar">
 <div class="anchors"> 
     <span class="material-symbols-outlined">
       home
@@ -25,22 +25,21 @@ menu
       info
         </span>
          <a href="#about">about</a>
-    </div></div>
+    </div>
+    </div>
       <main id="route-container"></main>
       `;
     this.renderContent();
+    this.onInit();
   }
   renderContent() {
     const $routeContent = document.querySelector("#route-container");
 
     window.addEventListener("load", () => {
       const home = new HomePage();
-      $routeContent?.appendChild(home);
-      this.onInit();
-    });
-  }
 
-  onInit() {
+      $routeContent?.appendChild(home);
+    });
     window.addEventListener("hashchange", () => {
       const hash = window.location.hash;
       const ROUTES: { [key: string]: typeof HTMLElement } = {
@@ -52,6 +51,27 @@ menu
       const Page = ROUTES[hash];
       const home = new Page();
       $routeContent?.appendChild(home);
+    });
+  }
+
+  onInit() {
+    this.activeSidBar();
+  }
+
+  activeSidBar() {
+    const $iconHeader = document.querySelector<HTMLElement>("header .menu");
+    const $sideBar = document.querySelector<HTMLElement>("router-app .side-bar");
+    const $anchors = document.querySelectorAll(".anchors");
+
+    $iconHeader?.addEventListener("click", (event) => {
+      console.log(event);
+      event.preventDefault();
+      $sideBar?.classList.toggle("active");
+    });
+    $anchors.forEach(($anchor) => {
+      $anchor.addEventListener("click", () => {
+        $sideBar?.classList.remove("active");
+      });
     });
   }
 }

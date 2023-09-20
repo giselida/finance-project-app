@@ -1,1 +1,70 @@
 @import "./scss/reset.scss";
+:root {
+  --color-pink: #ff0f52;
+  --color-orange: #ff8f16;
+  --color-yellow: #ffea38;
+  --color-yellow-light: #fffb93;
+  --color-withe: #fffbe6;
+  --color-black: #000000;
+}
+body {
+  background-color: var(--color-withe);
+  font-family: Roboto, serif;
+}
+router-app {
+  display: block;
+  header {
+    display: flex;
+    padding: 10px;
+    height: 30px;
+    background-color: var(--color-pink);
+    border-bottom: 1px solid var(--color-yellow);
+    font-size: 20px;
+    .material-symbols-outlined {
+      cursor: pointer;
+      color: var(--color-yellow);
+    }
+  }
+
+  .side-bar {
+    background-color: var(--color-pink);
+    position: fixed;
+    overflow: hidden;
+    height: 100%;
+    z-index: 1;
+    width: 0px;
+    transition: transform 0.8s ease-in;
+    transform: translateX(-18rem);
+    .anchors {
+      display: flex;
+      align-items: center;
+      padding: 5px 0px;
+      border-bottom: 1px solid var(--color-yellow);
+      transition: all 0.2s ease-in-out;
+      .material-symbols-outlined {
+        margin-right: 5px;
+        color: var(--color-yellow);
+      }
+      a {
+        color: var(--color-black);
+        text-decoration: none;
+      }
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+    &.active {
+      transform: translateX(0rem);
+      transition: transform 0.8s ease-out;
+      padding: 5px 10px;
+      width: 150px;
+    }
+  }
+
+  .side-bar.active + main {
+    margin-left: 170px;
+  }
+  main {
+    transition: margin-left 0.8s;
+  }
+}

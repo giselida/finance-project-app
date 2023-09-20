@@ -1,0 +1,5 @@
+@mixin pageStyle($direction: "row") {
+  display: flex;
+  flex-direction: $direction;
+  padding: 10px;
+}
