@@ -1,10 +1,5 @@
 import "./about.page.scss";
 export class AboutPage extends HTMLElement {
-  constructor() {
-    super();
-
-    this.connectedCallback();
-  }
   connectedCallback() {
     this.innerHTML = `
       <div>

@@ -2,10 +2,6 @@ import { AboutPage } from "../pages/about.page.ts/about.page";
 import { HomePage } from "../pages/home/home.page";
 
 export class Routes extends HTMLElement {
-  constructor() {
-    super();
-    this.connectedCallback();
-  }
   connectedCallback() {
     this.innerHTML = `
    <header>
