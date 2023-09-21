@@ -1,5 +1,55 @@
 @import "/src/scss/reset.scss";
 @import "/src/scss/mixins.scss";
+:root {
+  --color-pink: #ff0f52;
+  --color-orange: #ff9f18;
+  --color-orange-light: #f2b97bfc;
+  --color-yellow: #ffea38;
+  --color-yellow-light: #fffb93;
+  --color-withe: #fffbe6;
+  --color-black: #000000;
+  --color-red: #f80505;
+}
 home-page {
-  @include pageStyle(row);
+  @include pageStyle(column);
+  .input-group {
+    margin-top: 10px;
+    display: flex;
+    .input-group-text {
+      background-color: var(--color-yellow-light);
+      border-color: var(--color-orange);
+    }
+    .form-control {
+      border-color: var(--color-orange);
+    }
+    :focus {
+      box-shadow: 0px 0px 2px 1px var(--color-orange-light);
+    }
+    .search {
+      border-radius: 5px;
+      padding: 0px 10px;
+    }
+  }
+  .button-group {
+    display: flex;
+    gap: 10px;
+    .btn {
+      border: none;
+      display: flex;
+      align-items: center;
+      transition: background ease-in-out 0.5s;
+      .icon {
+        margin-right: 5px;
+      }
+    }
+    .btn-search {
+      background-color: var(--color-orange);
+    }
+    .btn-clean {
+      background-color: var(--color-red);
+    }
+    :hover {
+      background-color: #d2000095;
+    }
+  }
 }

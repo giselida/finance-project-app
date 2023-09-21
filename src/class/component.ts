@@ -8,26 +8,20 @@ export class Routes extends HTMLElement {
   }
   connectedCallback() {
     this.innerHTML = `
-<header>
-<span class="material-symbols-outlined menu">
-menu
-</span>
-</header>
-<div class="side-bar">
-<div class="anchors"> 
-    <span class="material-symbols-outlined">
-      home
-        </span>
-         <a href="#home">Home</a>
+   <header>
+      <span class="material-symbols-outlined menu"> menu </span>
+    </header>
+    <div class="side-bar">
+      <div class="anchors">
+        <span class="material-symbols-outlined"> home </span>
+        <a href="#home">Home</a>
+      </div>
+      <div class="anchors">
+        <span class="material-symbols-outlined"> info </span>
+        <a href="#about">about</a>
+      </div>
     </div>
-<div class="anchors"> 
-    <span class="material-symbols-outlined">
-      info
-        </span>
-         <a href="#about">about</a>
-    </div>
-    </div>
-      <main id="route-container"></main>
+    <main id="route-container"></main>
       `;
     this.renderContent();
     this.onInit();
@@ -55,16 +49,15 @@ menu
   }
 
   onInit() {
-    this.activeSidBar();
+    this.activeSideBar();
   }
 
-  activeSidBar() {
+  activeSideBar() {
     const $iconHeader = document.querySelector<HTMLElement>("header .menu");
     const $sideBar = document.querySelector<HTMLElement>("router-app .side-bar");
     const $anchors = document.querySelectorAll(".anchors");
 
     $iconHeader?.addEventListener("click", (event) => {
-      console.log(event);
       event.preventDefault();
       $sideBar?.classList.toggle("active");
     });

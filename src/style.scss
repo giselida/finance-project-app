@@ -15,8 +15,9 @@ router-app {
   display: block;
   header {
     display: flex;
+    align-items: center;
     padding: 10px;
-    height: 30px;
+    height: 40px;
     background-color: var(--color-pink);
     border-bottom: 1px solid var(--color-yellow);
     font-size: 20px;
@@ -36,6 +37,7 @@ router-app {
     transition: transform 0.8s ease-in;
     transform: translateX(-18rem);
     .anchors {
+      cursor: pointer;
       display: flex;
       align-items: center;
       padding: 5px 0px;
