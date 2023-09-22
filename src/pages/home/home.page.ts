@@ -17,7 +17,6 @@ export class HomePage extends HTMLElement {
         required
       />
     </div>
-    
     <div class="button-group">
       <button type="button" class="btn btn-search">
         <span class="material-symbols-outlined icon"> travel_explore </span>
@@ -27,6 +26,10 @@ export class HomePage extends HTMLElement {
         <span class="material-symbols-outlined icon"> close </span>
         Limpar
       </button>
+    </div>
+    <div class="form-select">
+    <label></label>
+    
     </div>
 
       `;

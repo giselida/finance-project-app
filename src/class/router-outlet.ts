@@ -1,7 +1,7 @@
 import { AboutPage } from "../pages/about.page.ts/about.page";
 import { HomePage } from "../pages/home/home.page";
 
-export class Routes extends HTMLElement {
+export class RouterOutlet extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
    <header>
@@ -14,7 +14,7 @@ export class Routes extends HTMLElement {
       </div>
       <div class="anchors">
         <span class="material-symbols-outlined"> info </span>
-        <a href="#about">about</a>
+        <a href="#about">About</a>
       </div>
     </div>
     <main id="route-container"></main>
