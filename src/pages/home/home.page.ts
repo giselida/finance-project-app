@@ -1,9 +1,13 @@
 import Currency from "@tadashi/currency";
+import { FormSelect } from "../../components/form-select/form-select";
 import "./home.page.scss";
+
 export class HomePage extends HTMLElement {
+  imports = [FormSelect];
   $input: HTMLInputElement;
   $search: HTMLButtonElement;
   $clean: HTMLButtonElement;
+
   connectedCallback() {
     this.innerHTML = `
     <div class="input-group mb-3">
@@ -27,12 +31,47 @@ export class HomePage extends HTMLElement {
         Limpar
       </button>
     </div>
-    <div class="form-select">
-    <label></label>
-    
-    </div>
-
+<div class="form">
+ <div class="form-group">
+  <label>Converter de :</label>
+  </div>
+  <button type="button" class="btn btn-alt">
+  <span class="material-symbols-outlined">sync_alt</span>
+  </button>
+  <div class="form-group-2 ">
+  <label>Para :</label>
+  </div>
+</div>
       `;
+
+    this.querySelector(".form-group").innerHTML += `
+       <form-select >
+       ${[1, 2, 3, 4]
+         .map((value) => {
+           return `
+        <div class="option" value="${value}">
+         <i class="bi bi-${value}-square-fill"></i>
+          Eu sou a opção ${value}
+          </div> `;
+         })
+         .join("")}
+       </form-select> 
+      `;
+
+    this.querySelector(".form-group-2").innerHTML += `
+       <form-select>
+       ${[2, 3, 4, 5]
+         .map((value) => {
+           return `
+        <div class="option" value="${value}">
+         <i class="bi bi-${value}-square-fill"></i>
+          Eu sou a opção ${value}
+          </div> `;
+         })
+         .join("")}
+       </form-select> 
+      `;
+
     this.onInit();
   }
 
