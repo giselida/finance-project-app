@@ -48,4 +48,25 @@ home-page {
       }
     }
   }
+  .h5 {
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .result {
+    display: flex;
+    justify-content: space-between;
+    gap: 70px;
+    .card {
+      width: 100%;
+      border: 1px solid #ff8f16;
+      .card-header {
+        border-bottom: 1px solid #ff8f16;
+        font-weight: 700;
+        background-color: #fffb93;
+      }
+      .card-text {
+        margin-top: 5px;
+      }
+    }
+  }
 }
