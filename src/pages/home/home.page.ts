@@ -2,6 +2,7 @@ import Currency from "@tadashi/currency";
 import { FormSelect } from "../../components/form-select/form-select";
 import { COUNTRY_LIST } from "../../constants/countrys";
 import { ExchangeRateApiResponse } from "../../constants/rates";
+import { Toasts } from "../../toasts/toast";
 import "./home.page.scss";
 
 export class HomePage extends HTMLElement {
@@ -115,6 +116,7 @@ export class HomePage extends HTMLElement {
       const eventKey = event.key;
       if (eventKey == "Enter") {
         this.getCurrency();
+        Toasts.successToast("olá");
       }
     });
   }
@@ -183,6 +185,7 @@ export class HomePage extends HTMLElement {
         </div>
       </div>
     </div>
+     <div id="toast-content"></div>
       `;
   }
   private createFormSelect() {
