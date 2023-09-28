@@ -8,27 +8,25 @@ export class RouterOutlet extends HTMLElement {
       <span class="material-symbols-outlined menu"> menu </span>
     </header>
     <div class="side-bar">
-      <div class="anchors">
+      <a href="#home"class="anchors">
         <span class="material-symbols-outlined"> home </span>
-        <a href="#home">Home</a>
-      </div>
-      <div class="anchors">
+        <span >Home</span>
+      </a>
+      <a href="#about" class="anchors">
         <span class="material-symbols-outlined"> info </span>
-        <a href="#about">About</a>
-      </div>
+        <span>About</span>
+      </a>
     </div>
-    <main id="route-container"></main>
+    <main id="root"></main>
       `;
     this.renderContent();
     this.onInit();
   }
   renderContent() {
-    const $routeContent = document.querySelector("#route-container");
-
     window.addEventListener("load", () => {
+      const $root = document.querySelector("#root");
       const home = new HomePage();
-
-      $routeContent?.appendChild(home);
+      $root?.appendChild(home);
     });
     window.addEventListener("hashchange", () => {
       const hash = window.location.hash;
@@ -36,11 +34,13 @@ export class RouterOutlet extends HTMLElement {
         "#home": HomePage,
         "#about": AboutPage,
       };
-      const $routeContent = document.querySelector("#route-container");
-      if ($routeContent) $routeContent.innerHTML = "";
+      const $root = document.querySelector("#root");
+      if ($root) $root.innerHTML = "";
       const Page = ROUTES[hash];
-      const home = new Page();
-      $routeContent?.appendChild(home);
+      if (Page) {
+        const page = new Page();
+        $root?.append(page);
+      }
     });
   }
 
@@ -54,8 +54,8 @@ export class RouterOutlet extends HTMLElement {
     const $anchors = document.querySelectorAll(".anchors");
 
     $iconHeader?.addEventListener("click", (event) => {
-      event.preventDefault();
-      $sideBar?.classList.toggle("active");
+      event.stopPropagation();
+      $sideBar?.classList.add("active");
     });
     $anchors.forEach(($anchor) => {
       $anchor.addEventListener("click", () => {

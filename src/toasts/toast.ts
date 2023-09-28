@@ -20,6 +20,6 @@ export class Toasts {
     const $toasts = document.querySelector("#toast-content");
     $toasts.append($div);
     const instanceBootstrap = Toast.getOrCreateInstance($div);
-    instanceBootstrap.show;
+    instanceBootstrap.show();
   }
 }

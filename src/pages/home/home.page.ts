@@ -1,12 +1,12 @@
 import Currency from "@tadashi/currency";
+
 import { FormSelect } from "../../components/form-select/form-select";
 import { COUNTRY_LIST } from "../../constants/countrys";
-import { ExchangeRateApiResponse } from "../../constants/rates";
+import { ExchangeRateApiResponse } from "../../interface/rates";
 import { Toasts } from "../../toasts/toast";
 import "./home.page.scss";
 
 export class HomePage extends HTMLElement {
-  imports = [FormSelect];
   $input: HTMLInputElement;
   $buttonSearch: HTMLButtonElement;
   $buttonClean: HTMLButtonElement;
@@ -47,41 +47,40 @@ export class HomePage extends HTMLElement {
     this.onKeyUpEvent();
     this.onSearchClickEvent();
     this.onSelectChanges();
-    this.getCurrency();
     this.onChangesCurrency();
   }
   onChangesCurrency() {
     this.$buttonAlt.addEventListener("click", () => {
-      const [$fromForm, $toForm] = document.querySelectorAll<HTMLElement>("form-select");
+      const [$fromForm, $toForm] = document.querySelectorAll<FormSelect>("form-select");
       const changeFrom = $fromForm.innerHTML;
       const changeTo = $toForm.innerHTML;
       $fromForm.innerHTML = changeTo;
       $toForm.innerHTML = changeFrom;
-      const toValue = $toForm.getAttribute("value");
-      const fromValue = $fromForm.getAttribute("value");
-      $toForm.setAttribute("value", fromValue);
-      $fromForm.setAttribute("value", toValue);
+      const toValue = $toForm.value;
+      const fromValue = $fromForm.value;
+      $toForm.value = fromValue;
+      $fromForm.value = toValue;
       this.getCurrency();
     });
   }
 
   private onSelectChanges() {
-    const [$fromForm, $toForm] = document.querySelectorAll<HTMLElement>("form-select");
+    const [$fromForm, $toForm] = document.querySelectorAll<FormSelect>("form-select");
 
     $fromForm.addEventListener("change", () => this.changeFromCard($fromForm));
 
     $toForm.addEventListener("change", () => this.changeToCard($toForm));
   }
 
-  private changeToCard($toForm: HTMLElement) {
-    const value = $toForm.getAttribute("value");
+  private changeToCard($toForm: FormSelect) {
+    const value = $toForm.value;
     const optionToSelected = COUNTRY_LIST.find((country) => country.currency === value);
     if (!optionToSelected) return;
     this.$toCard.innerText = optionToSelected.name;
   }
 
-  private changeFromCard($fromForm: HTMLElement) {
-    const value = $fromForm.getAttribute("value");
+  private changeFromCard($fromForm: FormSelect) {
+    const value = $fromForm.value;
     const optionFromSelected = COUNTRY_LIST.find((country) => country.currency === value);
     if (!optionFromSelected) return;
 
@@ -90,9 +89,9 @@ export class HomePage extends HTMLElement {
   }
 
   private getCurrency() {
-    const [$fromForm, $toForm] = document.querySelectorAll<HTMLElement>("form-select");
-    const currencyFrom = $fromForm.getAttribute("value");
-    const currencyTo = $toForm.getAttribute("value");
+    const [$fromForm, $toForm] = document.querySelectorAll<FormSelect>("form-select");
+    const currencyFrom = $fromForm.value;
+    const currencyTo = $toForm.value;
     this.changeToCard($toForm);
     this.changeFromCard($fromForm);
 
@@ -100,11 +99,13 @@ export class HomePage extends HTMLElement {
       .then<ExchangeRateApiResponse>((response) => response.json())
       .then((data) => {
         const valueInput = +this.$input.value.replaceAll(".", "").replace(",", ".");
-
-        const formatCurrencyFrom = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2 }).format(valueInput);
-
-        const formatCurrencyTo = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2 }).format(valueInput * data.rates[currencyTo]);
-
+        const options = {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        };
+        const conversionValue = valueInput * data.rates[currencyTo];
+        const formatCurrencyFrom = new Intl.NumberFormat("en-US", options).format(valueInput);
+        const formatCurrencyTo = new Intl.NumberFormat("en-US", options).format(conversionValue);
         const [$currentValue, $finalValue] = this.$textsOfCards;
 
         $currentValue.innerText = formatCurrencyFrom;
@@ -131,6 +132,7 @@ export class HomePage extends HTMLElement {
     this.$buttonClean.addEventListener("click", () => {
       if (this.$input?.value) {
         this.$input.value = "";
+        Toasts.successToast("olá");
       }
     });
   }
@@ -189,15 +191,17 @@ export class HomePage extends HTMLElement {
       `;
   }
   private createFormSelect() {
-    const options = COUNTRY_LIST.map((value) => {
-      const currency = value.currency;
-      const unicode = currency.slice(0, -1).toLowerCase();
-      return `<div class="option" value="${currency}">
-                <span class="fi fi-${unicode}"></span>
-                 ${currency}
-                </div> 
-                `;
-    }).join("");
+    const options = [...COUNTRY_LIST]
+      .map((value) => {
+        const currency = value.currency;
+        const unicode = currency.slice(0, -1).toLowerCase();
+        return `
+      <div class="option" value="${currency}">
+      <span class="fi fi-${unicode}"></span>
+      ${currency}
+      </div> `;
+      })
+      .join("");
     return `
        <form-select placeholder="Selecione" >
        ${options}

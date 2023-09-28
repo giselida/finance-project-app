@@ -6,6 +6,8 @@
   --color-yellow-light: #fffb93;
   --color-white: #fffbe6;
   --color-black: #000000;
+
+  --color-pink-border: #ad1b43;
 }
 body {
   background-color: var(--color-white);
@@ -19,6 +21,7 @@ router-app {
     padding: 10px;
     height: 40px;
     background-color: var(--color-pink);
+    box-shadow: inset 0px -2px 2px 0px var(--color-pink-border);
     font-size: 20px;
     .material-symbols-outlined {
       cursor: pointer;
@@ -36,25 +39,24 @@ router-app {
     width: 0px;
     transition: transform 0.5s ease-in, width 0.5s ease-in;
     transform: translateX(-18rem);
+    border-right: 1px solid var(--color-pink-border);
     .anchors {
-      margin-top: 8px;
       cursor: pointer;
       display: flex;
       align-items: center;
       padding: 5px;
       padding-left: 10px;
-      border-bottom: 1px solid var(--color-white);
+      border-bottom: 1px solid var(--color-pink-border);
+      color: var(--color-white);
+      font-weight: 700;
+      text-decoration: none;
       transition: all 0.2s ease-in-out;
       .material-symbols-outlined {
         color: var(--color-white);
         font-weight: 500;
         margin-right: 8px;
       }
-      a {
-        color: var(--color-white);
-        font-weight: 700;
-        text-decoration: none;
-      }
+
       &:hover {
         transform: scale(1.05);
       }
@@ -114,6 +116,7 @@ router-app {
   .form-select {
     gap: 10px;
     position: relative;
+    cursor: pointer;
     --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ff8f16' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
     border: 1px solid var(--color-orange);
     white-space: nowrap;
@@ -149,6 +152,21 @@ router-app {
         &:hover {
           background: var(--color-yellow-light);
         }
+      }
+      &::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: var(--color-yellow-light);
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: var(--color-orange);
+      }
+
+      &::-webkit-scrollbar-thumb:hover {
+        background: #555;
       }
     }
   }
