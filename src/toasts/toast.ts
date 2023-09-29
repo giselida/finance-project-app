@@ -3,6 +3,9 @@ export class Toasts {
   static successToast(description: string, icon = "check_circle") {
     return Toasts.createToast("text-bg-success", description, icon);
   }
+  static ErrorToast(description: string, icon = "info") {
+    return Toasts.createToast("text-bg-danger", description, icon);
+  }
   static createToast(className: string, description: string, icon: string) {
     const $div = document.createElement("div");
     $div.classList.add("toast", "align-items-center", className);

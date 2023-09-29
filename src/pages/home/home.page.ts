@@ -1,5 +1,4 @@
 import Currency from "@tadashi/currency";
-
 import { FormSelect } from "../../components/form-select/form-select";
 import { COUNTRY_LIST } from "../../constants/countrys";
 import { ExchangeRateApiResponse } from "../../interface/rates";
@@ -52,14 +51,19 @@ export class HomePage extends HTMLElement {
   onChangesCurrency() {
     this.$buttonAlt.addEventListener("click", () => {
       const [$fromForm, $toForm] = document.querySelectorAll<FormSelect>("form-select");
+
       const changeFrom = $fromForm.innerHTML;
       const changeTo = $toForm.innerHTML;
       $fromForm.innerHTML = changeTo;
       $toForm.innerHTML = changeFrom;
-      const toValue = $toForm.value;
       const fromValue = $fromForm.value;
-      $toForm.value = fromValue;
+      const toValue = $toForm.value;
       $fromForm.value = toValue;
+      $toForm.value = fromValue;
+      if (toValue && fromValue) {
+        Toasts.successToast(`Valor ${fromValue} alterado para ${toValue}`);
+      }
+
       this.getCurrency();
     });
   }
@@ -72,26 +76,32 @@ export class HomePage extends HTMLElement {
     $toForm.addEventListener("change", () => this.changeToCard($toForm));
   }
 
+  private changeFromCard($fromForm: FormSelect) {
+    const value = $fromForm.value;
+    const optionFromSelected = this.findCountry(value);
+    if (!optionFromSelected) return;
+    this.$fromCard.innerText = optionFromSelected.name;
+    this.$symbolToCoin.innerText = optionFromSelected.symbol;
+  }
   private changeToCard($toForm: FormSelect) {
     const value = $toForm.value;
-    const optionToSelected = COUNTRY_LIST.find((country) => country.currency === value);
+    const optionToSelected = this.findCountry(value);
     if (!optionToSelected) return;
     this.$toCard.innerText = optionToSelected.name;
   }
 
-  private changeFromCard($fromForm: FormSelect) {
-    const value = $fromForm.value;
-    const optionFromSelected = COUNTRY_LIST.find((country) => country.currency === value);
-    if (!optionFromSelected) return;
-
-    this.$fromCard.innerText = optionFromSelected.name;
-    this.$symbolToCoin.innerText = optionFromSelected.symbol;
+  private findCountry(value: string) {
+    return COUNTRY_LIST.find((country) => country.currency === value);
   }
 
   private getCurrency() {
     const [$fromForm, $toForm] = document.querySelectorAll<FormSelect>("form-select");
     const currencyFrom = $fromForm.value;
     const currencyTo = $toForm.value;
+    if (!currencyFrom && !currencyTo) {
+      return Toasts.ErrorToast("selecione os dois valores");
+    }
+
     this.changeToCard($toForm);
     this.changeFromCard($fromForm);
 
@@ -99,6 +109,8 @@ export class HomePage extends HTMLElement {
       .then<ExchangeRateApiResponse>((response) => response.json())
       .then((data) => {
         const valueInput = +this.$input.value.replaceAll(".", "").replace(",", ".");
+        if (valueInput < 1) return;
+
         const options = {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
@@ -115,24 +127,61 @@ export class HomePage extends HTMLElement {
   private onKeyUpEvent() {
     this.$input.addEventListener("keyup", (event) => {
       const eventKey = event.key;
+
       if (eventKey == "Enter") {
+        const [$fromForm, $toForm] = document.querySelectorAll<FormSelect>("form-select");
+        const currencyFrom = $fromForm.value;
+        const currencyTo = $toForm.value;
+        if (!currencyFrom && !currencyTo) {
+          return Toasts.ErrorToast("selecione os dois valores");
+        }
+        this.$input.value != "0,00" && this.$input.value != ""
+          ? Toasts.successToast("Valor convertido com sucesso")
+          : Toasts.ErrorToast("Digite um valor valido");
         this.getCurrency();
-        Toasts.successToast("olá");
       }
     });
   }
 
   private onSearchClickEvent() {
     this.$buttonSearch.addEventListener("click", () => {
+      const [$fromForm, $toForm] = document.querySelectorAll<FormSelect>("form-select");
+      const currencyFrom = $fromForm.value;
+      const currencyTo = $toForm.value;
+      if (!currencyFrom && !currencyTo) {
+        return Toasts.ErrorToast("selecione os dois valores");
+      }
+      this.$input.value != "0,00" && this.$input.value != ""
+        ? Toasts.successToast("Valor convertido com sucesso")
+        : Toasts.ErrorToast("Digite um valor valido");
+
       this.getCurrency();
     });
   }
 
   private onClearInputEvent() {
     this.$buttonClean.addEventListener("click", () => {
-      if (this.$input?.value) {
+      const [$fromForm, $toForm] = document.querySelectorAll<FormSelect>("form-select");
+      const [$currentValue, $finalValue] = this.$textsOfCards;
+
+      if (this.$symbolToCoin.innerText) {
+        this.$symbolToCoin.innerText = "$";
+      }
+      if ($fromForm.innerHTML && $toForm.innerHTML) {
+        $fromForm.innerHTML = "Selecione";
+        $toForm.innerHTML = "Selecione";
+      }
+      if (this.$input.value) {
+        if ($currentValue.innerText && $finalValue.innerText) {
+          $currentValue.innerText = "";
+          $finalValue.innerText = "";
+        }
+        if (this.$fromCard.innerText && this.$toCard.innerText) {
+          this.$fromCard.innerText = "";
+          this.$toCard.innerText = "";
+        }
         this.$input.value = "";
-        Toasts.successToast("olá");
+        Toasts.successToast("Valor limpo com sucesso");
       }
     });
   }
