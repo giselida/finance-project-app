@@ -1,9 +1,9 @@
 import { Toast } from "bootstrap";
 export class Toasts {
-  static successToast(description: string, icon = "check_circle") {
+  static success(description: string, icon = "check_circle") {
     return Toasts.createToast("text-bg-success", description, icon);
   }
-  static ErrorToast(description: string, icon = "info") {
+  static error(description: string, icon = "info") {
     return Toasts.createToast("text-bg-danger", description, icon);
   }
   static createToast(className: string, description: string, icon: string) {
@@ -23,6 +23,10 @@ export class Toasts {
     const $toasts = document.querySelector("#toast-content");
     $toasts.append($div);
     const instanceBootstrap = Toast.getOrCreateInstance($div);
+
     instanceBootstrap.show();
+    setTimeout(() => {
+      $div.remove();
+    }, 4000);
   }
 }

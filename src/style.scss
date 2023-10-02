@@ -179,11 +179,19 @@ router-app {
   .toast {
     display: block;
   }
+  .btn-close {
+    --bs-btn-close-color: white;
+    --bs-btn-close-bg: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffff'><path d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/></svg>");
+  }
   #toast-content {
     position: fixed;
     top: 10px;
     right: 10px;
     z-index: 9999;
+    .toast {
+      margin-top: 10px;
+    }
+
     .toast-body {
       display: flex;
       align-items: center;
