@@ -32,14 +32,14 @@ export class HomePage extends HTMLElement {
 
     this.$fromForm = $fromFrom;
     this.$toForm = $toForm;
+
     this.recoveryElementRef();
     this.addListeners();
-    this.apexCharts();
+    this.apexChats();
   }
 
-  private apexCharts() {
+  private apexChats() {
     const chart = new ApexCharts(document.querySelector("#chart"), OPTIONS);
-    console.log(OPTIONS.series);
 
     chart.render();
   }
