@@ -4,7 +4,25 @@ import { AboutPage } from "./pages/about.page.ts/about.page";
 import { HomePage } from "./pages/home/home.page";
 import "./style.scss";
 
-customElements.define("form-select", FormSelect);
-customElements.define("home-page", HomePage);
-customElements.define("about-page", AboutPage);
-customElements.define("router-app", RouterOutlet);
+const options = [
+  {
+    selector: "form-select",
+    class: FormSelect,
+  },
+  {
+    selector: "home-page",
+    class: HomePage,
+  },
+  {
+    selector: "about-page",
+    class: AboutPage,
+  },
+  {
+    selector: "router-app",
+    class: RouterOutlet,
+  },
+];
+
+options.forEach((option) => {
+  customElements.define(option.selector, option.class);
+});
