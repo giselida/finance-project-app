@@ -1,11 +1,15 @@
 export const OPTIONS = {
   chart: {
-    type: "line",
+    type: "bar",
   },
   series: [
     {
       name: "sales",
       data: [30, 40, 35, 50, 49, 60, 70, 91, 125],
+    },
+    {
+      name: "sales",
+      data: [35, 45, 40, 55, 59, 70, 75, 101, 115],
     },
   ],
   xaxis: {
