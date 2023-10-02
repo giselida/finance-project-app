@@ -1,10 +1,11 @@
 import Currency from "@tadashi/currency";
+import ApexCharts from "apexcharts";
 import { FormSelect } from "../../components/form-select/form-select";
+import { OPTIONS } from "../../constants/charts";
 import { COUNTRY_LIST } from "../../constants/countrys";
 import { ExchangeRateApiResponse } from "../../interface/rates";
 import { Toasts } from "../../toasts/toast";
 import "./home.page.scss";
-
 export class HomePage extends HTMLElement {
   $input: HTMLInputElement;
   $buttonSearch: HTMLButtonElement;
@@ -34,6 +35,10 @@ export class HomePage extends HTMLElement {
 
     this.recoveryElementRef();
     this.addListeners();
+
+    const chart = new ApexCharts(document.querySelector("#chart"), OPTIONS);
+
+    chart.render();
   }
 
   recoveryElementRef() {
@@ -249,6 +254,7 @@ export class HomePage extends HTMLElement {
         </div>
       </div>
     </div>
+    <div id="chart"></div>
      <div id="toast-content"></div>
       `;
   }
