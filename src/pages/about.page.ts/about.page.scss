@@ -1,7 +1,22 @@
 @import "/src/scss/reset.scss";
 @import "/src/scss/mixins.scss";
+
 about-page {
   @include pageStyle(column);
+  form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .form-input {
+    .form-control {
+      border-color: var(--color-orange);
+    }
+    :focus {
+      box-shadow: 0px 0px 2px 1px var(--color-orange-light);
+    }
+  }
+
   .btn-transaction {
     background-color: var(--color-yellow-light);
     &:hover {
