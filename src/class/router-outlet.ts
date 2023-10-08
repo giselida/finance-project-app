@@ -23,25 +23,23 @@ export class RouterOutlet extends HTMLElement {
     this.onInit();
   }
   renderContent() {
-    window.addEventListener("load", () => {
-      const $root = document.querySelector("#root");
-      const home = new HomePage();
-      $root?.appendChild(home);
-    });
-    window.addEventListener("hashchange", () => {
-      const hash = window.location.hash;
-      const ROUTES: { [key: string]: typeof HTMLElement } = {
-        "#home": HomePage,
-        "#about": AboutPage,
-      };
-      const $root = document.querySelector("#root");
-      if ($root) $root.innerHTML = "";
-      const Page = ROUTES[hash];
-      if (Page) {
-        const page = new Page();
-        $root?.append(page);
-      }
-    });
+    window.addEventListener("load", () => this.renderOutlet());
+    window.addEventListener("hashchange", () => this.renderOutlet());
+  }
+
+  private renderOutlet() {
+    const hash = window.location.hash;
+    const ROUTES: { [key: string]: typeof HTMLElement } = {
+      "#home": HomePage,
+      "#about": AboutPage,
+    };
+    const $root = document.querySelector("#root");
+    if ($root) $root.innerHTML = "";
+    const Page = ROUTES[hash];
+    if (Page) {
+      const page = new Page();
+      $root?.append(page);
+    }
   }
 
   onInit() {

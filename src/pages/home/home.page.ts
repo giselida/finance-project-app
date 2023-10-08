@@ -1,7 +1,5 @@
 import Currency from "@tadashi/currency";
-import ApexCharts from "apexcharts";
 import { FormSelect } from "../../components/form-select/form-select";
-import { OPTIONS } from "../../constants/charts";
 import { COUNTRY_LIST } from "../../constants/countrys";
 import { ExchangeRateApiResponse } from "../../interface/rates";
 import { Toasts } from "../../toasts/toast";
@@ -35,13 +33,6 @@ export class HomePage extends HTMLElement {
 
     this.recoveryElementRef();
     this.addListeners();
-    this.apexChats();
-  }
-
-  private apexChats() {
-    const chart = new ApexCharts(document.querySelector("#chart"), OPTIONS);
-
-    chart.render();
   }
 
   recoveryElementRef() {
@@ -150,6 +141,7 @@ export class HomePage extends HTMLElement {
         $finalValue.innerText = formatCurrencyTo;
       });
   }
+
   private removeMask(value: string) {
     return +value.replaceAll(".", "").replace(",", ".");
   }
