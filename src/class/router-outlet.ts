@@ -3,7 +3,7 @@ import { HomePage } from "../pages/home/home.page";
 
 export class RouterOutlet extends HTMLElement {
   connectedCallback() {
-    this.innerHTML = `
+    this.innerHTML = /*html*/ `
    <header>
       <span class="material-symbols-outlined menu"> menu </span>
     </header>
@@ -53,7 +53,7 @@ export class RouterOutlet extends HTMLElement {
 
     $iconHeader?.addEventListener("click", (event) => {
       event.stopPropagation();
-      $sideBar?.classList.add("active");
+      $sideBar?.classList.toggle("active");
     });
     $anchors.forEach(($anchor) => {
       $anchor.addEventListener("click", () => {

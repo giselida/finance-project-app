@@ -143,7 +143,8 @@ export class HomePage extends HTMLElement {
   }
 
   private removeMask(value: string) {
-    return +value.replaceAll(".", "").replace(",", ".");
+    const number = value.replaceAll(".", "").replace(",", ".");
+    return isNaN(+number) ? 1 : +number;
   }
 
   private onKeyUpEvent() {
@@ -188,13 +189,15 @@ export class HomePage extends HTMLElement {
   private resetPage() {
     const [$currentValue, $finalValue] = this.$textsOfCards;
 
+    this.$fromForm.value = "";
     this.$fromForm.innerHTML = "Selecione";
     this.$toForm.innerHTML = "Selecione";
+    this.$toForm.value = "";
     $currentValue.innerText = "";
     $finalValue.innerText = "";
     this.$fromCard.innerText = "";
     this.$toCard.innerText = "";
-    this.$input.value = "";
+    this.$input.value = "0,00";
     this.$symbolToCoin.innerText = "$";
   }
 

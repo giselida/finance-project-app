@@ -1,5 +1,5 @@
-@import "/src/scss/reset.scss";
 @import "/src/scss/mixins.scss";
+@import "bootstrap/dist/css/bootstrap.min.css";
 
 about-page {
   @include pageStyle(column);
@@ -18,9 +18,20 @@ about-page {
   }
 
   .btn-transaction {
+    max-width: 200px;
     background-color: var(--color-yellow-light);
     &:hover {
       background-color: var(--color-yellow);
+    }
+  }
+  .table-container {
+    max-height: 485px;
+    overflow-y: auto;
+    border-radius: 5px;
+    box-shadow: 0px 0px 0px 1.5px #dee2e6;
+    background: white;
+    table {
+      margin: 0;
     }
   }
 }

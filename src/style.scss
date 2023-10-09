@@ -1,4 +1,5 @@
 @import "./scss/reset.scss";
+@import "./scss/mixins.scss";
 :root {
   --color-pink: #ff0f52;
   --color-orange-light: #f2b97bfc;
@@ -21,7 +22,7 @@ router-app {
     padding: 10px;
     height: 40px;
     background-color: var(--color-pink);
-    box-shadow: inset 0px -2px 2px 0px var(--color-pink-border);
+    box-shadow: inset 0px -1px 1px 0px var(--color-pink-border);
     font-size: 20px;
     .material-symbols-outlined {
       cursor: pointer;
