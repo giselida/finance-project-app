@@ -19,6 +19,16 @@ export class FormSelect extends HTMLElement {
 
     this.innerHTML = this.getAttribute("placeholder") ?? "Selecione ...";
 
+    this.value = this.getAttribute("value");
+
+    const optionSelected = this.options.find((option) => option.getAttribute("value") === this.getAttribute("value"));
+
+    if (optionSelected) {
+      this.innerHTML = optionSelected.innerHTML;
+      const method = this.getAttribute("required") != null ? "add" : "remove";
+      this.classList[method]("is-valid");
+    }
+
     this.addEventListener("click", () => {
       this.$backdrop = document.querySelector<HTMLElement>(".backdrop");
       if (!this.$backdrop) {
@@ -65,6 +75,13 @@ export class FormSelect extends HTMLElement {
       const option = event.target as HTMLElement;
       this.innerHTML = option.innerHTML;
       this.value = option.getAttribute("value");
+
+      this.classList.remove("is-valid");
+      this.classList.remove("is-invalid");
+
+      const method = this.getAttribute("required") != null ? "add" : "remove";
+      const className = this.value ? "is-valid" : "is-invalid";
+      this.classList[method](className);
 
       this.dispatchEvent(new Event("change"));
 

@@ -133,6 +133,7 @@ router-app {
     border: 1px solid var(--color-orange);
     white-space: nowrap;
     text-overflow: ellipsis;
+    background-size: 18px 52px, calc(7.75em + 3.375rem) calc(7.75em + 69.375rem) !important;
     .backdrop {
       position: absolute;
       width: 100%;
