@@ -1,4 +1,6 @@
 import Currency from "@tadashi/currency";
+import { Modal } from "bootstrap";
+import { FormSelect } from "../../components/form-select/form-select";
 import { SVG_ICONS } from "../../constants/svg-icons";
 import "./about.page.scss";
 interface Transaction {
@@ -10,54 +12,136 @@ interface Transaction {
 }
 export class AboutPage extends HTMLElement {
   mask: typeof Currency;
-  $formControls: NodeListOf<HTMLInputElement>;
+  transactionList: Transaction[] = [
+    {
+      date: "24/09/2001",
+      description: "Pix",
+      id: 1,
+      name: "João Vitor Pereira dos Santos",
+      value: "5.000,00",
+    },
+  ];
   $btnSend: HTMLButtonElement;
   $inputValue: HTMLInputElement;
-  $inputDescription: HTMLInputElement;
+  $inputDescription: FormSelect;
   $inputDate: HTMLInputElement;
   $inputName: HTMLInputElement;
-
+  $edit: HTMLSpanElement;
+  $delete: HTMLSpanElement;
+  $modal: HTMLElement;
+  idActual: number = 0;
+  idSelected: number;
+  listFind: Transaction;
   connectedCallback() {
-    this.innerHTML = this.createInnerHTML();
-    const $description = this.querySelector(".description");
-
-    $description.innerHTML += this.createFormSelect();
+    this.createInnerHTML();
     this.recoveryElementRef();
     this.addListeners();
+
     this.rendeScreen();
   }
+
   recoveryElementRef() {
-    this.$formControls = document.querySelectorAll(".form-control");
+    const [$formInputValue, $formInputDescription, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
+
+    this.$inputValue = $formInputValue as HTMLInputElement;
+    this.$inputDescription = $formInputDescription as FormSelect;
+    this.$inputDate = $formInputDate as HTMLInputElement;
+    this.$inputName = $formInputName as HTMLInputElement;
+    this.$modal = document.querySelector("#staticBackdrop");
     this.$btnSend = document.querySelector(".btn-send");
+    this.$edit = document.querySelector(".edit");
+    this.$delete = document.querySelector(".delete");
   }
 
   addListeners() {
-    const [$formInputValue] = this.$formControls;
-    this.mask = new Currency($formInputValue);
+    this.mask = new Currency(this.$inputValue);
 
     this.$btnSend.addEventListener("click", () => {
+      if (!this.idSelected) {
+        this.addTransaction();
+      } else {
+        this.updateTransaction();
+      }
+      this.instanceModal().toggle();
       this.rendeScreen();
     });
   }
+
+  private instanceModal() {
+    return Modal.getOrCreateInstance(this.$modal);
+  }
+  private addTransaction() {
+    const transactionObject: Transaction = {
+      id: ++this.idActual,
+      value: this.$inputValue.value,
+      description: this.$inputDescription.value,
+      date: this.$inputDate.value,
+      name: this.$inputName.value,
+    };
+    this.clearForm();
+    this.transactionList.push(transactionObject);
+  }
+  private clearForm() {
+    this.$inputValue.value = "";
+    this.$inputDescription.value = "";
+    this.$inputDate.value = "";
+    this.$inputName.value = "";
+  }
+
+  updateTransaction() {
+    this.listFind.value = this.$inputValue.value;
+    this.listFind.description = this.$inputDescription.value;
+    this.listFind.date = this.$inputDate.value;
+    this.listFind.name = this.$inputName.value;
+  }
   rendeScreen() {
     const $tbody = document.querySelector("tbody");
-
-    const [$formInputValue, $formInputDescription, $formInputDate, $formInputName] = this.$formControls;
-    $tbody.innerHTML += /*html*/ ` 
-     <tr>
-      <th scope="row">${$tbody.childElementCount + 1}</th>
-      <td>${$formInputValue?.value}</td>
-      <td>
-        ${SVG_ICONS[$formInputDescription?.value]}  
-        ${$formInputDescription?.value}
+    $tbody.innerHTML = "";
+    this.transactionList.forEach((transaction) => {
+      $tbody.innerHTML += /*html*/ ` 
+     <tr id='option-of-transaction-${transaction.id}'>
+       <th scope="row">${transaction.id}</th>
+       <td>${transaction.value}</td>
+       <td>
+         ${SVG_ICONS[transaction.description]}  
+        ${transaction.description}
       </td>
-      <td>${$formInputDate?.value}</td>
-      <td>${$formInputName?.value}</td>
+      <td>${transaction.date}</td>
+      <td>${transaction.name}</td>
+      <td>
+        <span class="material-symbols-outlined edit" onclick="document.querySelector('about-page').onEdit(${transaction.id})" >
+          edit
+        </span>
+        <span class="material-symbols-outlined delete"onclick="document.querySelector('about-page').onRemove(${transaction.id})">
+          delete
+        </span>
+      </td>
     </tr>`;
+    });
+  }
+  onRemove(id: number) {
+    const $tbody = document.querySelector(`#option-of-transaction-${id}`);
+    this.transactionList = this.transactionList.filter((itemValue) => itemValue.id !== id);
+    $tbody.remove();
+  }
+  onEdit(id: number) {
+    this.idSelected = id;
+    this.listFind = this.transactionList.find((itemValue) => itemValue.id === this.idSelected);
+    this.$inputValue.value = this.listFind.value;
+    this.$inputDescription.value = this.listFind.description;
+    this.$inputDate.value = this.listFind.date;
+    this.$inputName.value = this.listFind.name;
+
+    this.instanceModal().toggle();
+    this.$modal.addEventListener("hidden.bs.modal", (event) => {
+      this.listFind = null;
+      this.idSelected = null;
+      this.clearForm();
+    });
   }
 
   createInnerHTML() {
-    return /*html*/ `
+    this.innerHTML = /*html*/ `
       <button type="button" class="btn btn-transaction mb-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
       <span class="material-symbols-outlined icon"> forward </span>Fazer uma transação
       </button>
@@ -84,7 +168,6 @@ export class AboutPage extends HTMLElement {
                     type="text"
                     class="form-control"
                     autocomplete="transaction-currency"
-                    value="70,70"
                     pattern="[0-9]+,[0-9]{2}||[0-9]+(.[0-9]{3})*,[0-9]{2}"
                     required
                   />
@@ -94,11 +177,11 @@ export class AboutPage extends HTMLElement {
                 </div>
                 <div class="form-input">
                   <label class="col-form-label">Data:</label>
-                  <input type="text" class="form-control" value="01/01/01" required />
+                  <input type="text" class="form-control" required />
                 </div>
                 <div class="form-input">
                   <label class="col-form-label">Nome:</label>
-                  <input type="text" class="form-control" value="Não posso" required />
+                  <input type="text" class="form-control" required />
                 </div>
               </form>
             </div>
@@ -118,16 +201,19 @@ export class AboutPage extends HTMLElement {
             <th scope="col">Descrição</th>
             <th scope="col">Data</th>
             <th scope="col">Nome</th>
+            <th scope="col">Ações</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
   </div>
     `;
+    const $description = this.querySelector(".description");
+    $description.innerHTML += this.createFormSelect();
   }
   createFormSelect() {
     return /*html*/ `
-       <form-select class="form-control" required placeholder="Selecione" value="Pix" >
+       <form-select class="form-control is-invalid" required placeholder="Selecione">
         <div class="option" value="">
           Selecione
         </div>
