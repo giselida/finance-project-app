@@ -1,8 +1,6 @@
 @import "/src/scss/reset.scss";
 @import "/src/scss/mixins.scss";
-:root {
-  --color-red: #f80505;
-}
+
 home-page {
   @include pageStyle(column);
 

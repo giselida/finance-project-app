@@ -12,32 +12,24 @@ interface Transaction {
 }
 export class AboutPage extends HTMLElement {
   mask: typeof Currency;
-  transactionList: Transaction[] = [
-    {
-      date: "24/09/2001",
-      description: "Pix",
-      id: 1,
-      name: "João Vitor Pereira dos Santos",
-      value: "5.000,00",
-    },
-  ];
+  $inputDescription: FormSelect;
   $btnSend: HTMLButtonElement;
   $inputValue: HTMLInputElement;
-  $inputDescription: FormSelect;
   $inputDate: HTMLInputElement;
   $inputName: HTMLInputElement;
   $edit: HTMLSpanElement;
   $delete: HTMLSpanElement;
   $modal: HTMLElement;
-  idActual: number = 0;
-  idSelected: number;
-  listFind: Transaction;
+  actuallyId: number = 0;
+  selectedId: number;
+  transactionList: Transaction[] = [];
+  transactionFind: Transaction;
+
   connectedCallback() {
     this.createInnerHTML();
     this.recoveryElementRef();
     this.addListeners();
-
-    this.rendeScreen();
+    this.renderTransactions();
   }
 
   recoveryElementRef() {
@@ -55,52 +47,26 @@ export class AboutPage extends HTMLElement {
 
   addListeners() {
     this.mask = new Currency(this.$inputValue);
-
     this.$btnSend.addEventListener("click", () => {
-      if (!this.idSelected) {
-        this.addTransaction();
-      } else {
-        this.updateTransaction();
-      }
+      const methodKey = !this.selectedId ? "addTransaction" : "updateTransaction";
+      this[methodKey]();
       this.instanceModal().toggle();
-      this.rendeScreen();
+      this.renderTransactions();
+    });
+    this.$modal.addEventListener("hidden.bs.modal", () => {
+      this.transactionFind = null;
+      this.selectedId = null;
+      this.clearForm();
     });
   }
 
-  private instanceModal() {
-    return Modal.getOrCreateInstance(this.$modal);
-  }
-  private addTransaction() {
-    const transactionObject: Transaction = {
-      id: ++this.idActual,
-      value: this.$inputValue.value,
-      description: this.$inputDescription.value,
-      date: this.$inputDate.value,
-      name: this.$inputName.value,
-    };
-    this.clearForm();
-    this.transactionList.push(transactionObject);
-  }
-  private clearForm() {
-    this.$inputValue.value = "";
-    this.$inputDescription.value = "";
-    this.$inputDate.value = "";
-    this.$inputName.value = "";
-  }
-
-  updateTransaction() {
-    this.listFind.value = this.$inputValue.value;
-    this.listFind.description = this.$inputDescription.value;
-    this.listFind.date = this.$inputDate.value;
-    this.listFind.name = this.$inputName.value;
-  }
-  rendeScreen() {
+  renderTransactions() {
     const $tbody = document.querySelector("tbody");
     $tbody.innerHTML = "";
     this.transactionList.forEach((transaction) => {
       $tbody.innerHTML += /*html*/ ` 
-     <tr id='option-of-transaction-${transaction.id}'>
-       <th scope="row">${transaction.id}</th>
+       <tr id="option-of-transaction-${transaction.id}">
+       <td scope="row">${transaction.id}</td>
        <td>${transaction.value}</td>
        <td>
          ${SVG_ICONS[transaction.description]}  
@@ -109,37 +75,48 @@ export class AboutPage extends HTMLElement {
       <td>${transaction.date}</td>
       <td>${transaction.name}</td>
       <td>
-        <span class="material-symbols-outlined edit" onclick="document.querySelector('about-page').onEdit(${transaction.id})" >
+        <span class="material-symbols-outlined edit" onclick="document.querySelector('about-page').editTransaction(${transaction.id})" >
           edit
         </span>
-        <span class="material-symbols-outlined delete"onclick="document.querySelector('about-page').onRemove(${transaction.id})">
+        <span class="material-symbols-outlined delete"onclick="document.querySelector('about-page').removeTransaction(${transaction.id})">
           delete
         </span>
       </td>
     </tr>`;
     });
   }
-  onRemove(id: number) {
+  addTransaction() {
+    const newTransaction: Transaction = {
+      id: ++this.actuallyId,
+      value: this.$inputValue.value,
+      description: this.$inputDescription.value,
+      date: this.$inputDate.value,
+      name: this.$inputName.value,
+    };
+    this.transactionList.push(newTransaction);
+    this.clearForm();
+  }
+
+  updateTransaction() {
+    this.transactionFind.value = this.$inputValue.value;
+    this.transactionFind.description = this.$inputDescription.value;
+    this.transactionFind.date = this.$inputDate.value;
+    this.transactionFind.name = this.$inputName.value;
+  }
+  editTransaction(id: number) {
+    this.selectedId = id;
+    this.transactionFind = this.transactionList.find((transaction) => transaction.id === this.selectedId);
+    this.$inputValue.value = this.transactionFind.value;
+    this.$inputDescription.value = this.transactionFind.description;
+    this.$inputDate.value = this.transactionFind.date;
+    this.$inputName.value = this.transactionFind.name;
+    this.instanceModal().toggle();
+  }
+  removeTransaction(id: number) {
     const $tbody = document.querySelector(`#option-of-transaction-${id}`);
-    this.transactionList = this.transactionList.filter((itemValue) => itemValue.id !== id);
+    this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
     $tbody.remove();
   }
-  onEdit(id: number) {
-    this.idSelected = id;
-    this.listFind = this.transactionList.find((itemValue) => itemValue.id === this.idSelected);
-    this.$inputValue.value = this.listFind.value;
-    this.$inputDescription.value = this.listFind.description;
-    this.$inputDate.value = this.listFind.date;
-    this.$inputName.value = this.listFind.name;
-
-    this.instanceModal().toggle();
-    this.$modal.addEventListener("hidden.bs.modal", () => {
-      this.listFind = null;
-      this.idSelected = null;
-      this.clearForm();
-    });
-  }
-
   createInnerHTML() {
     this.innerHTML = /*html*/ `
       <button type="button" class="btn btn-transaction mb-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
@@ -235,5 +212,14 @@ export class AboutPage extends HTMLElement {
         </div>
        </form-select> 
       `;
+  }
+  private clearForm() {
+    this.$inputValue.value = "";
+    this.$inputDescription.value = "";
+    this.$inputDate.value = "";
+    this.$inputName.value = "";
+  }
+  private instanceModal() {
+    return Modal.getOrCreateInstance(this.$modal);
   }
 }

@@ -9,6 +9,8 @@
   --color-white: #fffbe6;
   --color-black: #000000;
   --color-pink-border: #ad1b43;
+  --color-red: #f80505;
+  --color-yellow-dark: #c5bf22;
 }
 body {
   background-color: var(--color-white);
@@ -57,7 +59,6 @@ router-app {
         font-weight: 500;
         margin-right: 8px;
       }
-
       &:hover {
         transform: scale(1.05);
       }

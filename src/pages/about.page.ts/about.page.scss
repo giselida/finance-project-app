@@ -52,4 +52,18 @@ about-page {
       }
     }
   }
+  .delete {
+    color: var(--color-red);
+    cursor: pointer;
+    &:hover {
+      color: var(--color-pink-border);
+    }
+  }
+  .edit {
+    color: var(--color-yellow-dark);
+    cursor: pointer;
+    &:hover {
+      color: var(--color-yellow-light);
+    }
+  }
 }
