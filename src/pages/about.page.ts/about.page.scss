@@ -39,4 +39,17 @@ about-page {
   th:first-child {
     text-align: center;
   }
+  .modal-footer {
+    .btn-send {
+      background-color: var(--color-yellow-light);
+      &:hover {
+        background-color: var(--color-yellow);
+      }
+    }
+    .btn-closed {
+      &:hover {
+        background-color: var(--color-yellow-light);
+      }
+    }
+  }
 }

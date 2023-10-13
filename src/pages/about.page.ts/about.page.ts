@@ -133,7 +133,7 @@ export class AboutPage extends HTMLElement {
     this.$inputName.value = this.listFind.name;
 
     this.instanceModal().toggle();
-    this.$modal.addEventListener("hidden.bs.modal", (event) => {
+    this.$modal.addEventListener("hidden.bs.modal", () => {
       this.listFind = null;
       this.idSelected = null;
       this.clearForm();
