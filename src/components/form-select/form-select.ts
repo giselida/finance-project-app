@@ -6,30 +6,25 @@ export class FormSelect extends HTMLElement {
   set value(value) {
     this._value = value;
     this.setAttribute("value", this._value);
+    this.classList.remove("is-valid");
+    this.classList.remove("is-invalid");
     if (!value) {
-      if (this.getAttribute("required")) {
-        this.classList.remove("is-valid");
+      if (this.getAttribute("required") != null) {
         this.classList.add("is-invalid");
+        this.classList.remove("is-valid");
       }
-
       this.innerHTML = this.getAttribute("placeholder") ?? "Selecione ...";
     } else {
-      if (this.getAttribute("required")) {
-        this.classList.remove("is-invalid");
-        this.classList.add("is-valid");
-      }
       const optionSelected = this.options.find((option) => option.getAttribute("value") === this.getAttribute("value"));
-
       if (optionSelected) {
         this.innerHTML = optionSelected.innerHTML;
-
-        const method = this.getAttribute("required") != null ? "add" : "remove";
-
-        this.classList[method]("is-valid");
+        if (this.getAttribute("required") != null) {
+          this.classList.remove("is-invalid");
+          this.classList.add("is-valid");
+        }
       }
     }
   }
-
   get value() {
     return this._value;
   }

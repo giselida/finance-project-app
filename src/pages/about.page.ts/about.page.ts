@@ -115,6 +115,8 @@ export class AboutPage extends HTMLElement {
     this.transactionFind.name = this.$inputName.value;
   }
   editTransaction(id: number) {
+    const $titleModal = document.querySelector(".modal-title");
+    $titleModal.textContent = "Editar transação";
     this.selectedId = id;
     this.transactionFind = this.transactionList.find((transaction) => transaction.id === this.selectedId);
     this.$inputValue.value = this.transactionFind.value;
@@ -137,7 +139,8 @@ export class AboutPage extends HTMLElement {
     this.innerHTML = /*html*/ `
       <button type="button" class="btn btn-transaction mb-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
       <span class="material-symbols-outlined icon"> forward </span>Fazer uma transação
-      </button>
+    </button>
+
       <div
         class="modal fade"
         id="staticBackdrop"
