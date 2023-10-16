@@ -25,8 +25,9 @@ export class AboutPage extends HTMLElement {
   $modal: HTMLElement;
   actuallyId: number = 0;
   selectedId: number;
-  transactionList: Transaction[] = [];
+  transactionList: Transaction[];
   transactionFind: Transaction;
+  datePicker: AirDatepicker;
 
   connectedCallback() {
     this.createInnerHTML();
@@ -36,8 +37,10 @@ export class AboutPage extends HTMLElement {
   }
 
   recoveryElementRef() {
-    const [$formInputValue, $formInputDescription, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
+    this.transactionList = JSON.parse(localStorage.getItem("transactionList")) ?? [];
+    this.actuallyId = +localStorage.getItem("actuallyId");
 
+    const [$formInputValue, $formInputDescription, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
     this.$inputValue = $formInputValue as HTMLInputElement;
     this.$inputDescription = $formInputDescription as FormSelect;
     this.$inputDate = $formInputDate as HTMLInputElement;
@@ -62,20 +65,21 @@ export class AboutPage extends HTMLElement {
       this.clearForm();
     });
 
-    console.log(new AirDatepicker(this.$inputDate, { locale: localeEn }));
+    this.datePicker = new AirDatepicker(this.$inputDate, { locale: localeEn });
   }
 
   renderTransactions() {
     const $tbody = document.querySelector("tbody");
+    this.setStorage();
     $tbody.innerHTML = "";
     this.transactionList.forEach((transaction) => {
       $tbody.innerHTML += /*html*/ ` 
        <tr id="option-of-transaction-${transaction.id}">
-       <td scope="row">${transaction.id}</td>
-       <td>${transaction.value}</td>
-       <td>
-         ${SVG_ICONS[transaction.description]}  
-        ${transaction.description}
+         <td scope="row">${transaction.id}</td>
+         <td>${transaction.value}</td>
+         <td>
+           ${SVG_ICONS[transaction.description]}  
+           ${transaction.description}
       </td>
       <td>${transaction.date}</td>
       <td>${transaction.name}</td>
@@ -91,14 +95,16 @@ export class AboutPage extends HTMLElement {
     });
   }
   addTransaction() {
+    ++this.actuallyId;
     const newTransaction: Transaction = {
-      id: ++this.actuallyId,
+      id: this.actuallyId,
       value: this.$inputValue.value,
       description: this.$inputDescription.value,
       date: this.$inputDate.value,
       name: this.$inputName.value,
     };
     this.transactionList.push(newTransaction);
+    this.setStorage();
     this.clearForm();
   }
 
@@ -121,7 +127,12 @@ export class AboutPage extends HTMLElement {
     const $tbody = document.querySelector(`#option-of-transaction-${id}`);
     this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
     $tbody.remove();
+    this.setStorage();
   }
+  private setStorage() {
+    localStorage.setItem("transactionList", JSON.stringify(this.transactionList));
+  }
+
   createInnerHTML() {
     this.innerHTML = /*html*/ `
       <button type="button" class="btn btn-transaction mb-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
@@ -134,8 +145,7 @@ export class AboutPage extends HTMLElement {
         data-bs-keyboard="false"
         tabindex="-1"
         aria-labelledby="staticBackdropLabel"
-        aria-hidden="true"
-      >
+        aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
@@ -174,7 +184,7 @@ export class AboutPage extends HTMLElement {
           </div>
         </div>
       </div>
-      <div class="table-container">
+      <div class="table-container" >
       <table class="table table-sm table-hover table-bordered">
         <thead class="table-warning">
           <tr style="position: sticky;top: 0;">
