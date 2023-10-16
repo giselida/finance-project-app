@@ -16,8 +16,12 @@ body {
   background-color: var(--color-white);
   font-family: Roboto, serif;
 }
+.air-datepicker-global-container {
+  z-index: 999999;
+}
 router-app {
   display: block;
+
   header {
     display: flex;
     align-items: center;
@@ -91,6 +95,7 @@ router-app {
     gap: 10px;
     margin-bottom: 20px;
   }
+
   .btn {
     display: flex;
     border: 1px solid var(--color-orange);

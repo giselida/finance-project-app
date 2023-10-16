@@ -1,4 +1,7 @@
 import Currency from "@tadashi/currency";
+import AirDatepicker from "air-datepicker";
+import "air-datepicker/air-datepicker.css";
+import localeEn from "air-datepicker/locale/en";
 import { Modal } from "bootstrap";
 import { FormSelect } from "../../components/form-select/form-select";
 import { SVG_ICONS } from "../../constants/svg-icons";
@@ -58,6 +61,8 @@ export class AboutPage extends HTMLElement {
       this.selectedId = null;
       this.clearForm();
     });
+
+    console.log(new AirDatepicker(this.$inputDate, { locale: localeEn }));
   }
 
   renderTransactions() {
