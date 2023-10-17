@@ -18,6 +18,8 @@ export class RouterOutlet extends HTMLElement {
       </a>
     </div>
     <main id="root"></main>
+    <div id="toast-content"></div>
+
       `;
     this.renderContent();
     this.onInit();

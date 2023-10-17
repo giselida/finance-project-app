@@ -253,7 +253,6 @@ export class HomePage extends HTMLElement {
       </div>
     </div>
     <div id="chart"></div>
-     <div id="toast-content"></div>
       `;
   }
   private createFormSelect() {

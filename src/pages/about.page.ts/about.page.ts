@@ -5,6 +5,7 @@ import localeEn from "air-datepicker/locale/en";
 import { Modal } from "bootstrap";
 import { FormSelect } from "../../components/form-select/form-select";
 import { SVG_ICONS } from "../../constants/svg-icons";
+import { Toasts } from "../../toasts/toast";
 import "./about.page.scss";
 interface Transaction {
   id: number;
@@ -56,6 +57,8 @@ export class AboutPage extends HTMLElement {
   addListeners() {
     this.mask = new Currency(this.$inputValue);
     this.$btnSend.addEventListener("click", () => {
+      if (!this.$inputValue.value || !this.$inputDescription.value || !this.$inputDate.value || !this.$inputName.value)
+        return Toasts.error("Por favor preencha os campos obrigatórios");
       const methodKey = !this.selectedId ? "addTransaction" : "updateTransaction";
       this[methodKey]();
       this.instanceModal().toggle();
@@ -71,9 +74,8 @@ export class AboutPage extends HTMLElement {
     });
     this.datePicker = new AirDatepicker(this.$inputDate, { locale: localeEn });
   }
-  filteredList() {
+  get filteredList() {
     return this.transactionList.filter((item) => {
-      console.log(item);
       return Object.values(item).some((item) => item.toString().toLowerCase().includes(this.$search.value.toLowerCase()));
     });
   }
@@ -81,7 +83,7 @@ export class AboutPage extends HTMLElement {
     const $tbody = document.querySelector("tbody");
     this.setStorage();
     $tbody.innerHTML = "";
-    this.filteredList().forEach((transaction) => {
+    this.filteredList.forEach((transaction) => {
       $tbody.innerHTML += /*html*/ ` 
        <tr id="option-of-transaction-${transaction.id}">
          <td scope="row">${transaction.id}</td>
@@ -128,6 +130,9 @@ export class AboutPage extends HTMLElement {
     $titleModal.textContent = "Editar transação";
     this.selectedId = id;
     this.transactionFind = this.transactionList.find((transaction) => transaction.id === this.selectedId);
+
+    if (!this.transactionFind) return;
+
     this.$inputValue.value = this.transactionFind.value;
     this.$inputDescription.value = this.transactionFind.description;
     this.$inputDate.value = this.transactionFind.date;
