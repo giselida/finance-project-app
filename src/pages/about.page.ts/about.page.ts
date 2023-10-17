@@ -25,11 +25,17 @@ export class AboutPage extends HTMLElement {
   $edit: HTMLSpanElement;
   $delete: HTMLSpanElement;
   $modal: HTMLElement;
+  $previous: HTMLButtonElement;
+  $next: HTMLButtonElement;
   actuallyId: number = 0;
   selectedId: number;
+  page: number = 1;
+  pageSize: number = 5;
+  maxPage: number;
   transactionList: Transaction[];
   transactionFind: Transaction;
   datePicker: AirDatepicker;
+  $pageActually: HTMLElement;
 
   connectedCallback() {
     this.createInnerHTML();
@@ -52,6 +58,9 @@ export class AboutPage extends HTMLElement {
     this.$edit = document.querySelector(".edit");
     this.$delete = document.querySelector(".delete");
     this.$search = document.querySelector(".form-search");
+    this.$previous = document.querySelector(".page-previous");
+    this.$next = document.querySelector(".page-next");
+    this.$pageActually = document.querySelector(".page-actually");
   }
 
   addListeners() {
@@ -72,18 +81,49 @@ export class AboutPage extends HTMLElement {
     this.$search.addEventListener("input", () => {
       this.renderTransactions();
     });
+    this.nextListener();
+    this.previousListener();
     this.datePicker = new AirDatepicker(this.$inputDate, { locale: localeEn });
   }
-  get filteredList() {
-    return this.transactionList.filter((item) => {
-      return Object.values(item).some((item) => item.toString().toLowerCase().includes(this.$search.value.toLowerCase()));
+  private previousListener() {
+    this.$previous.addEventListener("click", () => {
+      this.page--;
+      if (this.page <= 1) {
+        this.page = 1;
+      }
+      this.renderTransactions();
     });
   }
-  renderTransactions() {
+  private nextListener() {
+    this.$next.addEventListener("click", () => {
+      this.page++;
+
+      if (this.page > this.maxPage) {
+        this.page = this.maxPage;
+      }
+      this.renderTransactions();
+    });
+  }
+
+  renderTransactions(list: Transaction[] = this.filteredList) {
+    this.maxPage = Math.ceil(this.filteredList.length / this.pageSize);
+    if (this.maxPage < 1) {
+      this.maxPage = 1;
+    }
+    this.$previous.disabled = this.page == 1;
+    this.$next.disabled = this.maxPage == this.page;
+    console.log(this.maxPage, "max");
+    console.log(this.page, "page");
     const $tbody = document.querySelector("tbody");
     this.setStorage();
+
+    const start = (this.page - 1) * this.pageSize;
+    const end = start + this.pageSize;
+
     $tbody.innerHTML = "";
-    this.filteredList.forEach((transaction) => {
+    this.$pageActually.textContent = this.page.toString();
+
+    list.slice(start, end).forEach((transaction) => {
       $tbody.innerHTML += /*html*/ ` 
        <tr id="option-of-transaction-${transaction.id}">
          <td scope="row">${transaction.id}</td>
@@ -105,10 +145,14 @@ export class AboutPage extends HTMLElement {
     </tr>`;
     });
   }
+  get filteredList() {
+    return this.transactionList.filter((item) => {
+      return Object.values(item).some((item) => item.toString().toLowerCase().includes(this.$search.value.toLowerCase()));
+    });
+  }
   addTransaction() {
-    ++this.actuallyId;
     const newTransaction: Transaction = {
-      id: this.actuallyId,
+      id: ++this.actuallyId,
       value: this.$inputValue.value,
       description: this.$inputDescription.value,
       date: this.$inputDate.value,
@@ -147,12 +191,13 @@ export class AboutPage extends HTMLElement {
   }
   private setStorage() {
     localStorage.setItem("transactionList", JSON.stringify(this.transactionList));
+    localStorage.setItem("actuallyId", this.actuallyId.toString());
   }
 
   createInnerHTML() {
     this.innerHTML = /*html*/ `
 <div class="content-row mb-3">
-        <button type="button" class="btn btn-transaction" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+        <button type="button" class="btn btn-transaction" data-bs-toggle="modal" data-bs-target="#staticBackdrop" >
       <span class="material-symbols-outlined icon"> forward </span>Fazer uma transação
     </button>
     <div class="group-input">
@@ -227,23 +272,17 @@ search
  <nav aria-label="Page navigation ">
   <ul class="pagination">
     <li class="page-item">
-      <div class="page-link page-previous"aria-label="Previous">
+      <button class="page-link page-previous" aria-label="Previous" disabled>
         <span class="previous" >&laquo;</span>
-      </div>
+      </button>
     </li>
     <li class="page-item">
-      <div class="page-link" >1</div>
+      <div class="page-link page-actually" >1</div>
     </li>
     <li class="page-item">
-      <div class="page-link">2</div>
-    </li>
-    <li class="page-item">
-      <div class="page-link">3</div>
-    </li>
-    <li class="page-item">
-      <div class="page-link page-next" aria-label="Next">
+      <button class="page-link page-next" aria-label="Next" disabled>
         <span class="next">&raquo;</span>
-      </div>
+      </button>
     </li>
   </ul>
 </nav>

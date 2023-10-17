@@ -80,6 +80,10 @@ about-page {
         &:hover {
           background-color: var(--color-yellow);
         }
+        &:disabled {
+          background-color: var(--color-yellow-dark);
+          cursor: not-allowed;
+        }
       }
     }
   }
