@@ -66,4 +66,21 @@ about-page {
       color: var(--color-yellow-light);
     }
   }
+  nav {
+    margin-top: 15px;
+    align-self: center;
+    .page-item {
+      .page-link {
+        color: var(--color-pink);
+      }
+      .page-previous,
+      .page-next {
+        background-color: var(--color-yellow-light);
+        transition: background-color ease-out 0.5s;
+        &:hover {
+          background-color: var(--color-yellow);
+        }
+      }
+    }
+  }
 }
