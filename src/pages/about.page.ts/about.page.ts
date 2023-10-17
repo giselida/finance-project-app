@@ -219,6 +219,30 @@ search
         <tbody></tbody>
       </table>
   </div>
+ <nav aria-label="Page navigation ">
+  <ul class="pagination">
+    <li class="page-item">
+      <div class="page-link page-previous"aria-label="Previous">
+        <span class="previous" >&laquo;</span>
+      </div>
+    </li>
+    <li class="page-item">
+      <div class="page-link" >1</div>
+    </li>
+    <li class="page-item">
+      <div class="page-link">2</div>
+    </li>
+    <li class="page-item">
+      <div class="page-link">3</div>
+    </li>
+    <li class="page-item">
+      <div class="page-link page-next" aria-label="Next">
+        <span class="next">&raquo;</span>
+      </div>
+    </li>
+  </ul>
+</nav>
+
     `;
     const $description = this.querySelector(".description");
     $description.innerHTML += this.createFormSelect();
