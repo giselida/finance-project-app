@@ -1,9 +1,9 @@
 import Currency from "@tadashi/currency";
 import AirDatepicker from "air-datepicker";
 import "air-datepicker/air-datepicker.css";
-import localeEn from "air-datepicker/locale/en";
 import { Modal } from "bootstrap";
 import { FormSelect } from "../../components/form-select/form-select";
+import { PT_BR_LOCALE } from "../../constants/apexChats";
 import { SVG_ICONS } from "../../constants/svg-icons";
 import { Toasts } from "../../toasts/toast";
 import "./about.page.scss";
@@ -83,7 +83,7 @@ export class AboutPage extends HTMLElement {
     });
     this.nextListener();
     this.previousListener();
-    this.datePicker = new AirDatepicker(this.$inputDate, { locale: localeEn });
+    this.datePicker = new AirDatepicker(this.$inputDate, { locale: PT_BR_LOCALE });
   }
   private previousListener() {
     this.$previous.addEventListener("click", () => {
