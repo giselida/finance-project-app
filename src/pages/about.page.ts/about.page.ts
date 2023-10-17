@@ -20,6 +20,7 @@ export class AboutPage extends HTMLElement {
   $inputValue: HTMLInputElement;
   $inputDate: HTMLInputElement;
   $inputName: HTMLInputElement;
+  $search: HTMLInputElement;
   $edit: HTMLSpanElement;
   $delete: HTMLSpanElement;
   $modal: HTMLElement;
@@ -49,6 +50,7 @@ export class AboutPage extends HTMLElement {
     this.$btnSend = document.querySelector(".btn-send");
     this.$edit = document.querySelector(".edit");
     this.$delete = document.querySelector(".delete");
+    this.$search = document.querySelector(".form-search");
   }
 
   addListeners() {
@@ -64,15 +66,22 @@ export class AboutPage extends HTMLElement {
       this.selectedId = null;
       this.clearForm();
     });
-
+    this.$search.addEventListener("input", () => {
+      this.renderTransactions();
+    });
     this.datePicker = new AirDatepicker(this.$inputDate, { locale: localeEn });
   }
-
+  filteredList() {
+    return this.transactionList.filter((item) => {
+      console.log(item);
+      return Object.values(item).some((item) => item.toString().toLowerCase().includes(this.$search.value.toLowerCase()));
+    });
+  }
   renderTransactions() {
     const $tbody = document.querySelector("tbody");
     this.setStorage();
     $tbody.innerHTML = "";
-    this.transactionList.forEach((transaction) => {
+    this.filteredList().forEach((transaction) => {
       $tbody.innerHTML += /*html*/ ` 
        <tr id="option-of-transaction-${transaction.id}">
          <td scope="row">${transaction.id}</td>
@@ -137,10 +146,18 @@ export class AboutPage extends HTMLElement {
 
   createInnerHTML() {
     this.innerHTML = /*html*/ `
-      <button type="button" class="btn btn-transaction mb-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+<div class="content-row mb-3">
+        <button type="button" class="btn btn-transaction" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
       <span class="material-symbols-outlined icon"> forward </span>Fazer uma transação
     </button>
+    <div class="group-input">
+  <div class="input-group-text"><span class="material-symbols-outlined">
+search
+</span></div>
+  <input type="text" class="form-search">
+</div>
 
+</div>
       <div
         class="modal fade"
         id="staticBackdrop"
