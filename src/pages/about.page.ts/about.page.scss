@@ -24,11 +24,9 @@ about-page {
     }
   }
   .table-container {
-    max-height: 485px;
     overflow-y: auto;
     border-radius: 5px;
-    box-shadow: 0px 0px 0px 1.5px #dee2e6;
-    background: white;
+    min-height: 170px;
     table {
       margin: 0;
     }

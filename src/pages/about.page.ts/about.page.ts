@@ -67,7 +67,7 @@ export class AboutPage extends HTMLElement {
     this.mask = new Currency(this.$inputValue);
     this.$btnSend.addEventListener("click", () => {
       if (!this.$inputValue.value || !this.$inputDescription.value || !this.$inputDate.value || !this.$inputName.value)
-        return Toasts.error("Por favor preencha os campos obrigatórios");
+        return Toasts.error("Por favor preencha os campos obrigatórios!");
       const methodKey = !this.selectedId ? "addTransaction" : "updateTransaction";
       this[methodKey]();
       this.instanceModal().toggle();
@@ -114,6 +114,8 @@ export class AboutPage extends HTMLElement {
     this.$next.disabled = this.maxPage == this.page;
 
     const $tbody = document.querySelector("tbody");
+    const $table = document.querySelector("table");
+    $table.hidden = this.filteredList.length < 1;
     this.setStorage();
 
     const actuallyPage = (this.page - 1) * this.pageSize;
@@ -160,6 +162,7 @@ export class AboutPage extends HTMLElement {
     this.transactionList.push(newTransaction);
     this.setStorage();
     this.clearForm();
+    Toasts.success("Transação adicionada com sucesso!");
   }
 
   updateTransaction() {
@@ -186,6 +189,7 @@ export class AboutPage extends HTMLElement {
     this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
     this.setStorage();
     this.renderTransactions();
+    Toasts.success("Transação removida com sucesso!");
   }
   private setStorage() {
     localStorage.setItem("transactionList", JSON.stringify(this.transactionList));
