@@ -2,6 +2,7 @@ import Currency from "@tadashi/currency";
 import AirDatepicker from "air-datepicker";
 import "air-datepicker/air-datepicker.css";
 import { Modal } from "bootstrap";
+import IMask from "imask";
 import { FormSelect } from "../../components/form-select/form-select";
 import { PT_BR_LOCALE } from "../../constants/apexChats";
 import { SVG_ICONS } from "../../constants/svg-icons";
@@ -64,7 +65,14 @@ export class AboutPage extends HTMLElement {
   }
 
   addListeners() {
+    const maskOptions = {
+      mask: "00/00/0000",
+    };
+    const mask = IMask(this.$inputDate, maskOptions);
+    console.log(mask.value, "value");
+
     this.mask = new Currency(this.$inputValue);
+
     this.$btnSend.addEventListener("click", () => {
       if (!this.$inputValue.value || !this.$inputDescription.value || !this.$inputDate.value || !this.$inputName.value)
         return Toasts.error("Por favor preencha os campos obrigatórios!");
@@ -187,6 +195,9 @@ export class AboutPage extends HTMLElement {
   }
   removeTransaction(id: number) {
     this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
+    if (this.transactionList.length < 1) {
+      this.actuallyId = 0;
+    }
     this.setStorage();
     this.renderTransactions();
     Toasts.success("Transação removida com sucesso!");
@@ -198,68 +209,70 @@ export class AboutPage extends HTMLElement {
 
   createInnerHTML() {
     this.innerHTML = /*html*/ `
-<div class="content-row mb-3">
-        <button type="button" class="btn btn-transaction" data-bs-toggle="modal" data-bs-target="#staticBackdrop" >
-      <span class="material-symbols-outlined icon"> forward </span>Fazer uma transação
-    </button>
-    <div class="group-input">
-  <div class="input-group-text"><span class="material-symbols-outlined">
-search
-</span></div>
-  <input type="text" class="form-search">
-</div>
-
-</div>
-      <div
-        class="modal fade"
-        id="staticBackdrop"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabindex="-1"
-        aria-labelledby="staticBackdropLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h1 class="modal-title fs-2" id="staticBackdropLabel">Transação</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <form class="was-validated">
-                <div class="form-input">
-                  <label class="col-form-label">Valor:</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    autocomplete="transaction-currency"
-                    pattern="[0-9]+,[0-9]{2}||[0-9]+(.[0-9]{3})*,[0-9]{2}"
-                    required
-                  />
-                </div>
-                <div class="form-input description">
-                  <label class="col-form-label">Descrição:</label>
-                </div>
-                <div class="form-input">
-                  <label class="col-form-label">Data:</label>
-                  <input type="text" class="form-control" required />
-                </div>
-                <div class="form-input">
-                  <label class="col-form-label">Nome:</label>
-                  <input type="text" class="form-control" required />
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-send">Enviar</button>
-              <button type="button" class="btn btn-closed" data-bs-dismiss="modal">Fechar</button>
-            </div>
+ <div class="content-row mb-3">
+      <button type="button" class="btn btn-transaction" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+        <span class="material-symbols-outlined icon"> forward </span>Fazer uma transação
+      </button>
+      <div class="group-input">
+        <div class="input-group-text"><span class="material-symbols-outlined"> search </span></div>
+        <input type="text" class="form-search" />
+      </div>
+    </div>
+    <div
+      class="modal fade"
+      id="staticBackdrop"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="staticBackdropLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-2" id="staticBackdropLabel">Transação</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form class="was-validated">
+              <div class="form-input">
+                <label class="col-form-label">Valor:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  autocomplete="transaction-currency"
+                  pattern="[0-9]+,[0-9]{2}||[0-9]+(.[0-9]{3})*,[0-9]{2}"
+                  required
+                />
+              </div>
+              <div class="form-input description">
+                <label class="col-form-label">Descrição:</label>
+              </div>
+              <div class="form-input">
+                <label class="col-form-label">Data:</label>
+                <input 
+                type="text"
+                class="form-control" 
+                required 
+                />
+              </div>
+              <div class="form-input">
+                <label class="col-form-label">Nome:</label>
+                <input type="text" class="form-control" required />
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-send">Enviar</button>
+            <button type="button" class="btn btn-closed" data-bs-dismiss="modal">Fechar</button>
           </div>
         </div>
       </div>
-      <div class="table-container" >
+    </div>
+    <div class="table-container">
       <table class="table table-sm table-hover table-bordered">
         <thead class="table-warning">
-          <tr style="position: sticky;top: 0;">
+          <tr style="position: sticky; top: 0">
             <th scope="col">#</th>
             <th scope="col">Valor</th>
             <th scope="col">Descrição</th>
@@ -270,25 +283,24 @@ search
         </thead>
         <tbody></tbody>
       </table>
-  </div>
- <nav aria-label="Page navigation ">
-  <ul class="pagination">
-    <li class="page-item">
-      <button class="page-link page-previous" aria-label="Previous" disabled>
-        <span class="previous" >&laquo;</span>
-      </button>
-    </li>
-    <li class="page-item">
-      <div class="page-link page-actually" >1</div>
-    </li>
-    <li class="page-item">
-      <button class="page-link page-next" aria-label="Next" disabled>
-        <span class="next">&raquo;</span>
-      </button>
-    </li>
-  </ul>
-</nav>
-
+    </div>
+    <nav aria-label="Page navigation ">
+      <ul class="pagination">
+        <li class="page-item">
+          <button class="page-link page-previous" aria-label="Previous" disabled>
+            <span class="previous">&laquo;</span>
+          </button>
+        </li>
+        <li class="page-item">
+          <div class="page-link page-actually">1</div>
+        </li>
+        <li class="page-item">
+          <button class="page-link page-next" aria-label="Next" disabled>
+            <span class="next">&raquo;</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
     `;
     const $description = this.querySelector(".description");
     $description.innerHTML += this.createFormSelect();
@@ -319,6 +331,8 @@ search
       `;
   }
   private clearForm() {
+    const $titleModal = document.querySelector(".modal-title");
+    $titleModal.textContent = "Adicionar transação";
     this.$inputValue.value = "";
     this.$inputDescription.value = "";
     this.$inputDate.value = "";
