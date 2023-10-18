@@ -105,25 +105,24 @@ export class AboutPage extends HTMLElement {
     });
   }
 
-  renderTransactions(list: Transaction[] = this.filteredList) {
+  renderTransactions(transactions: Transaction[] = this.filteredList) {
     this.maxPage = Math.ceil(this.filteredList.length / this.pageSize);
     if (this.maxPage < 1) {
       this.maxPage = 1;
     }
     this.$previous.disabled = this.page == 1;
     this.$next.disabled = this.maxPage == this.page;
-    console.log(this.maxPage, "max");
-    console.log(this.page, "page");
+
     const $tbody = document.querySelector("tbody");
     this.setStorage();
 
-    const start = (this.page - 1) * this.pageSize;
-    const end = start + this.pageSize;
+    const actuallyPage = (this.page - 1) * this.pageSize;
+    const nextPage = actuallyPage + this.pageSize;
 
     $tbody.innerHTML = "";
     this.$pageActually.textContent = this.page.toString();
 
-    list.slice(start, end).forEach((transaction) => {
+    transactions.slice(actuallyPage, nextPage).forEach((transaction) => {
       $tbody.innerHTML += /*html*/ ` 
        <tr id="option-of-transaction-${transaction.id}">
          <td scope="row">${transaction.id}</td>
@@ -184,10 +183,9 @@ export class AboutPage extends HTMLElement {
     this.instanceModal().toggle();
   }
   removeTransaction(id: number) {
-    const $tbody = document.querySelector(`#option-of-transaction-${id}`);
     this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
-    $tbody.remove();
     this.setStorage();
+    this.renderTransactions();
   }
   private setStorage() {
     localStorage.setItem("transactionList", JSON.stringify(this.transactionList));
