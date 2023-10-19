@@ -1,10 +1,12 @@
 import Currency from "@tadashi/currency";
 import AirDatepicker from "air-datepicker";
 import "air-datepicker/air-datepicker.css";
+import ApexCharts from "apexcharts";
 import { Modal } from "bootstrap";
 import IMask from "imask";
 import { FormSelect } from "../../components/form-select/form-select";
 import { PT_BR_LOCALE } from "../../constants/apexChats";
+import { OPTIONS } from "../../constants/charts";
 import { SVG_ICONS } from "../../constants/svg-icons";
 import { Toasts } from "../../toasts/toast";
 import "./about.page.scss";
@@ -62,14 +64,16 @@ export class AboutPage extends HTMLElement {
     this.$previous = document.querySelector(".page-previous");
     this.$next = document.querySelector(".page-next");
     this.$pageActually = document.querySelector(".page-actually");
+    const $chart = document.querySelector("#chart");
+    const myChart = new ApexCharts($chart, OPTIONS);
+    myChart.render();
   }
 
   addListeners() {
     const maskOptions = {
       mask: "00/00/0000",
     };
-    const mask = IMask(this.$inputDate, maskOptions);
-    console.log(mask.value, "value");
+    IMask(this.$inputDate, maskOptions);
 
     this.mask = new Currency(this.$inputValue);
 
@@ -114,6 +118,9 @@ export class AboutPage extends HTMLElement {
   }
 
   renderTransactions(transactions: Transaction[] = this.filteredList) {
+    if (this.filteredList.length < 1) {
+      this.actuallyId = 0;
+    }
     this.maxPage = Math.ceil(this.filteredList.length / this.pageSize);
     if (this.maxPage < 1) {
       this.maxPage = 1;
@@ -123,6 +130,10 @@ export class AboutPage extends HTMLElement {
 
     const $tbody = document.querySelector("tbody");
     const $table = document.querySelector("table");
+    const $pagination = document.querySelector<HTMLElement>(".container-pagination");
+
+    $pagination.hidden = this.filteredList.length < 1;
+
     $table.hidden = this.filteredList.length < 1;
     this.setStorage();
 
@@ -195,9 +206,7 @@ export class AboutPage extends HTMLElement {
   }
   removeTransaction(id: number) {
     this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
-    if (this.transactionList.length < 1) {
-      this.actuallyId = 0;
-    }
+
     this.setStorage();
     this.renderTransactions();
     Toasts.success("Transação removida com sucesso!");
@@ -284,7 +293,7 @@ export class AboutPage extends HTMLElement {
         <tbody></tbody>
       </table>
     </div>
-    <nav aria-label="Page navigation ">
+    <nav class="container-pagination" aria-label="Page navigation">
       <ul class="pagination">
         <li class="page-item">
           <button class="page-link page-previous" aria-label="Previous" disabled>
@@ -301,6 +310,7 @@ export class AboutPage extends HTMLElement {
         </li>
       </ul>
     </nav>
+    <div id="chart"></div>
     `;
     const $description = this.querySelector(".description");
     $description.innerHTML += this.createFormSelect();

@@ -23,8 +23,7 @@ router-app {
   display: block;
 
   header {
-    display: flex;
-    align-items: center;
+    @include display-align-content();
     padding: 10px;
     height: 40px;
     background-color: var(--color-pink);
@@ -49,8 +48,7 @@ router-app {
     border-right: 1px solid var(--color-pink-border);
     .anchors {
       cursor: pointer;
-      display: flex;
-      align-items: center;
+      @include display-align-content();
       padding: 5px;
       padding-left: 10px;
       border-bottom: 1px solid var(--color-pink-border);
@@ -74,17 +72,16 @@ router-app {
     }
   }
   .content-row {
-    display: flex;
-    justify-content: space-between;
+    @include display-align-content(space-between);
+
     .group-input {
-      display: flex;
-      align-items: center;
-      border: 1px solid orange;
+      @include display-align-content();
+      border: 1px solid var(--color-orange);
       border-radius: 5px;
       .input-group-text {
         background-color: var(--color-yellow-light);
         border-radius: 5px 0px 0px 5px;
-        border-right-color: orange;
+        border-right-color: var(--color-orange);
         padding: 9px;
       }
       .form-search {
@@ -114,17 +111,17 @@ router-app {
   }
 
   .form {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
+    @include display-align-content(space-around);
     gap: 10px;
     margin-bottom: 20px;
   }
 
   .btn {
-    display: flex;
+    &:active {
+      border: 1px solid var(--color-orange) !important;
+    }
+    @include display-align-content();
     border: 1px solid var(--color-orange);
-    align-items: center;
     transition: background-color ease-out 0.5s;
     &:hover {
       border: 1px solid var(--color-orange);
@@ -135,11 +132,10 @@ router-app {
   }
 
   .btn-alt {
+    @include display-align-content();
     position: relative;
     top: 10px;
     background-color: var(--color-yellow-light);
-    display: flex;
-    align-items: center;
     transition: background-color ease-out 0.5s;
     &:hover {
       background-color: var(--color-yellow);
@@ -166,11 +162,11 @@ router-app {
     text-overflow: ellipsis;
     background-size: 18px 52px, calc(7.75em + 3.375rem) calc(7.75em + 69.375rem) !important;
     .backdrop {
+      display: flex;
+      flex-direction: column;
       position: absolute;
       width: 100%;
       background: var(--bs-body-bg);
-      display: flex;
-      flex-direction: column;
       top: 40px;
       left: 0;
       border-radius: 5px;
@@ -179,9 +175,10 @@ router-app {
       max-height: 250px;
       overflow-y: auto;
       .option {
-        display: flex;
-        align-items: center;
+        @include display-align-content();
         gap: 10px;
+        padding: 10px;
+        transition: background-color 0.2s ease-in-out;
         &:first-child {
           border-radius: 5px 5px 0px 0px;
         }
@@ -191,8 +188,6 @@ router-app {
         &:not(:last-child) {
           border-bottom: 1px solid var(--color-orange);
         }
-        padding: 10px;
-        transition: background-color 0.2s ease-in-out;
         &:hover {
           background: var(--color-yellow-light);
         }
@@ -210,7 +205,7 @@ router-app {
       }
 
       &::-webkit-scrollbar-thumb:hover {
-        background: #555;
+        background: var(--color-yellow-dark);
       }
     }
   }
@@ -224,7 +219,7 @@ router-app {
     display: block;
   }
   .btn-close {
-    --bs-btn-close-color: white;
+    --bs-btn-close-color: var(--color-white);
     --bs-btn-close-bg: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffff'><path d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/></svg>");
   }
   #toast-content {
@@ -237,8 +232,7 @@ router-app {
     }
 
     .toast-body {
-      display: flex;
-      align-items: center;
+      @include display-align-content();
       gap: 8px;
       font-weight: bold;
     }

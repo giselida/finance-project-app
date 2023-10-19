@@ -1,5 +1,10 @@
-@mixin pageStyle($direction: "row") {
+@mixin pageStyle($direction: row) {
   display: flex;
   flex-direction: $direction;
   padding: 10px;
+}
+@mixin display-align-content($content: normal) {
+  display: flex;
+  align-items: center;
+  justify-content: $content;
 }
