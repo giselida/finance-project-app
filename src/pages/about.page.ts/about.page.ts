@@ -155,12 +155,13 @@ export class AboutPage extends HTMLElement {
       <td>${transaction.date}</td>
       <td>${transaction.name}</td>
       <td>
-        <span class="material-symbols-outlined edit" onclick="document.querySelector('about-page').editTransaction(${transaction.id})" >
-          edit
-        </span>
-        <span class="material-symbols-outlined delete"onclick="document.querySelector('about-page').removeTransaction(${transaction.id})">
-          delete
-        </span>
+        <ion-icon name="brush-outline" class="edit" onclick="document.querySelector('about-page').editTransaction(${
+          transaction.id
+        })"></ion-icon>
+        <ion-icon name="trash-outline" class="delete" onclick="document.querySelector('about-page').removeTransaction(${
+          transaction.id
+        })"></ion-icon>
+        <ion-icon name="duplicate-outline" class="duplicate"></ion-icon>
       </td>
     </tr>`;
     });
