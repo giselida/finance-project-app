@@ -161,7 +161,8 @@ export class AboutPage extends HTMLElement {
         <ion-icon name="trash-outline" class="delete" onclick="document.querySelector('about-page').removeTransaction(${
           transaction.id
         })"></ion-icon>
-        <ion-icon name="duplicate-outline" class="duplicate"></ion-icon>
+        <ion-icon name="duplicate-outline" class="duplicate"
+        onclick="document.querySelector('about-page').duplicateTransaction(${transaction.id})"></ion-icon>
       </td>
     </tr>`;
     });
@@ -170,6 +171,25 @@ export class AboutPage extends HTMLElement {
     return this.transactionList.filter((item) => {
       return Object.values(item).some((item) => item.toString().toLowerCase().includes(this.$search.value.toLowerCase()));
     });
+  }
+  duplicateTransaction(id: number) {
+    this.selectedId = id;
+    this.transactionFind = this.transactionList.find((transaction) => transaction.id === this.selectedId);
+
+    this.$inputValue.value = this.transactionFind.value;
+    this.$inputDescription.value = this.transactionFind.description;
+    this.$inputDate.value = this.transactionFind.date;
+    this.$inputName.value = this.transactionFind.name;
+
+    this.transactionFind = {
+      id: ++this.actuallyId,
+      value: this.$inputValue.value,
+      description: this.$inputDescription.value,
+      date: this.$inputDate.value,
+      name: this.$inputName.value,
+    };
+    this.transactionList.push(this.transactionFind);
+    this.instanceModal().toggle();
   }
   addTransaction() {
     const newTransaction: Transaction = {
