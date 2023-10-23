@@ -77,9 +77,16 @@ export class AboutPage extends HTMLElement {
       mask: "00/00/0000",
     };
     IMask(this.$inputDate, maskOptions);
-
     this.mask = new Currency(this.$inputValue);
-
+    this.sendListener();
+    this.onModalHidden();
+    this.$search.addEventListener("input", () => this.renderTransactions());
+    this.sortListener();
+    this.nextListener();
+    this.previousListener();
+    this.datePicker = new AirDatepicker(this.$inputDate, { locale: PT_BR_LOCALE });
+  }
+  private sendListener() {
     this.$btnSend.addEventListener("click", () => {
       if (!this.$inputValue.value || !this.$inputDescription.value || !this.$inputDate.value || !this.$inputName.value)
         return Toasts.error("Por favor preencha os campos obrigatórios!");
@@ -88,14 +95,17 @@ export class AboutPage extends HTMLElement {
       this.instanceModal().toggle();
       this.renderTransactions();
     });
+  }
+
+  private onModalHidden() {
     this.$modal.addEventListener("hidden.bs.modal", () => {
       this.transactionFind = null;
       this.selectedId = null;
       this.clearForm();
     });
-    this.$search.addEventListener("input", () => {
-      this.renderTransactions();
-    });
+  }
+
+  private sortListener() {
     this.$tableHeaders.forEach(($th) => {
       $th.addEventListener("click", () => {
         const $element = $th.querySelector(".sort");
@@ -128,10 +138,8 @@ export class AboutPage extends HTMLElement {
         this.renderTransactions();
       });
     });
-    this.nextListener();
-    this.previousListener();
-    this.datePicker = new AirDatepicker(this.$inputDate, { locale: PT_BR_LOCALE });
   }
+
   private sortByDirectionAndKey(direction: string, key: string) {
     const compareDate = (date: string) => new Date(date.replace(/(\d{2})\/(\d{2})\/(\d{4})/g, "$2-$1-$3")).getTime();
     const compareCurrency = (currency: string) => +currency.replace(",", ".");
@@ -227,22 +235,16 @@ export class AboutPage extends HTMLElement {
     });
   }
   duplicateTransaction(id: number) {
-    this.selectedId = id;
-    this.transactionFind = this.transactionList.find((transaction) => transaction.id === this.selectedId);
+    const $titleModal = document.querySelector(".modal-title");
+    $titleModal.textContent = "Duplicar transação";
 
+    this.selectedId = null;
+    this.transactionFind = this.transactionList.find((transaction) => transaction.id === id);
     this.$inputValue.value = this.transactionFind.value;
     this.$inputDescription.value = this.transactionFind.description;
     this.$inputDate.value = this.transactionFind.date;
     this.$inputName.value = this.transactionFind.name;
 
-    this.transactionFind = {
-      id: ++this.actuallyId,
-      value: this.$inputValue.value,
-      description: this.$inputDescription.value,
-      date: this.$inputDate.value,
-      name: this.$inputName.value,
-    };
-    this.transactionList.push(this.transactionFind);
     this.instanceModal().toggle();
   }
   addTransaction() {
@@ -256,7 +258,7 @@ export class AboutPage extends HTMLElement {
     this.transactionList.push(newTransaction);
     this.setStorage();
     this.clearForm();
-    Toasts.success("Transação adicionada com sucesso!");
+    Toasts.success(this.transactionFind ? "Transação duplicada com sucesso!" : "Transação adicionada com sucesso!");
   }
 
   updateTransaction() {
