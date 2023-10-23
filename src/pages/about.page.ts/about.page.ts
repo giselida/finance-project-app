@@ -28,6 +28,7 @@ export class AboutPage extends HTMLElement {
   $edit: HTMLSpanElement;
   $delete: HTMLSpanElement;
   $modal: HTMLElement;
+  $order: HTMLElement;
   $previous: HTMLButtonElement;
   $next: HTMLButtonElement;
   actuallyId: number = 0;
@@ -39,6 +40,7 @@ export class AboutPage extends HTMLElement {
   transactionFind: Transaction;
   datePicker: AirDatepicker;
   $pageActually: HTMLElement;
+  $tableHeaders: NodeListOf<HTMLTableCellElement>;
 
   connectedCallback() {
     this.createInnerHTML();
@@ -57,6 +59,7 @@ export class AboutPage extends HTMLElement {
     this.$inputDate = $formInputDate as HTMLInputElement;
     this.$inputName = $formInputName as HTMLInputElement;
     this.$modal = document.querySelector("#staticBackdrop");
+    this.$tableHeaders = document.querySelectorAll("th");
     this.$btnSend = document.querySelector(".btn-send");
     this.$edit = document.querySelector(".edit");
     this.$delete = document.querySelector(".delete");
@@ -93,10 +96,62 @@ export class AboutPage extends HTMLElement {
     this.$search.addEventListener("input", () => {
       this.renderTransactions();
     });
+    this.$tableHeaders.forEach(($th) => {
+      $th.addEventListener("click", () => {
+        const $element = $th.querySelector(".sort");
+        const isAscendent = $element.innerHTML.includes("arrow_upward");
+        const isDescendent = $element.innerHTML.includes("arrow_downward");
+
+        const innerHTML = !isAscendent ? "arrow_upward" : "arrow_downward";
+        $element.innerHTML = `
+        <span class="material-symbols-outlined">
+        ${innerHTML}
+        </span>
+        `;
+
+        if (isDescendent) {
+          $element.innerHTML = "";
+        }
+        const $sorts = document.querySelectorAll(".sort");
+
+        if ([...$sorts].every((element) => element.innerHTML == "")) {
+          this.transactionList.sort((a, b) => a.id - b.id);
+        } else {
+          $sorts.forEach((element) => {
+            if (element.innerHTML == "") return;
+            const $th = element.parentElement.parentElement;
+            const direction = element.innerHTML.includes("arrow_upward") ? "asc" : "desc";
+            this.sortByDirectionAndKey(direction, $th.getAttribute("key"));
+          });
+        }
+
+        this.renderTransactions();
+      });
+    });
     this.nextListener();
     this.previousListener();
     this.datePicker = new AirDatepicker(this.$inputDate, { locale: PT_BR_LOCALE });
   }
+  private sortByDirectionAndKey(direction: string, key: string) {
+    const compareDate = (date: string) => new Date(date.replace(/(\d{2})\/(\d{2})\/(\d{4})/g, "$2-$1-$3")).getTime();
+    const compareCurrency = (currency: string) => +currency.replace(",", ".");
+
+    this.transactionList.sort((a, b) => {
+      const firstElement = direction === "asc" ? a : b;
+      const secondElement = direction === "asc" ? b : a;
+
+      if (key === "id") return firstElement[key] - secondElement[key];
+
+      if (key === "value") return compareCurrency(firstElement[key]) - compareCurrency(secondElement[key]);
+
+      if (key === "description") return firstElement[key].localeCompare(secondElement[key]);
+
+      if (key === "name") return firstElement[key].localeCompare(secondElement[key]);
+
+      if (key === "date") return compareDate(firstElement[key]) - compareDate(secondElement[key]);
+    });
+  }
+
   private previousListener() {
     this.$previous.addEventListener("click", () => {
       this.page--;
@@ -135,7 +190,6 @@ export class AboutPage extends HTMLElement {
     $pagination.hidden = this.filteredList.length < 1;
 
     $table.hidden = this.filteredList.length < 1;
-    this.setStorage();
 
     const actuallyPage = (this.page - 1) * this.pageSize;
     const nextPage = actuallyPage + this.pageSize;
@@ -224,10 +278,10 @@ export class AboutPage extends HTMLElement {
     this.$inputDate.value = this.transactionFind.date;
     this.$inputName.value = this.transactionFind.name;
     this.instanceModal().toggle();
+    this.setStorage();
   }
   removeTransaction(id: number) {
     this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
-
     this.setStorage();
     this.renderTransactions();
     Toasts.success("Transação removida com sucesso!");
@@ -239,8 +293,8 @@ export class AboutPage extends HTMLElement {
 
   createInnerHTML() {
     this.innerHTML = /*html*/ `
- <div class="content-row mb-3">
-      <button type="button" class="btn btn-transaction" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+    <div class="content-row mb-3">
+      <button type="button" class="btn btn-transaction" data-bs-toggle="modal"              data-bs-target="#staticBackdrop">
         <span class="material-symbols-outlined icon"> forward </span>Fazer uma transação
       </button>
       <div class="group-input">
@@ -303,12 +357,39 @@ export class AboutPage extends HTMLElement {
       <table class="table table-sm table-hover table-bordered">
         <thead class="table-warning">
           <tr style="position: sticky; top: 0">
-            <th scope="col">#</th>
-            <th scope="col">Valor</th>
-            <th scope="col">Descrição</th>
-            <th scope="col">Data</th>
-            <th scope="col">Nome</th>
-            <th scope="col">Ações</th>
+            <th scope="col" key="id">
+             <div class="row-header">
+               <span>#</span>
+              <div class="sort"></div>
+             </div>
+            </th>
+             <th scope="col" key="value">
+             <div class="row-header">
+               <span>Valor</span>
+              <div class="sort"></div>
+             </div>
+            </th>
+             <th scope="col" key="description">
+             <div class="row-header">
+               <span>Descrição</span>
+              <div class="sort"></div>
+             </div>
+            </th>
+             <th scope="col" key="date"> 
+             <div class="row-header">
+               <span>Data</span>
+              <div class="sort"></div>
+             </div>
+            </th>
+             <th scope="col" key="name">
+             <div class="row-header">
+               <span>Nome</span>
+              <div class="sort"></div>
+             </div>
+            </th>
+            <th scope="col">
+              Ações
+            </th>
           </tr>
         </thead>
         <tbody></tbody>
