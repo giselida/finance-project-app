@@ -41,11 +41,13 @@ export class AboutPage extends HTMLElement {
   datePicker: AirDatepicker;
   $pageActually: HTMLElement;
   $tableHeaders: NodeListOf<HTMLTableCellElement>;
+  chart: ApexCharts;
 
   connectedCallback() {
     this.createInnerHTML();
     this.recoveryElementRef();
     this.addListeners();
+    this.onChart();
     this.renderTransactions();
   }
 
@@ -67,11 +69,7 @@ export class AboutPage extends HTMLElement {
     this.$previous = document.querySelector(".page-previous");
     this.$next = document.querySelector(".page-next");
     this.$pageActually = document.querySelector(".page-actually");
-    const $chart = document.querySelector("#chart");
-    const myChart = new ApexCharts($chart, OPTIONS);
-    myChart.render();
   }
-
   addListeners() {
     const maskOptions = {
       mask: "00/00/0000",
@@ -86,12 +84,44 @@ export class AboutPage extends HTMLElement {
     this.previousListener();
     this.datePicker = new AirDatepicker(this.$inputDate, { locale: PT_BR_LOCALE });
   }
+
+  private getDate(dateString: string) {
+    const [day, mouth, year] = dateString.split("/");
+    return new Date(+year, +mouth - 1, +day);
+  }
+
+  private onChart() {
+    const dates = this.transactionList.map((value) => value.date);
+    dates.sort((a, b) => this.getDate(a).getTime() - this.getDate(b).getTime());
+    const listDates = [...new Set(dates)];
+
+    OPTIONS.series = ["Credito", "Debito", "Dinheiro", "Pix"].map((value) => {
+      return {
+        name: value,
+        data: listDates.flatMap((date) => {
+          const transactionList = this.transactionList.filter((item) => item.description == value && item.date == date);
+
+          return transactionList.length <= 0 ? null : transactionList.map((item) => +item.value.replace(".", "").replace(",", "."));
+        }),
+      };
+    });
+    OPTIONS.xaxis.categories = Array.from(
+      { length: Math.max(...OPTIONS.series.map((value) => value.data.length)) },
+      (_, k) => listDates[k] ?? "-"
+    );
+
+    this.chart = new ApexCharts(document.querySelector("#chart"), OPTIONS);
+    this.chart.render();
+    this.chart.updateSeries(OPTIONS.series);
+  }
+
   private sendListener() {
     this.$btnSend.addEventListener("click", () => {
       if (!this.$inputValue.value || !this.$inputDescription.value || !this.$inputDate.value || !this.$inputName.value)
         return Toasts.error("Por favor preencha os campos obrigatórios!");
       const methodKey = !this.selectedId ? "addTransaction" : "updateTransaction";
       this[methodKey]();
+      this.onChart();
       this.instanceModal().toggle();
       this.renderTransactions();
     });
@@ -285,6 +315,7 @@ export class AboutPage extends HTMLElement {
   removeTransaction(id: number) {
     this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
     this.setStorage();
+    this.onChart();
     this.renderTransactions();
     Toasts.success("Transação removida com sucesso!");
   }
@@ -295,15 +326,21 @@ export class AboutPage extends HTMLElement {
 
   createInnerHTML() {
     this.innerHTML = /*html*/ `
+    <div id="chart"></div>
+
     <div class="content-row mb-3">
-      <button type="button" class="btn btn-transaction" data-bs-toggle="modal"              data-bs-target="#staticBackdrop">
-        <span class="material-symbols-outlined icon"> forward </span>Fazer uma transação
+      <button type="button" class="btn btn-transaction" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+        <span class="material-symbols-outlined icon"> forward </span>
+        Fazer uma transação
       </button>
       <div class="group-input">
-        <div class="input-group-text"><span class="material-symbols-outlined"> search </span></div>
+        <div class="input-group-text">
+          <span class="material-symbols-outlined"> search </span>
+        </div>
         <input type="text" class="form-search" />
       </div>
     </div>
+
     <div
       class="modal fade"
       id="staticBackdrop"
@@ -336,11 +373,7 @@ export class AboutPage extends HTMLElement {
               </div>
               <div class="form-input">
                 <label class="col-form-label">Data:</label>
-                <input 
-                type="text"
-                class="form-control" 
-                required 
-                />
+                <input type="text" class="form-control" required />
               </div>
               <div class="form-input">
                 <label class="col-form-label">Nome:</label>
@@ -355,48 +388,48 @@ export class AboutPage extends HTMLElement {
         </div>
       </div>
     </div>
+
     <div class="table-container">
       <table class="table table-sm table-hover table-bordered">
         <thead class="table-warning">
           <tr style="position: sticky; top: 0">
             <th scope="col" key="id">
-             <div class="row-header">
-               <span>#</span>
-              <div class="sort"></div>
-             </div>
+              <div class="row-header">
+                <span>#</span>
+                <div class="sort"></div>
+              </div>
             </th>
-             <th scope="col" key="value">
-             <div class="row-header">
-               <span>Valor</span>
-              <div class="sort"></div>
-             </div>
+            <th scope="col" key="value">
+              <div class="row-header">
+                <span>Valor</span>
+                <div class="sort"></div>
+              </div>
             </th>
-             <th scope="col" key="description">
-             <div class="row-header">
-               <span>Descrição</span>
-              <div class="sort"></div>
-             </div>
+            <th scope="col" key="description">
+              <div class="row-header">
+                <span>Descrição</span>
+                <div class="sort"></div>
+              </div>
             </th>
-             <th scope="col" key="date"> 
-             <div class="row-header">
-               <span>Data</span>
-              <div class="sort"></div>
-             </div>
+            <th scope="col" key="date">
+              <div class="row-header">
+                <span>Data</span>
+                <div class="sort"></div>
+              </div>
             </th>
-             <th scope="col" key="name">
-             <div class="row-header">
-               <span>Nome</span>
-              <div class="sort"></div>
-             </div>
+            <th scope="col" key="name">
+              <div class="row-header">
+                <span>Nome</span>
+                <div class="sort"></div>
+              </div>
             </th>
-            <th scope="col">
-              Ações
-            </th>
+            <th scope="col">Ações</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
     </div>
+
     <nav class="container-pagination" aria-label="Page navigation">
       <ul class="pagination">
         <li class="page-item">
@@ -414,7 +447,6 @@ export class AboutPage extends HTMLElement {
         </li>
       </ul>
     </nav>
-    <div id="chart"></div>
     `;
     const $description = this.querySelector(".description");
     $description.innerHTML += this.createFormSelect();

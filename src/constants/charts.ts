@@ -1,14 +1,11 @@
-export const OPTIONS = {
+import { ApexOptions } from "apexcharts";
+
+export const OPTIONS: ApexOptions = {
   chart: {
     type: "bar",
   },
-  series: [
-    {
-      name: "sales",
-      data: [30, 40, 35, 50, 49, 60, 70, 91, 125],
-    },
-  ],
+  series: [],
   xaxis: {
-    categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999],
+    categories: [],
   },
 };
