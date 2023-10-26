@@ -47,8 +47,8 @@ export class AboutPage extends HTMLElement {
     this.createInnerHTML();
     this.recoveryElementRef();
     this.addListeners();
-    this.onChart();
     this.renderTransactions();
+    this.onChart();
   }
 
   recoveryElementRef() {
@@ -121,8 +121,8 @@ export class AboutPage extends HTMLElement {
         return Toasts.error("Por favor preencha os campos obrigatórios!");
       const methodKey = !this.selectedId ? "addTransaction" : "updateTransaction";
       this[methodKey]();
-      this.onChart();
       this.instanceModal().toggle();
+      this.onChart();
       this.renderTransactions();
     });
   }
@@ -296,6 +296,7 @@ export class AboutPage extends HTMLElement {
     this.transactionFind.description = this.$inputDescription.value;
     this.transactionFind.date = this.$inputDate.value;
     this.transactionFind.name = this.$inputName.value;
+    this.setStorage();
   }
   editTransaction(id: number) {
     const $titleModal = document.querySelector(".modal-title");
@@ -315,9 +316,9 @@ export class AboutPage extends HTMLElement {
   removeTransaction(id: number) {
     this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
     this.setStorage();
-    this.onChart();
     this.renderTransactions();
     Toasts.success("Transação removida com sucesso!");
+    this.onChart();
   }
   private setStorage() {
     localStorage.setItem("transactionList", JSON.stringify(this.transactionList));
