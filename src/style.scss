@@ -73,6 +73,8 @@ router-app {
   }
   .content-row {
     @include display-align-content(space-between);
+    flex-wrap: wrap;
+    gap: 10px;
 
     .group-input {
       @include display-align-content();
@@ -238,7 +240,6 @@ router-app {
     }
   }
   #chart {
-    max-width: 400px;
     margin-top: 20px;
   }
 }
