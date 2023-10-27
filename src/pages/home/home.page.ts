@@ -1,5 +1,7 @@
 import Currency from "@tadashi/currency";
+import ApexCharts from "apexcharts";
 import { FormSelect } from "../../components/form-select/form-select";
+import { OPTIONS_CURRENCY } from "../../constants/charts";
 import { COUNTRY_LIST } from "../../constants/countrys";
 import { ExchangeRateApiResponse } from "../../interface/rates";
 import { Toasts } from "../../toasts/toast";
@@ -17,6 +19,7 @@ export class HomePage extends HTMLElement {
   $symbolToCoin: HTMLElement;
   $fromForm: FormSelect;
   $toForm: FormSelect;
+  $chartCurrency: ApexCharts;
 
   connectedCallback() {
     this.innerHTML = this.createInnerHTML();
@@ -30,7 +33,6 @@ export class HomePage extends HTMLElement {
 
     this.$fromForm = $fromFrom;
     this.$toForm = $toForm;
-
     this.recoveryElementRef();
     this.addListeners();
   }
@@ -139,7 +141,31 @@ export class HomePage extends HTMLElement {
 
         $currentValue.innerText = formatCurrencyFrom;
         $finalValue.innerText = formatCurrencyTo;
+
+        const valueFrom = this.$fromForm.value;
+
+        const valueTo = this.$toForm.value;
+
+        this.onChart(valueInput, conversionValue, valueFrom, valueTo);
       });
+  }
+
+  private onChart(valueInput: number, conversionValue: number, valueFrom: string, valueTo: string) {
+    const listCurrency = [+valueInput.toFixed(2), +conversionValue.toFixed(2)];
+    OPTIONS_CURRENCY.series = [valueFrom, valueTo].map((value, index) => {
+      return {
+        name: value,
+        data: [listCurrency[index]],
+      };
+    });
+    OPTIONS_CURRENCY.xaxis.categories = Array.from(
+      { length: Math.max(...OPTIONS_CURRENCY.series.map((value) => value.data.length)) },
+      (_, k) => listCurrency[k].toFixed(2) ?? "-"
+    );
+    this.$chartCurrency = new ApexCharts(document.querySelector("#chart-currency"), OPTIONS_CURRENCY);
+
+    this.$chartCurrency.render();
+    this.$chartCurrency.updateSeries(OPTIONS_CURRENCY.series);
   }
 
   private removeMask(value: string) {
@@ -252,7 +278,7 @@ export class HomePage extends HTMLElement {
         </div>
       </div>
     </div>
-    
+    <div id="chart-currency"></div>
       `;
   }
   private createFormSelect() {

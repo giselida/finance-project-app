@@ -6,7 +6,7 @@ import { Modal } from "bootstrap";
 import IMask from "imask";
 import { FormSelect } from "../../components/form-select/form-select";
 import { PT_BR_LOCALE } from "../../constants/apexChats";
-import { OPTIONS } from "../../constants/charts";
+import { OPTIONS_PAYMENT } from "../../constants/charts";
 import { SVG_ICONS } from "../../constants/svg-icons";
 import { Toasts } from "../../toasts/toast";
 import "./about.page.scss";
@@ -41,7 +41,7 @@ export class AboutPage extends HTMLElement {
   datePicker: AirDatepicker;
   $pageActually: HTMLElement;
   $tableHeaders: NodeListOf<HTMLTableCellElement>;
-  chart: ApexCharts;
+  $chart: ApexCharts;
 
   connectedCallback() {
     this.createInnerHTML();
@@ -94,8 +94,8 @@ export class AboutPage extends HTMLElement {
     const dates = this.transactionList.map((value) => value.date);
     dates.sort((a, b) => this.getDate(a).getTime() - this.getDate(b).getTime());
     const listDates = [...new Set(dates)];
-
-    OPTIONS.series = ["Credito", "Debito", "Dinheiro", "Pix"].map((value) => {
+    const formPayment = ["Credito", "Debito", "Dinheiro", "Pix"];
+    OPTIONS_PAYMENT.series = formPayment.map((value) => {
       return {
         name: value,
         data: listDates.flatMap((date) => {
@@ -105,14 +105,14 @@ export class AboutPage extends HTMLElement {
         }),
       };
     });
-    OPTIONS.xaxis.categories = Array.from(
-      { length: Math.max(...OPTIONS.series.map((value) => value.data.length)) },
+    OPTIONS_PAYMENT.xaxis.categories = Array.from(
+      { length: Math.max(...OPTIONS_PAYMENT.series.map((value) => value.data.length)) },
       (_, k) => listDates[k] ?? "-"
     );
 
-    this.chart = new ApexCharts(document.querySelector("#chart"), OPTIONS);
-    this.chart.render();
-    this.chart.updateSeries(OPTIONS.series);
+    this.$chart = new ApexCharts(document.querySelector("#chart-payment"), OPTIONS_PAYMENT);
+    this.$chart.render();
+    this.$chart.updateSeries(OPTIONS_PAYMENT.series);
   }
 
   private sendListener() {
@@ -327,8 +327,7 @@ export class AboutPage extends HTMLElement {
 
   createInnerHTML() {
     this.innerHTML = /*html*/ `
-    <div id="chart"></div>
-
+    <div id="chart-payment"></div>
     <div class="content-row mb-3">
       <button type="button" class="btn btn-transaction" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
         <span class="material-symbols-outlined icon"> forward </span>
