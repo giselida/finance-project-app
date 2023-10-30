@@ -58,7 +58,8 @@ export class RouterOutlet extends HTMLElement {
       $sideBar?.classList.toggle("active");
     });
     $anchors.forEach(($anchor) => {
-      $anchor.addEventListener("click", () => {
+      $anchor.addEventListener("click", (event) => {
+        event.stopPropagation();
         $sideBar?.classList.remove("active");
       });
     });

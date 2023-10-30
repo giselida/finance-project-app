@@ -109,9 +109,9 @@ export class AboutPage extends HTMLElement {
       { length: Math.max(...OPTIONS_PAYMENT.series.map((value) => value.data.length)) },
       (_, k) => listDates[k] ?? "-"
     );
-
     this.$chart = new ApexCharts(document.querySelector("#chart-payment"), OPTIONS_PAYMENT);
     this.$chart.render();
+    this.$chart.resetSeries();
     this.$chart.updateSeries(OPTIONS_PAYMENT.series);
   }
 
@@ -139,8 +139,8 @@ export class AboutPage extends HTMLElement {
     this.$tableHeaders.forEach(($th) => {
       $th.addEventListener("click", () => {
         const $element = $th.querySelector(".sort");
-        const isAscendent = $element.innerHTML.includes("arrow_upward");
-        const isDescendent = $element.innerHTML.includes("arrow_downward");
+        const isAscendent = $element?.innerHTML?.includes("arrow_upward");
+        const isDescendent = $element?.innerHTML?.includes("arrow_downward");
 
         const innerHTML = !isAscendent ? "arrow_upward" : "arrow_downward";
         $element.innerHTML = `
