@@ -1,4 +1,5 @@
-import { AboutPage } from "../pages/about.page.ts/about.page";
+import { AboutPage } from "../pages/about/about.page";
+import { AccountPage } from "../pages/account/account.page";
 import { HomePage } from "../pages/home/home.page";
 
 export class RouterOutlet extends HTMLElement {
@@ -6,7 +7,18 @@ export class RouterOutlet extends HTMLElement {
     this.innerHTML = /*html*/ `
    <header>
       <span class="material-symbols-outlined menu"> menu </span>
+      <span class="material-symbols-outlined account">   
+     account_circle
+    </span> 
+    <div class="account-menu">
+      <div class="option-menu">
+        <a href="#account">
+          Criar conta
+          </a>
+      </div>
+     
     </header>
+
     <div class="side-bar">
       <a href="#home"class="anchors">
         <span class="material-symbols-outlined"> home </span>
@@ -34,6 +46,7 @@ export class RouterOutlet extends HTMLElement {
     const ROUTES: { [key: string]: typeof HTMLElement } = {
       "#home": HomePage,
       "#about": AboutPage,
+      "#account": AccountPage,
     };
     const $root = document.querySelector("#root");
     if ($root) $root.innerHTML = "";
@@ -46,6 +59,7 @@ export class RouterOutlet extends HTMLElement {
 
   onInit() {
     this.activeSideBar();
+    this.activeAccount();
   }
 
   activeSideBar() {
@@ -61,6 +75,19 @@ export class RouterOutlet extends HTMLElement {
       $anchor.addEventListener("click", (event) => {
         event.stopPropagation();
         $sideBar?.classList.remove("active");
+      });
+    });
+  }
+  activeAccount() {
+    const $iconAccount = document.querySelector<HTMLElement>("header .account");
+    const $accountMenu = document.querySelector<HTMLElement>("header .account-menu");
+    const $optionMenu = document.querySelectorAll(".option-menu");
+    $iconAccount.addEventListener("click", () => {
+      $accountMenu.classList.toggle("active");
+      $optionMenu.forEach((element) => {
+        element.addEventListener("click", () => {
+          $accountMenu.classList.remove("active");
+        });
       });
     });
   }

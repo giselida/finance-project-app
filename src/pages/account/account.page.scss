@@ -1,0 +1,4 @@
+@import "/src/scss/mixins.scss";
+account-page {
+  @include pageStyle(column);
+}

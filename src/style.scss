@@ -23,7 +23,7 @@ router-app {
   display: block;
 
   header {
-    @include display-align-content();
+    @include display-align-content(space-between);
     padding: 10px;
     height: 40px;
     background-color: var(--color-pink);
@@ -33,6 +33,31 @@ router-app {
       cursor: pointer;
       font-weight: 500;
       color: var(--color-white);
+    }
+
+    .account-menu {
+      width: 100px;
+      display: none;
+
+      background-color: white;
+      position: absolute;
+      z-index: 99999999999999;
+
+      top: 35px;
+      right: 5px;
+
+      &.active {
+        display: block;
+      }
+      .option-menu {
+        font-size: 15px;
+        padding: 8px;
+        border-bottom: 1px solid black;
+        a {
+          text-decoration: none;
+          color: black;
+        }
+      }
     }
   }
 
