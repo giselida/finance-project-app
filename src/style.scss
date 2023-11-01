@@ -36,27 +36,17 @@ router-app {
     }
 
     .account-menu {
-      width: 100px;
       display: none;
-
-      background-color: white;
-      position: absolute;
-      z-index: 99999999999999;
-
-      top: 35px;
       right: 5px;
-
       &.active {
         display: block;
       }
-      .option-menu {
-        font-size: 15px;
-        padding: 8px;
-        border-bottom: 1px solid black;
-        a {
-          text-decoration: none;
-          color: black;
-        }
+      a {
+        text-decoration: none;
+        color: black;
+      }
+      .dropdown-item:active {
+        background-color: var(--color-pink);
       }
     }
   }

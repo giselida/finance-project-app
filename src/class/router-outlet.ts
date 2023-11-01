@@ -7,16 +7,17 @@ export class RouterOutlet extends HTMLElement {
     this.innerHTML = /*html*/ `
    <header>
       <span class="material-symbols-outlined menu"> menu </span>
-      <span class="material-symbols-outlined account">   
-     account_circle
-    </span> 
-    <div class="account-menu">
-      <div class="option-menu">
-        <a href="#account">
-          Criar conta
-          </a>
-      </div>
-     
+      <div class="dropdown">
+        <span class="material-symbols-outlined account">
+          account_circle
+        </span> 
+        <div class="account-menu dropdown-menu">
+           <a href="#account">
+            <div class="option-menu dropdown-item">
+              Alterar conta
+            </div> 
+            </a>
+        </div>
     </header>
 
     <div class="side-bar">
