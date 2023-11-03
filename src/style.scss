@@ -261,4 +261,20 @@ router-app {
     font-weight: bold;
     cursor: pointer;
   }
+  .delete {
+    color: var(--color-red);
+    cursor: pointer;
+    &:hover {
+      color: var(--color-pink-border);
+    }
+  }
+  .edit,
+  .duplicate,
+  .add-account {
+    color: var(--color-yellow-dark);
+    cursor: pointer;
+    &:hover {
+      color: var(--color-yellow-light);
+    }
+  }
 }

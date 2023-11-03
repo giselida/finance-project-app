@@ -130,7 +130,7 @@ export class AccountPage extends HTMLElement {
       <td>${client.name}</td>
       <td>${client.email}</td> 
       <td class="actions"> 
-      <ion-icon name="bag-check-outline" onclick="document.querySelector('account-page').selectClient(${client.id})">
+      <ion-icon name="bag-check-outline" class="add-account" onclick="document.querySelector('account-page').selectClient(${client.id})">
       </ion-icon>
       <ion-icon name="trash-outline" class="delete" onclick="document.querySelector('account-page').removeClient(${client.id})" >
       </ion-icon>

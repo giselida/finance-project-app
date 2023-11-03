@@ -54,27 +54,7 @@ about-page {
     width: 60%;
     cursor: pointer;
   }
-  .delete {
-    color: var(--color-red);
-    cursor: pointer;
-    &:hover {
-      color: var(--color-pink-border);
-    }
-  }
-  .edit {
-    color: var(--color-yellow-dark);
-    cursor: pointer;
-    &:hover {
-      color: var(--color-yellow-light);
-    }
-  }
-  .duplicate {
-    color: var(--color-yellow-dark);
-    cursor: pointer;
-    &:hover {
-      color: var(--color-yellow-light);
-    }
-  }
+
   nav {
     margin-top: 15px;
     align-self: center;
