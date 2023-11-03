@@ -3,4 +3,28 @@
 
 home-page {
   @include pageStyle(column);
+  .card {
+    border: 1px solid var(--color-orange);
+  }
+  .card-header {
+    background-color: var(--color-yellow-light);
+    border-bottom: 1px solid var(--color-orange);
+  }
+  .accordion {
+    border: 1px solid var(--color-orange);
+    .accordion-item {
+      border-bottom: 1px solid var(--color-orange);
+    }
+    .accordion-button {
+      &:focus {
+        box-shadow: unset;
+      }
+      &:not(.collapsed) {
+        background-color: var(--color-yellow-light);
+        border-bottom: 1px solid var(--color-orange);
+      }
+      --bs-accordion-btn-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ff8f16' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+      --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ff8f16' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    }
+  }
 }
