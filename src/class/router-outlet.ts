@@ -1,5 +1,6 @@
 import { AboutPage } from "../pages/about/about.page";
 import { AccountPage } from "../pages/account/account.page";
+import { ConversionPage } from "../pages/conversion/convercio.page";
 import { HomePage } from "../pages/home/home.page";
 
 export class RouterOutlet extends HTMLElement {
@@ -34,6 +35,10 @@ export class RouterOutlet extends HTMLElement {
         <span class="material-symbols-outlined"> info </span>
         <span>About</span>
       </a>
+      <a href="#conversion" class="anchors">
+        <span class="material-symbols-outlined"> info </span>
+        <span>Conversor</span>
+      </a>
     </div>
     <main id="root"></main>
     <div id="toast-content"></div>
@@ -54,6 +59,7 @@ export class RouterOutlet extends HTMLElement {
       "#home": HomePage,
       "#about": AboutPage,
       "#account": AccountPage,
+      "#conversion": ConversionPage,
     };
     const $root = document.querySelector("#root");
     if ($root) $root.innerHTML = "";
