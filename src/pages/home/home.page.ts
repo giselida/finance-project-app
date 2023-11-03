@@ -17,19 +17,8 @@ export class HomePage extends HTMLElement {
   client: Cliente;
   maxID: number = 0;
   connectedCallback() {
-    const client = JSON.parse(localStorage.getItem("client") ?? "{}");
-
     this.innerHTML = /*html*/ `
-    <div class="card mb-2" hidden>
-  <div class="card-header">
-    Conta selecionada
-  </div>
-  <div class="card-body">
-    <h5 class="card-title">Nome: ${client.name ?? ""}</h5>
-    <h5 class="card-title">Numero da conta: ${client.accountNumber ?? ""}</h5>
-    <p class="card-text">Saldo: R$ ${(client.accountAmount ?? 0).toFixed(2)}</p>
-  </div>
-</div>
+
 <div class="accordion accordion-flush" id="accordionFlushExample">
   <div class="accordion-item">
     <h2 class="accordion-header" id="flush-headingOne">

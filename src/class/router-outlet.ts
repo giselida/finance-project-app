@@ -1,6 +1,6 @@
 import { AboutPage } from "../pages/about/about.page";
 import { AccountPage } from "../pages/account/account.page";
-import { ConversionPage } from "../pages/conversion/convercio.page";
+import { ConversionPage } from "../pages/conversion/conversion.page";
 import { HomePage } from "../pages/home/home.page";
 
 export class RouterOutlet extends HTMLElement {
@@ -20,7 +20,7 @@ export class RouterOutlet extends HTMLElement {
         <div class="account-menu dropdown-menu">
            <a href="#account">
             <div class="option-menu dropdown-item">
-              Alterar conta
+              Conta
             </div> 
             </a>
         </div>
