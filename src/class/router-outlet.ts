@@ -4,13 +4,18 @@ import { HomePage } from "../pages/home/home.page";
 
 export class RouterOutlet extends HTMLElement {
   connectedCallback() {
+    const client = JSON.parse(localStorage.getItem("client") ?? "{}");
+
     this.innerHTML = /*html*/ `
    <header>
       <span class="material-symbols-outlined menu"> menu </span>
       <div class="dropdown">
-        <span class="material-symbols-outlined account">
+        <div class="user account">
+        <span class="current-user">${client.name ?? ""}</span>
+        <span class="material-symbols-outlined ">
           account_circle
         </span> 
+        </div> 
         <div class="account-menu dropdown-menu">
            <a href="#account">
             <div class="option-menu dropdown-item">
@@ -34,6 +39,7 @@ export class RouterOutlet extends HTMLElement {
     <div id="toast-content"></div>
 
       `;
+    if (!window.location.hash) window.location.replace("#home");
     this.renderContent();
     this.onInit();
   }

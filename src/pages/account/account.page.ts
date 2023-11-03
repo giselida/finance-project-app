@@ -1,8 +1,10 @@
 import "./account.page.scss";
-interface Cliente {
+export interface Cliente {
   id: number;
   name: string;
   email: string;
+  accountNumber: string;
+  accountAmount: number;
   password: string;
 }
 export class AccountPage extends HTMLElement {
@@ -11,17 +13,20 @@ export class AccountPage extends HTMLElement {
   $inputPassword: HTMLInputElement;
   $buttonAdd: HTMLButtonElement;
   clientList: Cliente[];
-  idClient: number = 0;
+  client: Cliente;
+  maxID: number = 0;
   connectedCallback() {
+    const client = JSON.parse(localStorage.getItem("client") ?? "{}");
+
     this.innerHTML = /*html*/ `
     <div class="card mb-2">
   <div class="card-header">
     Conta selecionada
   </div>
   <div class="card-body">
-    <h5 class="card-title">João Vitor</h5>
-    <h5 class="card-title">Numero da conta: 3456-785</h5>
-    <p class="card-text">Saldo: R$ 2455</p>
+    <h5 class="card-title">Nome: ${client.name ?? ""}</h5>
+    <h5 class="card-title">Numero da conta: ${client.accountNumber ?? ""}</h5>
+    <p class="card-text">Saldo: R$ ${(client.accountAmount ?? 0).toFixed(2)}</p>
   </div>
 </div>
 <div class="accordion accordion-flush" id="accordionFlushExample">
@@ -33,7 +38,19 @@ export class AccountPage extends HTMLElement {
     </h2>
     <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
       <div class="accordion-body">
- 
+ <table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Numero da conta</th>
+      <th scope="col">Nome</th>
+      <th scope="col">Email</th>
+      <th scope="col">Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
     </div>
     </div>
   </div>
@@ -71,7 +88,7 @@ export class AccountPage extends HTMLElement {
   }
   onInit() {
     this.clientList = JSON.parse(localStorage.getItem("clients")) ?? [];
-    this.idClient = +localStorage.getItem("idClients");
+    this.maxID = +localStorage.getItem("idClients");
     this.$buttonAdd = document.querySelector(".btn-add");
     const $formControls = document.querySelectorAll(".form-control");
     const [$inputName, $inputEmail, $inputPassword] = $formControls;
@@ -79,6 +96,7 @@ export class AccountPage extends HTMLElement {
     this.$inputEmail = $inputEmail as HTMLInputElement;
     this.$inputPassword = $inputPassword as HTMLInputElement;
     this.addListeners();
+    this.renderList();
   }
 
   private addListeners() {
@@ -89,26 +107,65 @@ export class AccountPage extends HTMLElement {
     this.$buttonAdd.addEventListener("click", () => {
       if (!this.$inputName.value || !this.$inputEmail.value || !this.$inputPassword.value) return;
       this.addClient();
-      this.setStorage();
-      this.cleanForms();
+      this.renderList();
     });
   }
   private setStorage() {
     localStorage.setItem("clients", JSON.stringify(this.clientList));
-    localStorage.setItem("idClients", this.idClient.toString());
+    localStorage.setItem("idClients", this.maxID.toString());
   }
+  renderList() {
+    if (this.clientList.length < 1) this.maxID = 0;
 
+    const $tbody = document.querySelector("tbody");
+    const $table = document.querySelector("table");
+
+    $table.hidden = this.clientList.length < 1;
+    $tbody.innerHTML = "";
+    this.clientList.forEach((client) => {
+      $tbody.innerHTML += `
+       <tr>
+      <th scope="row">${client.id}</th>
+      <td>${client.accountNumber}</td>
+      <td>${client.name}</td>
+      <td>${client.email}</td> 
+      <td class="actions"> 
+      <ion-icon name="bag-check-outline" onclick="document.querySelector('account-page').selectClient(${client.id})">
+      </ion-icon>
+      <ion-icon name="trash-outline" class="delete" onclick="document.querySelector('account-page').removeClient(${client.id})" >
+      </ion-icon>
+    
+      </td> 
+    </tr>
+      `;
+    });
+  }
+  removeClient(id: number) {
+    this.clientList = this.clientList.filter((client) => client.id !== id);
+    this.setStorage();
+    this.renderList();
+  }
+  selectClient(id: number) {
+    const client = this.clientList.find((client) => client.id == id);
+    document.querySelector(".current-user").innerHTML = client.name;
+    localStorage.setItem("client", JSON.stringify(client));
+    this.connectedCallback();
+  }
   cleanForms() {
     this.$inputName.value = "";
     this.$inputEmail.value = "";
     this.$inputPassword.value = "";
+    this.client = null;
   }
 
   private addClient() {
+    const random = (min: number = 1, max: number = 100) => Math.floor(Math.random() * (max - min) + min);
     const objectClient: Cliente = {
-      id: ++this.idClient,
+      id: ++this.maxID,
       name: this.$inputName.value,
       email: this.$inputEmail.value,
+      accountNumber: `${random()}${random()}${random()}-${random()}`,
+      accountAmount: 0,
       password: this.$inputPassword.value,
     };
 

@@ -9,12 +9,15 @@ import { PT_BR_LOCALE } from "../../constants/apexChats";
 import { OPTIONS_PAYMENT } from "../../constants/charts";
 import { SVG_ICONS } from "../../constants/svg-icons";
 import { Toasts } from "../../toasts/toast";
+import { Cliente } from "../account/account.page";
 import "./about.page.scss";
 interface Transaction {
   id: number;
   value: string;
   description: string;
-  name: string;
+  clientName: string;
+  clientID: string;
+  userLoggedID: string;
   date: string;
 }
 export class AboutPage extends HTMLElement {
@@ -23,7 +26,7 @@ export class AboutPage extends HTMLElement {
   $btnSend: HTMLButtonElement;
   $inputValue: HTMLInputElement;
   $inputDate: HTMLInputElement;
-  $inputName: HTMLInputElement;
+  $clientID: HTMLInputElement;
   $search: HTMLInputElement;
   $edit: HTMLSpanElement;
   $delete: HTMLSpanElement;
@@ -31,7 +34,7 @@ export class AboutPage extends HTMLElement {
   $order: HTMLElement;
   $previous: HTMLButtonElement;
   $next: HTMLButtonElement;
-  actuallyId: number = 0;
+  actuallyId: number = +localStorage.getItem("actuallyId");
   selectedId: number;
   page: number = 1;
   pageSize: number = 5;
@@ -52,14 +55,16 @@ export class AboutPage extends HTMLElement {
   }
 
   recoveryElementRef() {
-    this.transactionList = JSON.parse(localStorage.getItem("transactionList")) ?? [];
-    this.actuallyId = +localStorage.getItem("actuallyId");
+    const clientLogged = JSON.parse(localStorage.getItem("client") ?? "{}");
+    this.transactionList = (JSON.parse(localStorage.getItem("transactionList")) ?? []).filter(
+      (item: Transaction) => item.userLoggedID === clientLogged.id
+    );
 
     const [$formInputValue, $formInputDescription, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
     this.$inputValue = $formInputValue as HTMLInputElement;
     this.$inputDescription = $formInputDescription as FormSelect;
     this.$inputDate = $formInputDate as HTMLInputElement;
-    this.$inputName = $formInputName as HTMLInputElement;
+    this.$clientID = $formInputName as HTMLInputElement;
     this.$modal = document.querySelector("#staticBackdrop");
     this.$tableHeaders = document.querySelectorAll("th");
     this.$btnSend = document.querySelector(".btn-send");
@@ -117,7 +122,7 @@ export class AboutPage extends HTMLElement {
 
   private sendListener() {
     this.$btnSend.addEventListener("click", () => {
-      if (!this.$inputValue.value || !this.$inputDescription.value || !this.$inputDate.value || !this.$inputName.value)
+      if (!this.$inputValue.value || !this.$inputDescription.value || !this.$inputDate.value || !this.$clientID.value)
         return Toasts.error("Por favor preencha os campos obrigatórios!");
       const methodKey = !this.selectedId ? "addTransaction" : "updateTransaction";
       this[methodKey]();
@@ -184,7 +189,7 @@ export class AboutPage extends HTMLElement {
 
       if (key === "description") return firstElement[key].localeCompare(secondElement[key]);
 
-      if (key === "name") return firstElement[key].localeCompare(secondElement[key]);
+      if (key === "clientName") return firstElement[key].localeCompare(secondElement[key]);
 
       if (key === "date") return compareDate(firstElement[key]) - compareDate(secondElement[key]);
     });
@@ -211,9 +216,6 @@ export class AboutPage extends HTMLElement {
   }
 
   renderTransactions(transactions: Transaction[] = this.filteredList) {
-    if (this.filteredList.length < 1) {
-      this.actuallyId = 0;
-    }
     this.maxPage = Math.ceil(this.filteredList.length / this.pageSize);
     if (this.maxPage < 1) {
       this.maxPage = 1;
@@ -234,7 +236,6 @@ export class AboutPage extends HTMLElement {
 
     $tbody.innerHTML = "";
     this.$pageActually.textContent = this.page.toString();
-
     transactions.slice(actuallyPage, nextPage).forEach((transaction) => {
       $tbody.innerHTML += /*html*/ ` 
        <tr id="option-of-transaction-${transaction.id}">
@@ -245,7 +246,7 @@ export class AboutPage extends HTMLElement {
            ${transaction.description}
       </td>
       <td>${transaction.date}</td>
-      <td>${transaction.name}</td>
+      <td>${transaction.clientName}</td>
       <td>
         <ion-icon name="brush-outline" class="edit" onclick="document.querySelector('about-page').editTransaction(${
           transaction.id
@@ -260,8 +261,13 @@ export class AboutPage extends HTMLElement {
     });
   }
   get filteredList() {
+    const clientLogged = JSON.parse(localStorage.getItem("client") ?? "{}");
+
     return this.transactionList.filter((item) => {
-      return Object.values(item).some((item) => item.toString().toLowerCase().includes(this.$search.value.toLowerCase()));
+      return (
+        item.userLoggedID === clientLogged.id &&
+        Object.values(item).some((item) => item.toString().toLowerCase().includes(this.$search.value.toLowerCase()))
+      );
     });
   }
   duplicateTransaction(id: number) {
@@ -273,18 +279,25 @@ export class AboutPage extends HTMLElement {
     this.$inputValue.value = this.transactionFind.value;
     this.$inputDescription.value = this.transactionFind.description;
     this.$inputDate.value = this.transactionFind.date;
-    this.$inputName.value = this.transactionFind.name;
+    this.$clientID.value = this.transactionFind.clientName;
 
     this.instanceModal().toggle();
   }
   addTransaction() {
+    const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
+    const client = clients.find((client) => client.id === +this.$clientID.value);
+    const clientLogged = JSON.parse(localStorage.getItem("client") ?? "{}");
+
     const newTransaction: Transaction = {
       id: ++this.actuallyId,
       value: this.$inputValue.value,
       description: this.$inputDescription.value,
       date: this.$inputDate.value,
-      name: this.$inputName.value,
+      clientName: `${client.name} - ${client.accountNumber}`,
+      clientID: this.$clientID.value,
+      userLoggedID: clientLogged.id,
     };
+
     this.transactionList.push(newTransaction);
     this.setStorage();
     this.clearForm();
@@ -295,7 +308,12 @@ export class AboutPage extends HTMLElement {
     this.transactionFind.value = this.$inputValue.value;
     this.transactionFind.description = this.$inputDescription.value;
     this.transactionFind.date = this.$inputDate.value;
-    this.transactionFind.name = this.$inputName.value;
+    this.transactionFind.clientID = this.$clientID.value;
+    const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
+    const client = clients.find((client) => client.id === +this.$clientID.value);
+    const clientLogged = JSON.parse(localStorage.getItem("client") ?? "{}");
+    this.transactionFind.userLoggedID = clientLogged.id;
+    this.transactionFind.clientName = `${client.name} - ${client.accountNumber}`;
     this.setStorage();
   }
   editTransaction(id: number) {
@@ -309,7 +327,7 @@ export class AboutPage extends HTMLElement {
     this.$inputValue.value = this.transactionFind.value;
     this.$inputDescription.value = this.transactionFind.description;
     this.$inputDate.value = this.transactionFind.date;
-    this.$inputName.value = this.transactionFind.name;
+    this.$clientID.value = this.transactionFind.clientID;
     this.instanceModal().toggle();
     this.setStorage();
   }
@@ -321,7 +339,10 @@ export class AboutPage extends HTMLElement {
     this.onChart();
   }
   private setStorage() {
-    localStorage.setItem("transactionList", JSON.stringify(this.transactionList));
+    const oldItems = JSON.parse(localStorage.getItem("transactionList") ?? "[]").filter((oldItem: Transaction) => {
+      return !this.transactionList.find((item) => item.id == oldItem.id);
+    });
+    localStorage.setItem("transactionList", JSON.stringify([...oldItems, ...this.transactionList]));
     localStorage.setItem("actuallyId", this.actuallyId.toString());
   }
 
@@ -375,9 +396,8 @@ export class AboutPage extends HTMLElement {
                 <label class="col-form-label">Data:</label>
                 <input type="text" class="form-control" required />
               </div>
-              <div class="form-input">
-                <label class="col-form-label">Nome:</label>
-                <input type="text" class="form-control" required />
+              <div class="form-input client">
+                <label class="col-form-label">Cliente:</label>
               </div>
             </form>
           </div>
@@ -450,6 +470,26 @@ export class AboutPage extends HTMLElement {
     `;
     const $description = this.querySelector(".description");
     $description.innerHTML += this.createFormSelect();
+
+    const $client = this.querySelector(".client");
+    $client.innerHTML += this.createFormSelectCliente();
+  }
+  createFormSelectCliente() {
+    const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
+    const clienteOptions = clients
+      .map((client) => {
+        return `
+           <div class="option" value="${client.id}">
+            ${client.name} - ${client.accountNumber}
+            </div>
+          `;
+      })
+      .join("");
+    return /*html*/ `
+       <form-select class="form-control is-invalid" required placeholder="Selecione">
+        ${clienteOptions}
+       </form-select>
+    `;
   }
   createFormSelect() {
     return /*html*/ `
@@ -482,7 +522,7 @@ export class AboutPage extends HTMLElement {
     this.$inputValue.value = "";
     this.$inputDescription.value = "";
     this.$inputDate.value = "";
-    this.$inputName.value = "";
+    this.$clientID.value = "";
   }
   private instanceModal() {
     return Modal.getOrCreateInstance(this.$modal);
