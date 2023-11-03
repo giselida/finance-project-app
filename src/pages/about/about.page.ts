@@ -410,7 +410,7 @@ export class AboutPage extends HTMLElement {
     </div>
 
     <div class="table-container">
-      <table class="table table-sm table-hover table-bordered">
+      <table class="table table-hover table-bordered">
         <thead class="table-warning">
           <tr style="position: sticky; top: 0">
             <th scope="col" key="id">

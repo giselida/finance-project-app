@@ -38,8 +38,8 @@ export class AccountPage extends HTMLElement {
     </h2>
     <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
       <div class="accordion-body">
- <table class="table">
-  <thead>
+ <table class="table table-hover table-bordered">
+  <thead class="table-warning">
     <tr>
       <th scope="col">#</th>
       <th scope="col">Numero da conta</th>
