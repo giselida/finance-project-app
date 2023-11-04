@@ -109,7 +109,7 @@ export class HomePage extends HTMLElement {
     localStorage.setItem("idClients", this.maxID.toString());
   }
   renderList() {
-    if (this.clientList.length > 1) this.maxID = 0;
+    if (this.clientList.length < 1) this.maxID = 0;
 
     const $tbody = document.querySelector("tbody");
     const $table = document.querySelector("table");
@@ -138,9 +138,15 @@ export class HomePage extends HTMLElement {
     });
   }
   removeClient(id: number) {
+    this.client = JSON.parse(localStorage.getItem("client") ?? "{}");
+
     this.clientList = this.clientList.filter((client) => client.id !== id);
     this.setStorage();
     this.renderList();
+    if (this.client.id == id) {
+      localStorage.setItem("client", "{}");
+      window.location.reload();
+    }
   }
   selectClient(id: number) {
     const client = this.clientList.find((client) => client.id == id);
