@@ -1,15 +1,32 @@
-import { AboutPage } from "../pages/about/about.page";
 import { AccountPage } from "../pages/account/account.page";
 import { ConversionPage } from "../pages/conversion/conversion.page";
 import { HomePage } from "../pages/home/home.page";
-
+import { TransactionPage } from "../pages/transaction/transaction.page";
+const createMaterialSymbol = (iconName: string, label: string) => {
+  return `
+      <span class="material-symbols-outlined">
+       ${iconName} 
+       </span>
+      <span>
+      ${label}
+      </span>`;
+};
+const PAGE_TITLES: { [key: string]: string } = {
+  "#home": createMaterialSymbol("home", "Inicio"),
+  "#transaction": createMaterialSymbol("paid", "Transação"),
+  "#account": createMaterialSymbol("account_circle", "Conta"),
+  "#conversion": createMaterialSymbol(" price_change", "Conversor de Moedas"),
+};
 export class RouterOutlet extends HTMLElement {
   connectedCallback() {
     const client = JSON.parse(localStorage.getItem("client") ?? "{}");
 
     this.innerHTML = /*html*/ `
    <header>
-      <span class="material-symbols-outlined menu"> menu </span>
+      <div class="content">
+        <span class="material-symbols-outlined menu"> menu </span>
+        <span class="page-title"></span>
+      </div>
       <div class="dropdown">
         <div class="user account">
         <span class="current-user">${client.name ?? ""}</span>
@@ -28,16 +45,13 @@ export class RouterOutlet extends HTMLElement {
 
     <div class="side-bar">
       <a href="#home"class="anchors">
-        <span class="material-symbols-outlined"> home </span>
-        <span >Home</span>
-      </a>
-      <a href="#about" class="anchors">
-        <span class="material-symbols-outlined"> info </span>
-        <span>About</span>
+         ${PAGE_TITLES["#home"]}
       </a>
       <a href="#conversion" class="anchors">
-        <span class="material-symbols-outlined"> info </span>
-        <span>Conversor</span>
+        ${PAGE_TITLES["#conversion"]}
+      </a>
+      <a href="#transaction" class="anchors">
+         ${PAGE_TITLES["#transaction"]}
       </a>
     </div>
     <main id="root"></main>
@@ -57,11 +71,14 @@ export class RouterOutlet extends HTMLElement {
     const hash = window.location.hash;
     const ROUTES: { [key: string]: typeof HTMLElement } = {
       "#home": HomePage,
-      "#about": AboutPage,
+      "#transaction": TransactionPage,
       "#account": AccountPage,
       "#conversion": ConversionPage,
     };
+
     const $root = document.querySelector("#root");
+    const $pageTitle = document.querySelector(".page-title");
+    $pageTitle.innerHTML = PAGE_TITLES[hash];
     if ($root) $root.innerHTML = "";
     const Page = ROUTES[hash];
     if (Page) {

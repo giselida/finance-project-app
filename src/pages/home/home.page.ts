@@ -70,6 +70,9 @@ export class HomePage extends HTMLElement {
   <tbody>
   </tbody>
 </table>
+<span class="account-info ">
+  Você não possui nenhuma conta.
+</span>
       </div>
     </div>
   </div>
@@ -106,12 +109,15 @@ export class HomePage extends HTMLElement {
     localStorage.setItem("idClients", this.maxID.toString());
   }
   renderList() {
-    if (this.clientList.length < 1) this.maxID = 0;
+    if (this.clientList.length > 1) this.maxID = 0;
 
     const $tbody = document.querySelector("tbody");
     const $table = document.querySelector("table");
+    const $accountInfo = document.querySelector<HTMLElement>(".account-info");
+    const clientLength = this.clientList.length < 1;
 
-    $table.hidden = this.clientList.length < 1;
+    $accountInfo.hidden = !clientLength;
+    $table.hidden = clientLength;
     $tbody.innerHTML = "";
     this.clientList.forEach((client) => {
       $tbody.innerHTML += `
@@ -121,9 +127,9 @@ export class HomePage extends HTMLElement {
       <td>${client.name}</td>
       <td>${client.email}</td> 
       <td class="actions"> 
-      <ion-icon name="bag-check-outline" class="add-account" onclick="document.querySelector('account-page').selectClient(${client.id})">
+      <ion-icon name="bag-check-outline" class="add-account" onclick="document.querySelector('home-page').selectClient(${client.id})">
       </ion-icon>
-      <ion-icon name="trash-outline" class="delete" onclick="document.querySelector('account-page').removeClient(${client.id})" >
+      <ion-icon name="trash-outline" class="delete" onclick="document.querySelector('home-page').removeClient(${client.id})" >
       </ion-icon>
     
       </td> 

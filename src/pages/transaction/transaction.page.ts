@@ -9,8 +9,8 @@ import { PT_BR_LOCALE } from "../../constants/apexChats";
 import { OPTIONS_PAYMENT } from "../../constants/charts";
 import { SVG_ICONS } from "../../constants/svg-icons";
 import { Toasts } from "../../toasts/toast";
-import { Cliente } from "../account/account.page";
-import "./about.page.scss";
+import { Cliente } from "../home/home.page";
+import "./transaction.page.scss";
 interface Transaction {
   id: number;
   value: string;
@@ -20,7 +20,7 @@ interface Transaction {
   userLoggedID: string;
   date: string;
 }
-export class AboutPage extends HTMLElement {
+export class TransactionPage extends HTMLElement {
   mask: typeof Currency;
   $inputDescription: FormSelect;
   $btnSend: HTMLButtonElement;

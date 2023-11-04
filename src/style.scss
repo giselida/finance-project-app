@@ -283,8 +283,17 @@ router-app {
   th:first-child {
     text-align: center;
   }
-  .title {
-    font-size: 22px;
-    margin-bottom: 5px;
+  .page-title {
+    font-weight: bold;
+    color: var(--color-white);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 }

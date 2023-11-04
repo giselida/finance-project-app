@@ -229,7 +229,6 @@ export class ConversionPage extends HTMLElement {
 
   private createInnerHTML() {
     return /*html*/ `
-     <h1 class="title">Conversor de Moedas</h1>
      <div class="input-group mb-3">
       <span class="input-group-text">$</span>
       <input
