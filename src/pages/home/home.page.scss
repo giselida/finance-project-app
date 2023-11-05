@@ -6,10 +6,13 @@ home-page {
 
   .accordion {
     border: 1px solid var(--color-orange);
+    border-radius: 5px;
     .accordion-item {
       border-bottom: 1px solid var(--color-orange);
+      border-radius: 5px !important;
     }
     .accordion-button {
+      border-radius: 5px !important;
       &:focus {
         box-shadow: unset;
       }

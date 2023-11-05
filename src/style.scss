@@ -38,15 +38,30 @@ router-app {
     .account-menu {
       display: none;
       right: 5px;
+      background-color: var(--color-pink);
       &.active {
         display: block;
       }
       a {
         text-decoration: none;
-        color: black;
       }
-      .dropdown-item:active {
+      &:hover {
+        filter: brightness(85%);
+      }
+      &:has(.dropdown-item:active) {
         background-color: var(--color-pink);
+        filter: hue-rotate(17deg);
+      }
+
+      .dropdown-item {
+        color: white;
+
+        &:hover {
+          background-color: var(--color-pink);
+        }
+        &:active {
+          background-color: var(--color-pink);
+        }
       }
     }
   }

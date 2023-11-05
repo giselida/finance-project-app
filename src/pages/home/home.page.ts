@@ -144,7 +144,7 @@ export class HomePage extends HTMLElement {
     this.setStorage();
     this.renderList();
     if (this.client.id == id) {
-      localStorage.setItem("client", "{}");
+      localStorage.removeItem("client");
       window.location.reload();
     }
   }
