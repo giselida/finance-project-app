@@ -8,3 +8,10 @@
   align-items: center;
   justify-content: $content;
 }
+@mixin display-none($display: true) {
+  @if $display {
+    display: none;
+  } @else {
+    display: block;
+  }
+}

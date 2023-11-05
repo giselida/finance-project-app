@@ -70,7 +70,7 @@ export class HomePage extends HTMLElement {
   <tbody>
   </tbody>
 </table>
-<span class="account-info ">
+<span class="account-info">
   Você não possui nenhuma conta.
 </span>
       </div>
@@ -144,7 +144,7 @@ export class HomePage extends HTMLElement {
     this.setStorage();
     this.renderList();
     if (this.client.id == id) {
-      localStorage.removeItem("client");
+      localStorage.setItem("client", "{}");
       window.location.reload();
     }
   }
