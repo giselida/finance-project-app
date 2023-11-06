@@ -109,8 +109,6 @@ export class HomePage extends HTMLElement {
     localStorage.setItem("idClients", this.maxID.toString());
   }
   renderList() {
-    if (this.clientList.length < 1) this.maxID = 0;
-
     const $tbody = document.querySelector("tbody");
     const $table = document.querySelector("table");
     const $accountInfo = document.querySelector<HTMLElement>(".account-info");
@@ -122,7 +120,7 @@ export class HomePage extends HTMLElement {
     this.clientList.forEach((client) => {
       $tbody.innerHTML += `
        <tr>
-      <th scope="row">${client.id}</th>
+       <th scope="row">${client.id}</th>
       <td>${client.accountNumber}</td>
       <td>${client.name}</td>
       <td>${client.email}</td> 
@@ -135,6 +133,7 @@ export class HomePage extends HTMLElement {
       </td> 
     </tr>
       `;
+      this.firstClient();
     });
   }
   removeClient(id: number) {
@@ -152,8 +151,17 @@ export class HomePage extends HTMLElement {
     const client = this.clientList.find((client) => client.id == id);
     document.querySelector(".current-user").innerHTML = client.name;
     localStorage.setItem("client", JSON.stringify(client));
+
     this.connectedCallback();
   }
+  private firstClient() {
+    const client = this.clientList.find((client) => client.id == this.maxID);
+    if (this.clientList.length <= 1) {
+      document.querySelector(".current-user").innerHTML = client.name;
+      localStorage.setItem("client", JSON.stringify(client));
+    }
+  }
+
   cleanForms() {
     this.$inputName.value = "";
     this.$inputEmail.value = "";
