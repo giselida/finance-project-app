@@ -45,6 +45,10 @@ export class TransactionPage extends HTMLElement {
   $pageActually: HTMLElement;
   $tableHeaders: NodeListOf<HTMLTableCellElement>;
   $chart: ApexCharts;
+  originalList: any;
+  get clientLogged() {
+    return JSON.parse(localStorage.getItem("client") ?? "{}");
+  }
 
   connectedCallback() {
     this.createInnerHTML();
@@ -55,10 +59,8 @@ export class TransactionPage extends HTMLElement {
   }
 
   recoveryElementRef() {
-    const clientLogged = JSON.parse(localStorage.getItem("client") ?? "{}");
-    this.transactionList = (JSON.parse(localStorage.getItem("transactionList")) ?? []).filter(
-      (item: Transaction) => item.userLoggedID === clientLogged.id
-    );
+    this.originalList = JSON.parse(localStorage.getItem("transactionList")) ?? [];
+    this.transactionList = this.originalList.filter((item: Transaction) => item.userLoggedID === this.clientLogged.id);
 
     const [$formInputValue, $formInputDescription, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
     this.$inputValue = $formInputValue as HTMLInputElement;
@@ -261,11 +263,9 @@ export class TransactionPage extends HTMLElement {
     });
   }
   get filteredList() {
-    const clientLogged = JSON.parse(localStorage.getItem("client") ?? "{}");
-
     return this.transactionList.filter((item) => {
       return (
-        item.userLoggedID === clientLogged.id &&
+        item.userLoggedID === this.clientLogged.id &&
         Object.values(item).some((item) => item.toString().toLowerCase().includes(this.$search.value.toLowerCase()))
       );
     });
@@ -286,7 +286,6 @@ export class TransactionPage extends HTMLElement {
   addTransaction() {
     const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
     const client = clients.find((client) => client.id === +this.$clientID.value);
-    const clientLogged = JSON.parse(localStorage.getItem("client") ?? "{}");
 
     const newTransaction: Transaction = {
       id: ++this.actuallyId,
@@ -295,9 +294,8 @@ export class TransactionPage extends HTMLElement {
       date: this.$inputDate.value,
       clientName: `${client.name} - ${client.accountNumber}`,
       clientID: this.$clientID.value,
-      userLoggedID: clientLogged.id,
+      userLoggedID: this.clientLogged.id,
     };
-
     this.transactionList.push(newTransaction);
     this.setStorage();
     this.clearForm();
@@ -311,8 +309,8 @@ export class TransactionPage extends HTMLElement {
     this.transactionFind.clientID = this.$clientID.value;
     const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
     const client = clients.find((client) => client.id === +this.$clientID.value);
-    const clientLogged = JSON.parse(localStorage.getItem("client") ?? "{}");
-    this.transactionFind.userLoggedID = clientLogged.id;
+
+    this.transactionFind.userLoggedID = this.clientLogged.id;
     this.transactionFind.clientName = `${client.name} - ${client.accountNumber}`;
     this.setStorage();
   }
@@ -333,16 +331,19 @@ export class TransactionPage extends HTMLElement {
   }
   removeTransaction(id: number) {
     this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
-    this.setStorage();
     this.renderTransactions();
     Toasts.success("Transação removida com sucesso!");
     this.onChart();
+    this.setStorage();
   }
   private setStorage() {
-    const oldItems = JSON.parse(localStorage.getItem("transactionList") ?? "[]").filter((oldItem: Transaction) => {
-      return !this.transactionList.find((item) => item.id == oldItem.id);
-    });
-    localStorage.setItem("transactionList", JSON.stringify([...oldItems, ...this.transactionList]));
+    localStorage.setItem(
+      "transactionList",
+      JSON.stringify([
+        ...this.originalList.filter((item: Transaction) => item.userLoggedID !== this.clientLogged.id),
+        ...this.transactionList,
+      ])
+    );
     localStorage.setItem("actuallyId", this.actuallyId.toString());
   }
 

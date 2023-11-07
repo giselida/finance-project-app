@@ -19,6 +19,12 @@ const PAGE_TITLES: { [key: string]: string } = {
 };
 export class RouterOutlet extends HTMLElement {
   connectedCallback() {
+    this.createInnerHTML();
+    if (!window.location.hash) window.location.replace("#home");
+    this.renderContent();
+    this.onInit();
+  }
+  private createInnerHTML() {
     const client = JSON.parse(localStorage.getItem("client") ?? "{}");
 
     this.innerHTML = /*html*/ `
@@ -58,10 +64,8 @@ export class RouterOutlet extends HTMLElement {
     <div id="toast-content"></div>
 
       `;
-    if (!window.location.hash) window.location.replace("#home");
-    this.renderContent();
-    this.onInit();
   }
+
   renderContent() {
     window.addEventListener("load", () => this.renderOutlet());
     window.addEventListener("hashchange", () => this.renderOutlet());

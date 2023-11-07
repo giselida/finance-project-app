@@ -1,3 +1,5 @@
+import { RouterOutlet } from "../../class/router-outlet";
+import { Toasts } from "../../toasts/toast";
 import "./home.page.scss";
 export interface Cliente {
   id: number;
@@ -16,6 +18,7 @@ export class HomePage extends HTMLElement {
   clientList: Cliente[];
   client: Cliente;
   maxID: number = 0;
+
   connectedCallback() {
     this.innerHTML = /*html*/ `
 
@@ -96,7 +99,9 @@ export class HomePage extends HTMLElement {
   private addListeners() {
     this.sendListener();
   }
-
+  get $currentUser() {
+    return document.querySelector(".current-user");
+  }
   private sendListener() {
     this.$buttonAdd.addEventListener("click", () => {
       if (!this.$inputName.value || !this.$inputEmail.value || !this.$inputPassword.value) return;
@@ -133,7 +138,6 @@ export class HomePage extends HTMLElement {
       </td> 
     </tr>
       `;
-      this.firstClient();
     });
   }
   removeClient(id: number) {
@@ -143,21 +147,30 @@ export class HomePage extends HTMLElement {
     this.setStorage();
     this.renderList();
     if (this.client.id == id) {
-      localStorage.setItem("client", "{}");
-      window.location.reload();
+      localStorage.removeItem("client");
+      const router = document.querySelector<RouterOutlet>("router-app");
+      if (!router) return;
+      router["createInnerHTML"]();
+      router["renderOutlet"]();
+      router["onInit"]();
+      this.firstClient();
     }
+    Toasts.success("Conta removida com sucesso!");
   }
   selectClient(id: number) {
     const client = this.clientList.find((client) => client.id == id);
-    document.querySelector(".current-user").innerHTML = client.name;
+    this.$currentUser.innerHTML = client.name;
     localStorage.setItem("client", JSON.stringify(client));
-
     this.connectedCallback();
+    Toasts.success(`Conta ${client.name} número ${client.accountNumber} foi selecionada com sucesso!`);
   }
   private firstClient() {
-    const client = this.clientList.find((client) => client.id == this.maxID);
-    if (this.clientList.length <= 1) {
-      document.querySelector(".current-user").innerHTML = client.name;
+    const client = this.clientList[0];
+
+    if (client) {
+      if (client.accountAmount == 0) client.accountAmount = 100;
+      this.setStorage();
+      this.$currentUser.innerHTML = client.name;
       localStorage.setItem("client", JSON.stringify(client));
     }
   }
@@ -183,5 +196,7 @@ export class HomePage extends HTMLElement {
     this.clientList.push(objectClient);
     this.setStorage();
     this.cleanForms();
+    this.firstClient();
+    Toasts.success("Conta criada com sucesso!");
   }
 }
