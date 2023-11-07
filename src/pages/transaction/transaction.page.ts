@@ -61,7 +61,9 @@ export class TransactionPage extends HTMLElement {
   recoveryElementRef() {
     this.originalList = JSON.parse(localStorage.getItem("transactionList")) ?? [];
     this.transactionList = this.originalList.filter((item: Transaction) => item.userLoggedID === this.clientLogged.id);
-
+    if (!this.clientLogged.id) {
+      localStorage.removeItem("transactionList");
+    }
     const [$formInputValue, $formInputDescription, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
     this.$inputValue = $formInputValue as HTMLInputElement;
     this.$inputDescription = $formInputDescription as FormSelect;

@@ -12,6 +12,6 @@
   @if $display {
     display: none;
   } @else {
-    display: block;
+    display: flex;
   }
 }
