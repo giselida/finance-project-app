@@ -285,18 +285,36 @@ export class TransactionPage extends HTMLElement {
   }
   addTransaction() {
     const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
-    const client = clients.find((client) => client.id === +this.$clientID.value);
+
+    const clientLogged = clients.find((client) => client.id === this.clientLogged.id);
+
+    const clientSelected = clients.find((client) => client.id === +this.$clientID.value);
+
+    const inputValue = +this.$inputValue.value.replace(".", "").replace(",", ".");
+
+    clientLogged.accountAmount = clientLogged.accountAmount - inputValue;
+    if (clientSelected.id === clientLogged.id) {
+      clientLogged.accountAmount = clientLogged.accountAmount - inputValue;
+    }
+    clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
+    if (inputValue > clientLogged.accountAmount) {
+      return Toasts.error("saldo insuficiente");
+    }
 
     const newTransaction: Transaction = {
       id: ++this.actuallyId,
       value: this.$inputValue.value,
       description: this.$inputDescription.value,
       date: this.$inputDate.value,
-      clientName: `${client.name} - ${client.accountNumber}`,
+      clientName: `${clientSelected.name} - ${clientSelected.accountNumber}`,
       clientID: this.$clientID.value,
       userLoggedID: this.clientLogged.id,
     };
+
     this.transactionList.push(newTransaction);
+    localStorage.setItem("clients", JSON.stringify(clients));
+    localStorage.setItem("client", JSON.stringify(clientSelected));
+    localStorage.setItem("client", JSON.stringify(clientLogged));
     this.setStorage();
     this.clearForm();
     Toasts.success(this.transactionFind ? "Transação duplicada com sucesso!" : "Transação adicionada com sucesso!");
