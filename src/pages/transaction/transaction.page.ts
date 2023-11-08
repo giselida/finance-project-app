@@ -64,6 +64,7 @@ export class TransactionPage extends HTMLElement {
     if (!this.clientLogged.id) {
       localStorage.removeItem("transactionList");
     }
+    this.setCurrentAmount();
     const [$formInputValue, $formInputDescription, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
     this.$inputValue = $formInputValue as HTMLInputElement;
     this.$inputDescription = $formInputDescription as FormSelect;
@@ -79,6 +80,18 @@ export class TransactionPage extends HTMLElement {
     this.$next = document.querySelector(".page-next");
     this.$pageActually = document.querySelector(".page-actually");
   }
+  private setCurrentAmount() {
+    const $currentBalance = document.querySelector(".current-balance");
+    $currentBalance.classList.remove("positive");
+    $currentBalance.classList.remove("negative");
+
+    $currentBalance.classList.add(this.clientLogged.accountAmount > 0 ? "positive" : "negative");
+    $currentBalance.textContent = `${new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(this.clientLogged.accountAmount)}`;
+  }
+
   addListeners() {
     const maskOptions = {
       mask: "00/00/0000",
@@ -126,8 +139,11 @@ export class TransactionPage extends HTMLElement {
 
   private sendListener() {
     this.$btnSend.addEventListener("click", () => {
-      if (!this.$inputValue.value || !this.$inputDescription.value || !this.$inputDate.value || !this.$clientID.value)
-        return Toasts.error("Por favor preencha os campos obrigatórios!");
+      if (!this.$inputValue.value || !this.$inputDescription.value || !this.$inputDate.value || !this.$clientID.value) {
+        Toasts.error("Por favor preencha os campos obrigatórios!");
+        throw new Error("Por favor preencha os campos obrigatórios!");
+      }
+
       const methodKey = !this.selectedId ? "addTransaction" : "updateTransaction";
       this[methodKey]();
       this.instanceModal().toggle();
@@ -286,6 +302,10 @@ export class TransactionPage extends HTMLElement {
     this.instanceModal().toggle();
   }
   addTransaction() {
+    if (+this.$inputValue.value.replace(".", "").replace(",", ".") <= 0) {
+      Toasts.error("Selecione um valor valido!");
+      throw new Error("Selecione um valor valido!");
+    }
     const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
 
     const clientLogged = clients.find((client) => client.id === this.clientLogged.id);
@@ -293,16 +313,24 @@ export class TransactionPage extends HTMLElement {
     const clientSelected = clients.find((client) => client.id === +this.$clientID.value);
 
     const inputValue = +this.$inputValue.value.replace(".", "").replace(",", ".");
-
-    clientLogged.accountAmount = clientLogged.accountAmount - inputValue;
-    if (clientSelected.id === clientLogged.id) {
-      clientLogged.accountAmount = clientLogged.accountAmount - inputValue;
-    }
-    clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
     if (inputValue > clientLogged.accountAmount) {
-      return Toasts.error("saldo insuficiente");
+      Toasts.error("Saldo insuficiente!");
+      throw new Error("Saldo insuficiente!");
     }
+    clientLogged.accountAmount = clientLogged.accountAmount - inputValue;
 
+    clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
+
+    localStorage.setItem("client", JSON.stringify(clientLogged));
+    this.setCurrentAmount();
+    this.objectTransaction(clientSelected);
+    this.setStorageClient(clients, clientSelected, clientLogged);
+    this.setStorage();
+    this.clearForm();
+    Toasts.success(this.transactionFind ? "Transação duplicada com sucesso!" : "Transação adicionada com sucesso!");
+  }
+
+  private objectTransaction(clientSelected: Cliente) {
     const newTransaction: Transaction = {
       id: ++this.actuallyId,
       value: this.$inputValue.value,
@@ -314,12 +342,12 @@ export class TransactionPage extends HTMLElement {
     };
 
     this.transactionList.push(newTransaction);
+  }
+
+  private setStorageClient(clients: Cliente[], clientSelected: Cliente, clientLogged: Cliente) {
     localStorage.setItem("clients", JSON.stringify(clients));
     localStorage.setItem("client", JSON.stringify(clientSelected));
     localStorage.setItem("client", JSON.stringify(clientLogged));
-    this.setStorage();
-    this.clearForm();
-    Toasts.success(this.transactionFind ? "Transação duplicada com sucesso!" : "Transação adicionada com sucesso!");
   }
 
   updateTransaction() {
@@ -369,6 +397,8 @@ export class TransactionPage extends HTMLElement {
 
   createInnerHTML() {
     this.innerHTML = /*html*/ `
+
+    <div class="container-current-balance">Saldo: <span class="current-balance">0,00</span></div>
     <div id="chart-payment"></div>
     <div class="content-row mb-3">
       <button type="button" class="btn btn-transaction" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
@@ -498,6 +528,7 @@ export class TransactionPage extends HTMLElement {
   createFormSelectCliente() {
     const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
     const clienteOptions = clients
+      .filter((client) => client.id != this.clientLogged.id)
       .map((client) => {
         return `
            <div class="option" value="${client.id}">

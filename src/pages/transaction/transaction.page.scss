@@ -3,6 +3,19 @@
 
 about-page {
   @include pageStyle(column);
+  .container-current-balance {
+    align-self: end;
+    padding: 10px;
+    .current-balance {
+      font-weight: bold;
+      &.positive {
+        color: green;
+      }
+      &.negative {
+        color: red;
+      }
+    }
+  }
   form {
     display: grid;
     grid-template-columns: 1fr 1fr;

@@ -82,6 +82,10 @@ export class RouterOutlet extends HTMLElement {
 
     const $root = document.querySelector("#root");
     const $pageTitle = document.querySelector(".page-title");
+    document.querySelectorAll("a").forEach((anchor) => {
+      anchor.classList.remove("active-router");
+    });
+    document.querySelector(`a[href="${hash}"]`).classList.add("active-router");
     $pageTitle.innerHTML = PAGE_TITLES[hash];
     if ($root) $root.innerHTML = "";
     const Page = ROUTES[hash];
