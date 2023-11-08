@@ -14,7 +14,7 @@ import "./transaction.page.scss";
 interface Transaction {
   id: number;
   value: string;
-  description: string;
+  formOfPayment: string;
   clientName: string;
   clientID: string;
   userLoggedID: string;
@@ -22,7 +22,7 @@ interface Transaction {
 }
 export class TransactionPage extends HTMLElement {
   mask: typeof Currency;
-  $inputDescription: FormSelect;
+  $inputFormOfPayment: FormSelect;
   $btnSend: HTMLButtonElement;
   $inputValue: HTMLInputElement;
   $inputDate: HTMLInputElement;
@@ -65,9 +65,9 @@ export class TransactionPage extends HTMLElement {
       localStorage.removeItem("transactionList");
     }
     this.setCurrentAmount();
-    const [$formInputValue, $formInputDescription, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
+    const [$formInputValue, $formInputFormOfPayment, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
     this.$inputValue = $formInputValue as HTMLInputElement;
-    this.$inputDescription = $formInputDescription as FormSelect;
+    this.$inputFormOfPayment = $formInputFormOfPayment as FormSelect;
     this.$inputDate = $formInputDate as HTMLInputElement;
     this.$clientID = $formInputName as HTMLInputElement;
     this.$modal = document.querySelector("#staticBackdrop");
@@ -121,7 +121,7 @@ export class TransactionPage extends HTMLElement {
       return {
         name: value,
         data: listDates.flatMap((date) => {
-          const transactionList = this.transactionList.filter((item) => item.description == value && item.date == date);
+          const transactionList = this.transactionList.filter((item) => item.formOfPayment == value && item.date == date);
 
           return transactionList.length <= 0 ? null : transactionList.map((item) => +item.value.replace(".", "").replace(",", "."));
         }),
@@ -139,7 +139,7 @@ export class TransactionPage extends HTMLElement {
 
   private sendListener() {
     this.$btnSend.addEventListener("click", () => {
-      if (!this.$inputValue.value || !this.$inputDescription.value || !this.$inputDate.value || !this.$clientID.value) {
+      if (!this.$inputValue.value || !this.$inputFormOfPayment.value || !this.$inputDate.value || !this.$clientID.value) {
         Toasts.error("Por favor preencha os campos obrigatórios!");
         throw new Error("Por favor preencha os campos obrigatórios!");
       }
@@ -207,7 +207,7 @@ export class TransactionPage extends HTMLElement {
 
       if (key === "value") return compareCurrency(firstElement[key]) - compareCurrency(secondElement[key]);
 
-      if (key === "description") return firstElement[key].localeCompare(secondElement[key]);
+      if (key === "formOfPayment") return firstElement[key].localeCompare(secondElement[key]);
 
       if (key === "clientName") return firstElement[key].localeCompare(secondElement[key]);
 
@@ -262,8 +262,8 @@ export class TransactionPage extends HTMLElement {
          <td scope="row">${transaction.id}</td>
          <td>${transaction.value}</td>
          <td>
-           ${SVG_ICONS[transaction.description]}  
-           ${transaction.description}
+           ${SVG_ICONS[transaction.formOfPayment]}  
+           ${transaction.formOfPayment}
       </td>
       <td>${transaction.date}</td>
       <td>${transaction.clientName}</td>
@@ -295,7 +295,7 @@ export class TransactionPage extends HTMLElement {
     this.selectedId = null;
     this.transactionFind = this.transactionList.find((transaction) => transaction.id === id);
     this.$inputValue.value = this.transactionFind.value;
-    this.$inputDescription.value = this.transactionFind.description;
+    this.$inputFormOfPayment.value = this.transactionFind.formOfPayment;
     this.$inputDate.value = this.transactionFind.date;
     this.$clientID.value = this.transactionFind.clientName;
 
@@ -334,7 +334,7 @@ export class TransactionPage extends HTMLElement {
     const newTransaction: Transaction = {
       id: ++this.actuallyId,
       value: this.$inputValue.value,
-      description: this.$inputDescription.value,
+      formOfPayment: this.$inputFormOfPayment.value,
       date: this.$inputDate.value,
       clientName: `${clientSelected.name} - ${clientSelected.accountNumber}`,
       clientID: this.$clientID.value,
@@ -352,7 +352,7 @@ export class TransactionPage extends HTMLElement {
 
   updateTransaction() {
     this.transactionFind.value = this.$inputValue.value;
-    this.transactionFind.description = this.$inputDescription.value;
+    this.transactionFind.formOfPayment = this.$inputFormOfPayment.value;
     this.transactionFind.date = this.$inputDate.value;
     this.transactionFind.clientID = this.$clientID.value;
     const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
@@ -371,7 +371,7 @@ export class TransactionPage extends HTMLElement {
     if (!this.transactionFind) return;
 
     this.$inputValue.value = this.transactionFind.value;
-    this.$inputDescription.value = this.transactionFind.description;
+    this.$inputFormOfPayment.value = this.transactionFind.formOfPayment;
     this.$inputDate.value = this.transactionFind.date;
     this.$clientID.value = this.transactionFind.clientID;
     this.instanceModal().toggle();
@@ -441,7 +441,7 @@ export class TransactionPage extends HTMLElement {
                 />
               </div>
               <div class="form-input description">
-                <label class="col-form-label">Descrição:</label>
+                <label class="col-form-label">Forma de pagamento:</label>
               </div>
               <div class="form-input">
                 <label class="col-form-label">Data:</label>
@@ -476,9 +476,9 @@ export class TransactionPage extends HTMLElement {
                 <div class="sort"></div>
               </div>
             </th>
-            <th scope="col" key="description">
+            <th scope="col" key="formOfPayment">
               <div class="row-header">
-                <span>Descrição</span>
+                <span>Forma de pagamento</span>
                 <div class="sort"></div>
               </div>
             </th>
@@ -572,7 +572,7 @@ export class TransactionPage extends HTMLElement {
     const $titleModal = document.querySelector(".modal-title");
     $titleModal.textContent = "Adicionar transação";
     this.$inputValue.value = "";
-    this.$inputDescription.value = "";
+    this.$inputFormOfPayment.value = "";
     this.$inputDate.value = "";
     this.$clientID.value = "";
   }
