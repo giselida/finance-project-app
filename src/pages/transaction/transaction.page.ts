@@ -366,17 +366,21 @@ export class TransactionPage extends HTMLElement {
     const $titleModal = document.querySelector(".modal-title");
     $titleModal.textContent = "Editar transação";
     this.selectedId = id;
+
     this.transactionFind = this.transactionList.find((transaction) => transaction.id === this.selectedId);
 
     if (!this.transactionFind) return;
+    this.$inputValue.disabled = this.selectedId == id;
 
     this.$inputValue.value = this.transactionFind.value;
     this.$inputFormOfPayment.value = this.transactionFind.formOfPayment;
     this.$inputDate.value = this.transactionFind.date;
     this.$clientID.value = this.transactionFind.clientID;
+
     this.instanceModal().toggle();
     this.setStorage();
   }
+
   removeTransaction(id: number) {
     this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
     this.renderTransactions();

@@ -29,6 +29,17 @@ export class FormSelect extends HTMLElement {
     return this._value;
   }
 
+  get hasSearch() {
+    let hasSearch = false;
+
+    try {
+      hasSearch = JSON.parse(this.getAttribute("search"));
+    } catch {
+      hasSearch = false;
+    }
+    return hasSearch;
+  }
+
   connectedCallback() {
     this.classList.add("form-select");
 
@@ -42,13 +53,13 @@ export class FormSelect extends HTMLElement {
         this.createBackdrop();
         return;
       }
-      this.$backdrop?.remove();
+      if (!this.hasSearch) this.$backdrop?.remove();
     });
 
     document.querySelector("html").addEventListener("click", (event) => {
       this.stopPropagation(event);
       const item = event.target as HTMLElement;
-      if (item.tagName != "FORM-SELECT") {
+      if (item.tagName != "FORM-SELECT" && item.tagName != "INPUT") {
         this.$backdrop?.remove();
       }
     });
@@ -61,6 +72,11 @@ export class FormSelect extends HTMLElement {
 
   createBackdrop() {
     this.$backdrop = document.createElement("div");
+    if (this.hasSearch) {
+      this.$backdrop.innerHTML = `
+      <input class="search-input" />
+      `;
+    }
     this.$backdrop.classList.add("backdrop");
     this.options
       .map((value) => {
@@ -72,7 +88,30 @@ export class FormSelect extends HTMLElement {
       });
 
     this.append(this.$backdrop);
+    const $searchInput = document.querySelector<HTMLInputElement>(".search-input");
+    $searchInput?.addEventListener(
+      "input",
+      this.debounceEvent(() => {
+        const inputValue = $searchInput.value?.toLowerCase();
+        const options = this.$backdrop.querySelectorAll(".option");
+        options.forEach((element) => element.remove());
+        this.options
+          .map((value) => {
+            return value.cloneNode(true) as HTMLElement;
+          })
+          .forEach((value) => {
+            const elementValue = value.getAttribute("value")?.toLowerCase();
+            if (elementValue.includes(inputValue)) {
+              this.changeOption(value, this.$backdrop);
+              this.$backdrop.appendChild(value);
+            }
+          });
+      }, 500)
+    );
     this.$backdrop.focus();
+    if (this.hasSearch) {
+      $searchInput.focus();
+    }
   }
 
   changeOption($element: HTMLElement, $backdrop: HTMLElement) {
@@ -94,5 +133,15 @@ export class FormSelect extends HTMLElement {
 
       $backdrop.remove();
     });
+  }
+  debounceEvent(callback: any, timeout: number) {
+    let timer: any;
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        callback();
+      }, timeout);
+    };
   }
 }

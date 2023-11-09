@@ -13,12 +13,16 @@ export const OPTIONS_PAYMENT: ApexOptions = {
 };
 
 export const OPTIONS_CURRENCY: ApexOptions = {
-  chart: {
-    height: 250,
-    type: "bar",
-  },
   series: [],
-  xaxis: {
-    categories: [],
+  chart: {
+    height: 350,
+    type: "heatmap",
+  },
+  dataLabels: {
+    enabled: false,
+  },
+  colors: ["#ff8f16"],
+  title: {
+    text: "Gráfico mapa de calor",
   },
 };

@@ -152,16 +152,16 @@ export class ConversionPage extends HTMLElement {
 
   private onChart(valueInput: number, conversionValue: number, valueFrom: string, valueTo: string) {
     const listCurrency = [+valueInput.toFixed(2), +conversionValue.toFixed(2)];
-    OPTIONS_CURRENCY.series = [valueFrom, valueTo].map((value, index) => {
-      return {
-        name: value,
-        data: [listCurrency[index]],
-      };
-    });
-    OPTIONS_CURRENCY.xaxis.categories = Array.from(
-      { length: Math.max(...OPTIONS_CURRENCY.series.map((value) => value.data.length)) },
-      (_, k) => listCurrency[k].toFixed(2) ?? "-"
-    );
+    OPTIONS_CURRENCY.series = [
+      {
+        name: valueTo,
+        data: [listCurrency[1]],
+      },
+      {
+        name: valueFrom,
+        data: [listCurrency[0]],
+      },
+    ];
     this.$chartCurrency = new ApexCharts(document.querySelector("#chart-currency"), OPTIONS_CURRENCY);
 
     this.$chartCurrency.render();
@@ -294,7 +294,7 @@ export class ConversionPage extends HTMLElement {
       })
       .join("");
     return /*html*/ `
-       <form-select placeholder="Selecione" >
+       <form-select search="true" placeholder="Selecione" >
        ${options}
        </form-select> 
       `;

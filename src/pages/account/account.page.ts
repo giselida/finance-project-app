@@ -14,7 +14,10 @@ export class AccountPage extends HTMLElement {
   <div class="card-body">
     <h5 class="card-title">Nome: ${client.name ?? ""}</h5>
     <h5 class="card-title">Numero da conta: ${client.accountNumber ?? ""}</h5>
-    <p class="card-text">Saldo: R$ ${(client.accountAmount ?? 0).toFixed(2)}</p>
+    <p class="card-text">Saldo: ${new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(client.accountAmount ?? 0)}</p>
   </div>
 
 </div>`;
