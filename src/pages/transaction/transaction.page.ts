@@ -5,8 +5,8 @@ import ApexCharts from "apexcharts";
 import { Modal } from "bootstrap";
 import IMask from "imask";
 import { FormSelect } from "../../components/form-select/form-select";
-import { PT_BR_LOCALE } from "../../constants/apexChats";
 import { OPTIONS_PAYMENT } from "../../constants/charts";
+import { PT_BR_LOCALE } from "../../constants/date-picker-locale";
 import { SVG_ICONS } from "../../constants/svg-icons";
 import { Toasts } from "../../toasts/toast";
 import { Cliente } from "../home/home.page";
@@ -98,6 +98,7 @@ export class TransactionPage extends HTMLElement {
     };
     IMask(this.$inputDate, maskOptions);
     this.mask = new Currency(this.$inputValue);
+
     this.sendListener();
     this.onModalHidden();
     this.$search.addEventListener("input", () => this.renderTransactions());
@@ -376,7 +377,8 @@ export class TransactionPage extends HTMLElement {
     this.$inputFormOfPayment.value = this.transactionFind.formOfPayment;
     this.$inputDate.value = this.transactionFind.date;
     this.$clientID.value = this.transactionFind.clientID;
-
+    console.log(this.$clientID);
+    console.log(this.transactionFind.clientID);
     this.instanceModal().toggle();
     this.setStorage();
   }
@@ -442,7 +444,11 @@ export class TransactionPage extends HTMLElement {
                   autocomplete="transaction-currency"
                   pattern="[0-9]+,[0-9]{2}||[0-9]+(.[0-9]{3})*,[0-9]{2}"
                   required
-                />
+                />  
+                <div class="valid-feedback">
+                </div>
+                <div class="invalid-feedback">
+                </div>
               </div>
               <div class="form-input description">
                 <label class="col-form-label">Forma de pagamento:</label>
