@@ -22,7 +22,7 @@ export class ConversionPage extends HTMLElement {
   $chartCurrency: ApexCharts;
 
   connectedCallback() {
-    this.innerHTML = this.createInnerHTML();
+    this.createInnerHTML();
     const $firstForm = this.querySelector(".form-group");
     const $secondForm = this.querySelector(".form-group-2");
 
@@ -228,7 +228,7 @@ export class ConversionPage extends HTMLElement {
   }
 
   private createInnerHTML() {
-    return /*html*/ `
+    this.innerHTML = /*html*/ `
      <div class="input-group mb-3">
       <span class="input-group-text">$</span>
       <input

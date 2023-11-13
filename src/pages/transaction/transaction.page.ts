@@ -18,6 +18,7 @@ interface Transaction {
   clientName: string;
   clientID: string;
   userLoggedID: string;
+  creditLimit: number;
   date: string;
 }
 export class TransactionPage extends HTMLElement {
@@ -101,11 +102,24 @@ export class TransactionPage extends HTMLElement {
 
     this.sendListener();
     this.onModalHidden();
-    this.$search.addEventListener("input", () => this.renderTransactions());
+    this.$search.addEventListener(
+      "input",
+      this.debounceEvent(() => this.renderTransactions(), 500)
+    );
     this.sortListener();
     this.nextListener();
     this.previousListener();
     this.datePicker = new AirDatepicker(this.$inputDate, { locale: PT_BR_LOCALE });
+  }
+  debounceEvent(callback: any, timeout: number) {
+    let timer: any;
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        callback();
+      }, timeout);
+    };
   }
 
   private getDate(dateString: string) {
@@ -157,6 +171,7 @@ export class TransactionPage extends HTMLElement {
     this.$modal.addEventListener("hidden.bs.modal", () => {
       this.transactionFind = null;
       this.selectedId = null;
+      this.$inputValue.disabled = false;
       this.clearForm();
     });
   }
@@ -340,6 +355,7 @@ export class TransactionPage extends HTMLElement {
       clientName: `${clientSelected.name} - ${clientSelected.accountNumber}`,
       clientID: this.$clientID.value,
       userLoggedID: this.clientLogged.id,
+      creditLimit: this.clientLogged.limitCredit,
     };
 
     this.transactionList.push(newTransaction);
@@ -372,13 +388,10 @@ export class TransactionPage extends HTMLElement {
 
     if (!this.transactionFind) return;
     this.$inputValue.disabled = this.selectedId == id;
-
     this.$inputValue.value = this.transactionFind.value;
     this.$inputFormOfPayment.value = this.transactionFind.formOfPayment;
     this.$inputDate.value = this.transactionFind.date;
     this.$clientID.value = this.transactionFind.clientID;
-    console.log(this.$clientID);
-    console.log(this.transactionFind.clientID);
     this.instanceModal().toggle();
     this.setStorage();
   }

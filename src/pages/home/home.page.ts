@@ -8,6 +8,7 @@ export interface Cliente {
   accountNumber: string;
   accountAmount: number;
   password: string;
+  limitCredit: number;
 }
 
 export class HomePage extends HTMLElement {
@@ -20,6 +21,10 @@ export class HomePage extends HTMLElement {
   maxID: number = 0;
 
   connectedCallback() {
+    this.createInnerHTML();
+    this.recoveryElementRef();
+  }
+  private createInnerHTML() {
     this.innerHTML = /*html*/ `
 
 <div class="accordion accordion-flush" id="accordionFlushExample">
@@ -34,17 +39,18 @@ export class HomePage extends HTMLElement {
         <form class="was-validated">
         <div class="mb-3">
           <label class="form-label">Nome</label>
-          <input type="text" class="form-control"  required>
+          <input type="text" class="form-control form"  required>
         </div>
         <div class="mb-3">
           <label  class="form-label">E-mail</label>
-          <input type="text" class="form-control" required >
+          <input type="text" class="form-control form" required >
         </div>
         <div class="mb-3">
           <label  class="form-label">Senha</label>
-      <input type="password" class="form-control" required>
+      <input type="password" class="form-control form" required>
         </div>
-        <div lass="mb-3">
+       
+        <div class="mb-3">
           <button class="btn btn-add" type="submit">Salvar</button>
         </div>
       </form>
@@ -81,13 +87,14 @@ export class HomePage extends HTMLElement {
   </div>
 </div>
 `;
-    this.onInit();
   }
-  onInit() {
+
+  recoveryElementRef() {
     this.clientList = JSON.parse(localStorage.getItem("clients")) ?? [];
     this.maxID = +localStorage.getItem("idClients");
     this.$buttonAdd = document.querySelector(".btn-add");
-    const $formControls = document.querySelectorAll(".form-control");
+
+    const $formControls = document.querySelectorAll(".form");
     const [$inputName, $inputEmail, $inputPassword] = $formControls;
     this.$inputName = $inputName as HTMLInputElement;
     this.$inputEmail = $inputEmail as HTMLInputElement;
@@ -99,6 +106,7 @@ export class HomePage extends HTMLElement {
   private addListeners() {
     this.sendListener();
   }
+
   get $currentUser() {
     return document.querySelector(".current-user");
   }
@@ -191,6 +199,7 @@ export class HomePage extends HTMLElement {
       accountNumber: `${random()}${random()}${random()}-${random()}`,
       accountAmount: 0,
       password: this.$inputPassword.value,
+      limitCredit: 0,
     };
 
     this.clientList.push(objectClient);
