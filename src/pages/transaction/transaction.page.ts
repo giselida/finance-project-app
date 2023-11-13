@@ -327,15 +327,20 @@ export class TransactionPage extends HTMLElement {
     const clientLogged = clients.find((client) => client.id === this.clientLogged.id);
 
     const clientSelected = clients.find((client) => client.id === +this.$clientID.value);
-
     const inputValue = +this.$inputValue.value.replace(".", "").replace(",", ".");
-    if (inputValue > clientLogged.accountAmount) {
+
+    if (this.$inputFormOfPayment.value === "Credito") {
+      clientLogged.limitCredit = clientLogged.limitCredit - inputValue;
+      clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
+    } else {
+      clientLogged.accountAmount = clientLogged.accountAmount - inputValue;
+
+      clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
+    }
+    if (inputValue > clientLogged.accountAmount || inputValue > clientLogged.limitCredit) {
       Toasts.error("Saldo insuficiente!");
       throw new Error("Saldo insuficiente!");
     }
-    clientLogged.accountAmount = clientLogged.accountAmount - inputValue;
-
-    clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
 
     localStorage.setItem("client", JSON.stringify(clientLogged));
     this.setCurrentAmount();

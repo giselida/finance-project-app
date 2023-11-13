@@ -42,6 +42,7 @@ export class AccountPage extends HTMLElement {
           currency: "BRL",
         }).format(formRangeValue)}`;
         clientLogged.limitCredit = formRangeValue;
+
         localStorage.setItem("client", JSON.stringify(clientLogged));
         localStorage.setItem("clients", JSON.stringify(clients));
       }, 500)
@@ -79,7 +80,7 @@ export class AccountPage extends HTMLElement {
     }).format(this.clientLogged.limitCredit ?? 0)}</div>
     <div class="mt-3">
          <label for="customRange1" class="form-label">Defina seu limite de Crédito</label>
-<input type="range" class="form form-range" min="0" max="10000" value="${this.clientLogged.limitCredit}" step="50" required>
+<input type="range" class="form form-range" min="0" max="10000" value="0" step="50" required>
 </div>
   </div>
 
