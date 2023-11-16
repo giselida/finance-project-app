@@ -9,7 +9,7 @@ import { OPTIONS_PAYMENT } from "../../constants/charts";
 import { PT_BR_LOCALE } from "../../constants/date-picker-locale";
 import { SVG_ICONS } from "../../constants/svg-icons";
 import { Toasts } from "../../toasts/toast";
-import { Cliente } from "../home/home.page";
+import { Cliente } from "../configuration/configuration.page";
 import "./transaction.page.scss";
 interface Transaction {
   id: number;
@@ -62,6 +62,7 @@ export class TransactionPage extends HTMLElement {
   recoveryElementRef() {
     this.originalList = JSON.parse(localStorage.getItem("transactionList")) ?? [];
     this.transactionList = this.originalList.filter((item: Transaction) => item.userLoggedID === this.clientLogged.id);
+    console.log(this.transactionList);
     if (!this.clientLogged.id) {
       localStorage.removeItem("transactionList");
     }
@@ -98,7 +99,7 @@ export class TransactionPage extends HTMLElement {
       mask: "00/00/0000",
     };
     IMask(this.$inputDate, maskOptions);
-    this.mask = new Currency(this.$inputValue);
+    this.mask = Currency.data(this.$inputValue);
 
     this.sendListener();
     this.onModalHidden();
@@ -122,7 +123,7 @@ export class TransactionPage extends HTMLElement {
     };
   }
 
-  private getDate(dateString: string) {
+  getDate(dateString: string) {
     const [day, mouth, year] = dateString.split("/");
     return new Date(+year, +mouth - 1, +day);
   }
@@ -284,14 +285,14 @@ export class TransactionPage extends HTMLElement {
       <td>${transaction.date}</td>
       <td>${transaction.clientName}</td>
       <td>
-        <ion-icon name="brush-outline" class="edit" onclick="document.querySelector('about-page').editTransaction(${
+        <ion-icon name="brush-outline" class="edit" onclick="document.querySelector('transaction-page').editTransaction(${
           transaction.id
         })"></ion-icon>
-        <ion-icon name="trash-outline" class="delete" onclick="document.querySelector('about-page').removeTransaction(${
+        <ion-icon name="trash-outline" class="delete" onclick="document.querySelector('transaction-page').removeTransaction(${
           transaction.id
         })"></ion-icon>
         <ion-icon name="duplicate-outline" class="duplicate"
-        onclick="document.querySelector('about-page').duplicateTransaction(${transaction.id})"></ion-icon>
+        onclick="document.querySelector('transaction-page').duplicateTransaction(${transaction.id})"></ion-icon>
       </td>
     </tr>`;
     });
@@ -318,7 +319,11 @@ export class TransactionPage extends HTMLElement {
     this.instanceModal().toggle();
   }
   addTransaction() {
-    if (+this.$inputValue.value.replace(".", "").replace(",", ".") <= 0) {
+    const { value } = this.$inputValue ?? { value: "0.00" };
+
+    const formattedValue = +value.replace(".", "").replace(",", ".");
+
+    if (!value || formattedValue <= 0) {
       Toasts.error("Selecione um valor valido!");
       throw new Error("Selecione um valor valido!");
     }
@@ -327,20 +332,18 @@ export class TransactionPage extends HTMLElement {
     const clientLogged = clients.find((client) => client.id === this.clientLogged.id);
 
     const clientSelected = clients.find((client) => client.id === +this.$clientID.value);
-    const inputValue = +this.$inputValue.value.replace(".", "").replace(",", ".");
+    const inputValue = +formattedValue;
 
-    if (this.$inputFormOfPayment.value === "Credito") {
-      clientLogged.limitCredit = clientLogged.limitCredit - inputValue;
-      clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
-    } else {
-      clientLogged.accountAmount = clientLogged.accountAmount - inputValue;
+    const isCredito = this.$inputFormOfPayment.value === "Credito";
+    const propertyName = isCredito ? "limitCredit" : "accountAmount";
 
-      clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
-    }
-    if (inputValue > clientLogged.accountAmount || inputValue > clientLogged.limitCredit) {
+    if (inputValue > clientLogged[propertyName]) {
       Toasts.error("Saldo insuficiente!");
       throw new Error("Saldo insuficiente!");
     }
+
+    clientLogged.accountAmount = clientLogged[propertyName] - inputValue;
+    clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
 
     localStorage.setItem("client", JSON.stringify(clientLogged));
     this.setCurrentAmount();
@@ -555,21 +558,23 @@ export class TransactionPage extends HTMLElement {
   }
   createFormSelectCliente() {
     const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
+    console.log(clients, this.clientLogged.id);
     const clienteOptions = clients
       .filter((client) => client.id != this.clientLogged.id)
-      .map((client) => {
-        return `
-           <div class="option" value="${client.id}">
-            ${client.name} - ${client.accountNumber}
-            </div>
-          `;
-      })
+      .map((client) => this.createFormOption(client))
       .join("");
     return /*html*/ `
        <form-select class="form-control is-invalid" required placeholder="Selecione">
         ${clienteOptions}
        </form-select>
     `;
+  }
+  createFormOption(client: Cliente) {
+    return `
+           <div class="option" value="${client.id}">
+            ${client.name} - ${client.accountNumber}
+            </div>
+          `;
   }
   createFormSelect() {
     return /*html*/ `

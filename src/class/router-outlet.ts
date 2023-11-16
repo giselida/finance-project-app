@@ -1,6 +1,6 @@
 import { AccountPage } from "../pages/account/account.page";
+import { ConfigurationPage } from "../pages/configuration/configuration.page";
 import { ConversionPage } from "../pages/conversion/conversion.page";
-import { HomePage } from "../pages/home/home.page";
 import { TransactionPage } from "../pages/transaction/transaction.page";
 const createMaterialSymbol = (iconName: string, label: string) => {
   return `
@@ -12,7 +12,7 @@ const createMaterialSymbol = (iconName: string, label: string) => {
       </span>`;
 };
 const PAGE_TITLES: { [key: string]: string } = {
-  "#home": createMaterialSymbol("home", "Inicio"),
+  "#configurations": createMaterialSymbol("manufacturing", "Configurações"),
   "#transaction": createMaterialSymbol("paid", "Transação"),
   "#account": createMaterialSymbol("account_circle", "Conta"),
   "#conversion": createMaterialSymbol(" price_change", "Conversor de Moedas"),
@@ -20,7 +20,7 @@ const PAGE_TITLES: { [key: string]: string } = {
 export class RouterOutlet extends HTMLElement {
   connectedCallback() {
     this.createInnerHTML();
-    if (!window.location.hash) window.location.replace("#home");
+    if (!window.location.hash) window.location.replace("#transaction");
     this.renderContent();
     this.onInit();
   }
@@ -28,36 +28,47 @@ export class RouterOutlet extends HTMLElement {
     const client = JSON.parse(localStorage.getItem("client") ?? "{}");
 
     this.innerHTML = /*html*/ `
-   <header>
-      <div class="content">
-        <span class="material-symbols-outlined menu"> menu </span>
-        <span class="page-title"></span>
-      </div>
-      <div class="dropdown">
-        <div class="user account">
-        <span class="current-user">${client.name ?? ""}</span>
-        <span class="material-symbols-outlined ">
-          account_circle
-        </span> 
-        </div> 
-        <div class="account-menu dropdown-menu">
-           <a href="#account">
-            <div class="option-menu dropdown-item">
-              Conta
-            </div> 
-            </a>
+<header>
+  <div class="content">
+    <span class="material-symbols-outlined menu"> menu </span>
+    <span class="page-title"></span>
+  </div>
+  <div class="dropdown">
+    <div class="user account">
+      <span class="current-user">${client.name ?? ""}</span>
+      <span class="material-symbols-outlined"> account_circle </span>
+    </div>
+    <div class="account-menu dropdown-menu">
+      <a href="#account">
+        <div class="option-menu dropdown-item">
+          <span class="material-symbols-outlined"> person </span>
+          Conta
         </div>
-    </header>
+      </a>
+      <div class="option-menu dropdown-item">
+        <div class="notification">
+          <span class="material-symbols-outlined"> notifications </span>
+          <span class="icon-button__badge">2</span>
+        </div>
+        Notificações
+      </div>
+      <a href="#configurations">
+        <div class="option-menu dropdown-item">
+          <span class="material-symbols-outlined"> manufacturing </span>
+          Configurações
+        </div>
+      </a>
+    </div>
+  </div>
+</header>
+
 
     <div class="side-bar">
-      <a href="#home"class="anchors">
-         ${PAGE_TITLES["#home"]}
+      <a href="#transaction" class="anchors">
+         ${PAGE_TITLES["#transaction"]}
       </a>
       <a href="#conversion" class="anchors">
         ${PAGE_TITLES["#conversion"]}
-      </a>
-      <a href="#transaction" class="anchors">
-         ${PAGE_TITLES["#transaction"]}
       </a>
     </div>
     <main id="root"></main>
@@ -74,7 +85,7 @@ export class RouterOutlet extends HTMLElement {
   private renderOutlet() {
     const hash = window.location.hash;
     const ROUTES: { [key: string]: typeof HTMLElement } = {
-      "#home": HomePage,
+      "#configurations": ConfigurationPage,
       "#transaction": TransactionPage,
       "#account": AccountPage,
       "#conversion": ConversionPage,

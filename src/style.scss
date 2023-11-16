@@ -45,26 +45,54 @@ router-app {
       a {
         text-decoration: none;
       }
-      &:hover {
-        filter: brightness(85%);
-      }
+
       &:has(.dropdown-item:active) {
         background-color: var(--color-pink);
         filter: hue-rotate(17deg);
       }
 
       .dropdown-item {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
         color: white;
 
         &:hover {
+          filter: brightness(85%);
           background-color: var(--color-pink);
         }
         &:active {
           background-color: var(--color-pink);
         }
+        .option-menu {
+        }
+      }
+      .notification {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+      }
+
+      .icon-button__badge {
+        position: absolute;
+        font-size: 12px;
+        top: 0px;
+        padding: 0px 3px;
+        right: -2px;
+        background-color: var(--color-orange);
+        color: #000000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        border: 1px solid #ffffff;
       }
     }
   }
+
   .active-router {
     color: var(--color-yellow-light) !important;
     .material-symbols-outlined {

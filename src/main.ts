@@ -1,22 +1,22 @@
 import { RouterOutlet } from "./class/router-outlet";
 import { FormSelect } from "./components/form-select/form-select";
 import { AccountPage } from "./pages/account/account.page";
+import { ConfigurationPage } from "./pages/configuration/configuration.page";
 import { ConversionPage } from "./pages/conversion/conversion.page";
-import { HomePage } from "./pages/home/home.page";
 import { TransactionPage } from "./pages/transaction/transaction.page";
 import "./style.scss";
 
-const options = [
+export const options = [
   {
     selector: "form-select",
     class: FormSelect,
   },
   {
-    selector: "home-page",
-    class: HomePage,
+    selector: "configuration-page",
+    class: ConfigurationPage,
   },
   {
-    selector: "about-page",
+    selector: "transaction-page",
     class: TransactionPage,
   },
   {

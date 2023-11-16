@@ -1,7 +1,7 @@
 @import "/src/scss/mixins.scss";
 @import "bootstrap/dist/css/bootstrap.min.css";
 
-about-page {
+transaction-page {
   @include pageStyle(column);
   .container-current-balance {
     align-self: end;

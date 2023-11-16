@@ -1,4 +1,4 @@
-import { Cliente } from "../home/home.page";
+import { Cliente } from "../configuration/configuration.page";
 import "./account.page.scss";
 export class AccountPage extends HTMLElement {
   clientList: Cliente[];
@@ -59,31 +59,29 @@ export class AccountPage extends HTMLElement {
     };
   }
   private createInnerHtml() {
+    const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+    const { name, accountNumber, accountAmount, limitCredit } = this.clientLogged;
     this.innerHTML = /*html*/ `
-    <span class="account-info">Você não possui uma conta cadastrada,
-      <a href="#home">cadastrar uma conta</a>
-  </span>
-    <div class="card mb-2" >
-  <div class="card-header">
-    Conta selecionada
-  </div>
+<span class="account-info"
+  >Você não possui uma conta cadastrada,
+  <a href="#configurations">cadastrar uma conta</a>
+</span>
+<div class="card mb-2">
+  <div class="card-header">Conta selecionada</div>
   <div class="card-body">
-    <div class="card-title">Nome: ${this.clientLogged.name ?? ""}</div>
-    <div class="card-title">Numero da conta: ${this.clientLogged.accountNumber ?? ""}</div>
-    <div class="card-title">Saldo: ${new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(this.clientLogged.accountAmount ?? 0)}</div>
-    <div class="credit-value">Limite de crédito: ${new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(this.clientLogged.limitCredit ?? 0)}</div>
+    <div class="card-title">Nome: ${name ?? ""}</div>
+    <div class="card-title">Numero da conta: ${accountNumber ?? ""}</div>
+    <div class="card-title">Saldo: ${currencyFormatter.format(accountAmount ?? 0)}</div>
+    <div class="credit-value">Limite de crédito: ${currencyFormatter.format(limitCredit ?? 0)}</div>
     <div class="mt-3">
-         <label for="customRange1" class="form-label">Defina seu limite de Crédito</label>
-<input type="range" class="form form-range" min="0" max="10000" value="0" step="50" required>
-</div>
+      <label for="customRange1" class="form-label">Defina seu limite de Crédito</label>
+      <input type="range" class="form form-range" min="0" max="10000" value="${limitCredit ?? 0}" step="50" required />
+    </div>
   </div>
-
-</div>`;
+</div>
+  `;
   }
 }

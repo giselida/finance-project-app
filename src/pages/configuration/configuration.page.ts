@@ -1,6 +1,6 @@
 import { RouterOutlet } from "../../class/router-outlet";
 import { Toasts } from "../../toasts/toast";
-import "./home.page.scss";
+import "./configuration.page.scss";
 export interface Cliente {
   id: number;
   name: string;
@@ -11,7 +11,7 @@ export interface Cliente {
   limitCredit: number;
 }
 
-export class HomePage extends HTMLElement {
+export class ConfigurationPage extends HTMLElement {
   $inputName: HTMLInputElement;
   $inputEmail: HTMLInputElement;
   $inputPassword: HTMLInputElement;
@@ -138,9 +138,9 @@ export class HomePage extends HTMLElement {
       <td>${client.name}</td>
       <td>${client.email}</td> 
       <td class="actions"> 
-      <ion-icon name="bag-check-outline" class="add-account" onclick="document.querySelector('home-page').selectClient(${client.id})">
+      <ion-icon name="bag-check-outline" class="add-account" onclick="document.querySelector('configuration-page').selectClient(${client.id})">
       </ion-icon>
-      <ion-icon name="trash-outline" class="delete" onclick="document.querySelector('home-page').removeClient(${client.id})" >
+      <ion-icon name="trash-outline" class="delete" onclick="document.querySelector('configuration-page').removeClient(${client.id})" >
       </ion-icon>
     
       </td> 
