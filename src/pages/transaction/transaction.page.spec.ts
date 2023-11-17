@@ -1,6 +1,45 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { SpyInstance, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToastContent } from "../../toasts/toast.spec";
-import { TransactionPage } from "./transaction.page";
+import { TransactionPage, eFormOfPayment } from "./transaction.page";
+let clientMock = {
+  id: 1,
+  name: "giselida",
+  email: "giselidac@gmail.com",
+  accountNumber: "31142-94",
+  accountAmount: 1760,
+  password: "21454",
+  limitCredit: 4550,
+};
+let transactionListMock = [
+  {
+    id: 16,
+    value: "500,00",
+    formOfPayment: "Pix",
+    date: "10/11/2023",
+    clientName: "João - 825077-44",
+    clientID: "1",
+    userLoggedID: 1,
+  },
+];
+
+let actuallyId = 1;
+let clientsMock = [clientMock];
+const mockLocalStorage = {
+  getItem(key: string) {
+    if (key === "actuallyId") return actuallyId;
+    if (key === "client") return JSON.stringify(clientMock);
+    if (key === "transactionList") return JSON.stringify(transactionListMock);
+    if (key === "clients") return JSON.stringify(clientsMock);
+  },
+  setItem(key: string, value: any) {
+    if (key === "clients") clientsMock = JSON.parse(value);
+    if (key === "client") clientMock = JSON.parse(value);
+    if (key === "actuallyId") actuallyId = JSON.parse(value);
+    if (key === "transactionList") transactionListMock = JSON.parse(value);
+  },
+  removeItem() {},
+};
+export const localStorage = vi.stubGlobal("localStorage", mockLocalStorage);
 
 export function mockCharts() {
   Object.defineProperty(window, "ResizeObserver", {
@@ -45,52 +84,56 @@ export function mockCharts() {
 
 describe("TransactionPage", () => {
   let transactionPage: TransactionPage;
-  mockCharts();
   customElements.define("transaction-page", TransactionPage);
-
-  afterEach(() => {});
-
+  vi.useFakeTimers();
+  let chartSpy: SpyInstance;
+  mockCharts();
   beforeEach(() => {
+    clientMock = {
+      id: 1,
+      name: "giselida",
+      email: "giselidac@gmail.com",
+      accountNumber: "31142-94",
+      accountAmount: 1760,
+      password: "21454",
+      limitCredit: 4550,
+    };
+    transactionListMock = [
+      {
+        id: 1,
+        value: "500,00",
+        formOfPayment: "Pix",
+        date: "10/11/2023",
+        clientName: "João - 825077-44",
+        clientID: "1",
+        userLoggedID: 1,
+      },
+    ];
+    actuallyId = 1;
+    clientsMock = [clientMock];
     renderToastContent();
     transactionPage = new TransactionPage();
+    chartSpy = vi.spyOn(transactionPage, "onChart");
+
+    chartSpy.mockImplementation(() => {});
     document.documentElement.firstChild.appendChild(transactionPage);
   });
 
   it("should addTransaction throw error when value 0 or less than", () => {
+    chartSpy.mockRestore();
+    const spy = vi.spyOn(mockLocalStorage, "getItem");
+    spy.mockReturnValue(null);
+    transactionPage.connectedCallback();
+
+    expect(transactionPage.clientLogged).toEqual({});
+
     expect(() => {
       transactionPage.addTransaction();
     }).toThrowError("Selecione um valor valido!");
+    spy.mockRestore();
   });
 
   it("should initialize correctly", () => {
-    vi.stubGlobal("localStorage", {
-      getItem(key: string) {
-        const mock = {
-          id: 1,
-          name: "giselida",
-          email: "giselidac@gmail.com",
-          accountNumber: "31142-94",
-          accountAmount: 1760,
-          password: "21454",
-          limitCredit: 4550,
-        };
-        if (key === "actuallyId") return 1;
-        if (key === "client") return JSON.stringify(mock);
-        if (key === "transactionList")
-          return JSON.stringify([
-            {
-              id: 16,
-              value: "500,00",
-              formOfPayment: "Pix",
-              date: "10/11/2023",
-              clientName: "João - 825077-44",
-              clientID: "2",
-              userLoggedID: 1,
-            },
-          ]);
-        if (key === "clients") return JSON.stringify([mock]);
-      },
-    });
     const client = {
       id: 2,
       name: "João",
@@ -113,19 +156,112 @@ describe("TransactionPage", () => {
     const mockDate = {
       date: "12/09/2009",
     };
-    expect(transactionPage.getDate(mockDate.date));
+    expect(transactionPage["getDate"](mockDate.date)).toStrictEqual(new Date("2009-09-12T03:00:00.000Z"));
   });
+
   it("should handle send button click", () => {});
 
-  it("should handle modal hidden event", () => {});
+  it("should handle modal hidden event", () => {
+    transactionPage["onModalHidden"]();
+    expect(transactionPage.transactionFind).toBeNull();
+    expect(transactionPage.$inputValue.disabled).toBeFalsy();
+    expect(transactionPage.selectedId).toBeNull();
+  });
 
   it("should debounce events correctly", () => {});
 
-  it("should add a transaction", () => {});
+  it("should add a transaction", () => {
+    transactionPage.$inputDate.value = "24/09/2001";
 
-  it("should update a transaction", () => {});
+    expect(() => {
+      transactionPage["sendListener"]();
+    }).toThrowError("Por favor preencha os campos obrigatórios!");
 
-  it("should remove a transaction", () => {});
+    transactionPage.$inputFormOfPayment.value = eFormOfPayment.CREDITO;
+    transactionPage.$inputValue.value = "10.50";
+    transactionPage.$clientID.value = "1";
+    transactionPage["sendListener"]();
+    expect(transactionPage.transactionList.length).toBe(2);
+  });
 
-  it("should duplicate a transaction", () => {});
+  it("should not add a transaction and throw message error", () => {
+    transactionPage.$inputDate.value = "24/09/2001";
+    transactionPage.$inputFormOfPayment.value = "Pix";
+    transactionPage.$inputValue.value = "1765";
+    transactionPage.$clientID.value = "1";
+    expect(() => {
+      transactionPage["sendListener"]();
+    }).toThrowError("Saldo insuficiente!");
+  });
+
+  it("should update a transaction", () => {
+    transactionPage.editTransaction(0);
+
+    transactionPage.editTransaction(1);
+
+    expect(transactionPage.$inputValue.disabled).toBeTruthy();
+    expect(transactionPage.$inputValue.value).toBe(transactionListMock[0].value);
+    expect(transactionPage.$inputFormOfPayment.value).toBe(transactionListMock[0].formOfPayment);
+    expect(transactionPage.$inputDate.value).toBe(transactionListMock[0].date);
+    expect(transactionPage.$clientID.value).toBe(transactionListMock[0].clientID);
+
+    transactionPage.$inputValue.value = "125,25";
+    transactionPage.$inputDate.value = "24/09/2001";
+    transactionPage["sendListener"]();
+
+    expect(transactionPage.transactionList[0]).toEqual({
+      clientID: "1",
+      clientName: "giselida - 31142-94",
+      date: "24/09/2001",
+      formOfPayment: "Pix",
+      id: 1,
+      userLoggedID: 1,
+      value: "125,25",
+    });
+  });
+
+  it("should remove a transaction", () => {
+    transactionPage.removeTransaction(1);
+    expect(transactionPage.transactionList.length).toBe(0);
+  });
+  it("should call the callback after the specified timeout", () => {
+    const callback = vi.fn();
+    const debounced = transactionPage.debounceEvent(callback, 100);
+
+    debounced();
+    vi.advanceTimersByTime(100);
+
+    expect(callback).toHaveBeenCalledOnce();
+  });
+
+  it("should not call the callback before the timeout", () => {
+    const callback = vi.fn();
+    const debounced = transactionPage.debounceEvent(callback, 100);
+
+    debounced();
+    vi.advanceTimersByTime(50);
+    expect(callback).not.toHaveBeenCalled();
+  });
+  it("should only call the callback once when debounced multiple times", () => {
+    const callback = vi.fn();
+    const debounced = transactionPage.debounceEvent(callback, 100);
+    debounced();
+    vi.advanceTimersByTime(50);
+    debounced();
+    vi.advanceTimersByTime(100);
+    expect(callback).toHaveBeenCalledOnce();
+  });
+  it("should duplicate a transaction", () => {
+    chartSpy.mockRestore();
+
+    transactionPage.duplicateTransaction(1);
+    expect(transactionPage.$inputValue.value).toBe(transactionListMock[0].value);
+    expect(transactionPage.$inputFormOfPayment.value).toBe(transactionListMock[0].formOfPayment);
+    expect(transactionPage.$inputDate.value).toBe(transactionListMock[0].date);
+    expect(transactionPage.$clientID.value).toBe(transactionListMock[0].clientID);
+
+    transactionPage["sendListener"]();
+
+    expect(transactionPage.transactionList.length).toBe(2);
+  });
 });

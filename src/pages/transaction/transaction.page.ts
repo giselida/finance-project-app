@@ -21,6 +21,13 @@ interface Transaction {
   creditLimit: number;
   date: string;
 }
+
+export enum eFormOfPayment {
+  CREDITO = "Credito",
+  DEBITO = "Debito",
+  DINHEIRO = "Dinheiro",
+  PIX = "Pix",
+}
 export class TransactionPage extends HTMLElement {
   mask: typeof Currency;
   $inputFormOfPayment: FormSelect;
@@ -47,26 +54,38 @@ export class TransactionPage extends HTMLElement {
   $tableHeaders: NodeListOf<HTMLTableCellElement>;
   $chart: ApexCharts;
   originalList: any;
+
+  get clients(): Cliente[] {
+    return JSON.parse(localStorage.getItem("clients") ?? "[]");
+  }
   get clientLogged() {
-    return JSON.parse(localStorage.getItem("client") ?? "{}");
+    return JSON.parse(localStorage.getItem("client") || "{}");
+  }
+  get filteredList() {
+    return this.transactionList.filter((item) => {
+      return (
+        item.userLoggedID === this.clientLogged.id &&
+        Object.values(item).some((item) => item.toString().toLowerCase().includes(this.$search.value.toLowerCase()))
+      );
+    });
   }
 
   connectedCallback() {
     this.createInnerHTML();
     this.recoveryElementRef();
+    this.setCurrentAmount();
     this.addListeners();
     this.renderTransactions();
     this.onChart();
   }
 
   recoveryElementRef() {
-    this.originalList = JSON.parse(localStorage.getItem("transactionList")) ?? [];
-    this.transactionList = this.originalList.filter((item: Transaction) => item.userLoggedID === this.clientLogged.id);
-    console.log(this.transactionList);
-    if (!this.clientLogged.id) {
+    if (!this.clientLogged?.id) {
       localStorage.removeItem("transactionList");
     }
-    this.setCurrentAmount();
+
+    this.originalList = JSON.parse(localStorage.getItem("transactionList")) ?? [];
+    this.transactionList = this.originalList.filter((item: Transaction) => item.userLoggedID === this.clientLogged?.id);
     const [$formInputValue, $formInputFormOfPayment, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
     this.$inputValue = $formInputValue as HTMLInputElement;
     this.$inputFormOfPayment = $formInputFormOfPayment as FormSelect;
@@ -82,63 +101,43 @@ export class TransactionPage extends HTMLElement {
     this.$next = document.querySelector(".page-next");
     this.$pageActually = document.querySelector(".page-actually");
   }
+  addListeners() {
+    IMask(this.$inputDate, {
+      mask: "00/00/0000",
+    });
+    this.mask = Currency.data(this.$inputValue) || new Currency(this.$inputValue);
+    this.$btnSend.addEventListener("click", () => this.sendListener());
+    this.$modal.addEventListener("hidden.bs.modal", () => this.onModalHidden());
+    this.$search.addEventListener(
+      "input",
+      this.debounceEvent(() => this.renderTransactions(), 500)
+    );
+    this.$tableHeaders.forEach(($th) => $th.addEventListener("click", () => this.sortByColumn($th)));
+    this.$next.addEventListener("click", () => this.nextPage());
+    this.$previous.addEventListener("click", () => this.previousPage());
+    this.datePicker = new AirDatepicker(this.$inputDate, { locale: PT_BR_LOCALE });
+  }
   private setCurrentAmount() {
     const $currentBalance = document.querySelector(".current-balance");
     $currentBalance.classList.remove("positive");
     $currentBalance.classList.remove("negative");
 
-    $currentBalance.classList.add(this.clientLogged.accountAmount > 0 ? "positive" : "negative");
+    $currentBalance.classList.add(this.clientLogged?.accountAmount > 0 ? "positive" : "negative");
     $currentBalance.textContent = `${new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
-    }).format(this.clientLogged.accountAmount)}`;
+    }).format(this.clientLogged?.accountAmount)}`;
   }
 
-  addListeners() {
-    const maskOptions = {
-      mask: "00/00/0000",
-    };
-    IMask(this.$inputDate, maskOptions);
-    this.mask = Currency.data(this.$inputValue);
-
-    this.sendListener();
-    this.onModalHidden();
-    this.$search.addEventListener(
-      "input",
-      this.debounceEvent(() => this.renderTransactions(), 500)
-    );
-    this.sortListener();
-    this.nextListener();
-    this.previousListener();
-    this.datePicker = new AirDatepicker(this.$inputDate, { locale: PT_BR_LOCALE });
-  }
-  debounceEvent(callback: any, timeout: number) {
-    let timer: any;
-
-    return () => {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => {
-        callback();
-      }, timeout);
-    };
-  }
-
-  getDate(dateString: string) {
-    const [day, mouth, year] = dateString.split("/");
-    return new Date(+year, +mouth - 1, +day);
-  }
-
-  private onChart() {
+  onChart() {
     const dates = this.transactionList.map((value) => value.date);
     dates.sort((a, b) => this.getDate(a).getTime() - this.getDate(b).getTime());
     const listDates = [...new Set(dates)];
-    const formPayment = ["Credito", "Debito", "Dinheiro", "Pix"];
-    OPTIONS_PAYMENT.series = formPayment.map((value) => {
+    OPTIONS_PAYMENT.series = Object.values(eFormOfPayment).map((value) => {
       return {
         name: value,
         data: listDates.flatMap((date) => {
           const transactionList = this.transactionList.filter((item) => item.formOfPayment == value && item.date == date);
-
           return transactionList.length <= 0 ? null : transactionList.map((item) => +item.value.replace(".", "").replace(",", "."));
         }),
       };
@@ -154,62 +153,54 @@ export class TransactionPage extends HTMLElement {
   }
 
   private sendListener() {
-    this.$btnSend.addEventListener("click", () => {
-      if (!this.$inputValue.value || !this.$inputFormOfPayment.value || !this.$inputDate.value || !this.$clientID.value) {
-        Toasts.error("Por favor preencha os campos obrigatórios!");
-        throw new Error("Por favor preencha os campos obrigatórios!");
-      }
+    if (!this.$inputValue.value || !this.$inputFormOfPayment.value || !this.$inputDate.value || !this.$clientID.value) {
+      Toasts.error("Por favor preencha os campos obrigatórios!");
+      throw new Error("Por favor preencha os campos obrigatórios!");
+    }
 
-      const methodKey = !this.selectedId ? "addTransaction" : "updateTransaction";
-      this[methodKey]();
-      this.instanceModal().toggle();
-      this.onChart();
-      this.renderTransactions();
-    });
+    const methodKey = !this.selectedId ? "addTransaction" : "updateTransaction";
+    this[methodKey]();
+    this.instanceModal().toggle();
+    this.onChart();
+    this.renderTransactions();
   }
 
   private onModalHidden() {
-    this.$modal.addEventListener("hidden.bs.modal", () => {
-      this.transactionFind = null;
-      this.selectedId = null;
-      this.$inputValue.disabled = false;
-      this.clearForm();
-    });
+    this.transactionFind = null;
+    this.selectedId = null;
+    this.$inputValue.disabled = false;
+    this.clearForm();
   }
 
-  private sortListener() {
-    this.$tableHeaders.forEach(($th) => {
-      $th.addEventListener("click", () => {
-        const $element = $th.querySelector(".sort");
-        const isAscendent = $element?.innerHTML?.includes("arrow_upward");
-        const isDescendent = $element?.innerHTML?.includes("arrow_downward");
+  private sortByColumn($th: HTMLTableCellElement) {
+    const $element = $th.querySelector(".sort");
+    const isAscendent = $element?.innerHTML?.includes("arrow_upward");
+    const isDescendent = $element?.innerHTML?.includes("arrow_downward");
 
-        const innerHTML = !isAscendent ? "arrow_upward" : "arrow_downward";
-        $element.innerHTML = `
+    const innerHTML = !isAscendent ? "arrow_upward" : "arrow_downward";
+    $element.innerHTML = `
         <span class="material-symbols-outlined">
         ${innerHTML}
         </span>
         `;
 
-        if (isDescendent) {
-          $element.innerHTML = "";
-        }
-        const $sorts = document.querySelectorAll(".sort");
+    if (isDescendent) {
+      $element.innerHTML = "";
+    }
+    const $sorts = document.querySelectorAll(".sort");
 
-        if ([...$sorts].every((element) => element.innerHTML == "")) {
-          this.transactionList.sort((a, b) => a.id - b.id);
-        } else {
-          $sorts.forEach((element) => {
-            if (element.innerHTML == "") return;
-            const $th = element.parentElement.parentElement;
-            const direction = element.innerHTML.includes("arrow_upward") ? "asc" : "desc";
-            this.sortByDirectionAndKey(direction, $th.getAttribute("key"));
-          });
-        }
-
-        this.renderTransactions();
+    if ([...$sorts].every((element) => element.innerHTML == "")) {
+      this.transactionList.sort((a, b) => a.id - b.id);
+    } else {
+      $sorts.forEach((element) => {
+        if (element.innerHTML == "") return;
+        const $th = element.parentElement.parentElement;
+        const direction = element.innerHTML.includes("arrow_upward") ? "asc" : "desc";
+        this.sortByDirectionAndKey(direction, $th.getAttribute("key"));
       });
-    });
+    }
+
+    this.renderTransactions();
   }
 
   private sortByDirectionAndKey(direction: string, key: string) {
@@ -232,24 +223,20 @@ export class TransactionPage extends HTMLElement {
     });
   }
 
-  private previousListener() {
-    this.$previous.addEventListener("click", () => {
-      this.page--;
-      if (this.page <= 1) {
-        this.page = 1;
-      }
-      this.renderTransactions();
-    });
+  private previousPage() {
+    this.page--;
+    if (this.page <= 1) {
+      this.page = 1;
+    }
+    this.renderTransactions();
   }
-  private nextListener() {
-    this.$next.addEventListener("click", () => {
-      this.page++;
+  private nextPage() {
+    this.page++;
 
-      if (this.page > this.maxPage) {
-        this.page = this.maxPage;
-      }
-      this.renderTransactions();
-    });
+    if (this.page > this.maxPage) {
+      this.page = this.maxPage;
+    }
+    this.renderTransactions();
   }
 
   renderTransactions(transactions: Transaction[] = this.filteredList) {
@@ -297,14 +284,7 @@ export class TransactionPage extends HTMLElement {
     </tr>`;
     });
   }
-  get filteredList() {
-    return this.transactionList.filter((item) => {
-      return (
-        item.userLoggedID === this.clientLogged.id &&
-        Object.values(item).some((item) => item.toString().toLowerCase().includes(this.$search.value.toLowerCase()))
-      );
-    });
-  }
+
   duplicateTransaction(id: number) {
     const $titleModal = document.querySelector(".modal-title");
     $titleModal.textContent = "Duplicar transação";
@@ -314,12 +294,12 @@ export class TransactionPage extends HTMLElement {
     this.$inputValue.value = this.transactionFind.value;
     this.$inputFormOfPayment.value = this.transactionFind.formOfPayment;
     this.$inputDate.value = this.transactionFind.date;
-    this.$clientID.value = this.transactionFind.clientName;
+    this.$clientID.value = this.transactionFind.clientID;
 
     this.instanceModal().toggle();
   }
   addTransaction() {
-    const { value } = this.$inputValue ?? { value: "0.00" };
+    const { value } = this.$inputValue;
 
     const formattedValue = +value.replace(".", "").replace(",", ".");
 
@@ -327,16 +307,13 @@ export class TransactionPage extends HTMLElement {
       Toasts.error("Selecione um valor valido!");
       throw new Error("Selecione um valor valido!");
     }
-    const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
+    const clientLogged = this.clients.find((client) => client.id === this.clientLogged.id);
 
-    const clientLogged = clients.find((client) => client.id === this.clientLogged.id);
-
-    const clientSelected = clients.find((client) => client.id === +this.$clientID.value);
+    const clientSelected = this.clients.find((client) => client.id === +this.$clientID.value);
     const inputValue = +formattedValue;
 
-    const isCredito = this.$inputFormOfPayment.value === "Credito";
+    const isCredito = this.$inputFormOfPayment.value === eFormOfPayment.CREDITO;
     const propertyName = isCredito ? "limitCredit" : "accountAmount";
-
     if (inputValue > clientLogged[propertyName]) {
       Toasts.error("Saldo insuficiente!");
       throw new Error("Saldo insuficiente!");
@@ -348,7 +325,7 @@ export class TransactionPage extends HTMLElement {
     localStorage.setItem("client", JSON.stringify(clientLogged));
     this.setCurrentAmount();
     this.objectTransaction(clientSelected);
-    this.setStorageClient(clients, clientSelected, clientLogged);
+    this.setStorageClient(this.clients, clientSelected, clientLogged);
     this.setStorage();
     this.clearForm();
     Toasts.success(this.transactionFind ? "Transação duplicada com sucesso!" : "Transação adicionada com sucesso!");
@@ -380,9 +357,7 @@ export class TransactionPage extends HTMLElement {
     this.transactionFind.formOfPayment = this.$inputFormOfPayment.value;
     this.transactionFind.date = this.$inputDate.value;
     this.transactionFind.clientID = this.$clientID.value;
-    const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
-    const client = clients.find((client) => client.id === +this.$clientID.value);
-
+    const client = this.clients.find((client) => client.id === +this.$clientID.value);
     this.transactionFind.userLoggedID = this.clientLogged.id;
     this.transactionFind.clientName = `${client.name} - ${client.accountNumber}`;
     this.setStorage();
@@ -395,11 +370,14 @@ export class TransactionPage extends HTMLElement {
     this.transactionFind = this.transactionList.find((transaction) => transaction.id === this.selectedId);
 
     if (!this.transactionFind) return;
+
+    const { value, formOfPayment, date, clientID } = this.transactionFind;
+
     this.$inputValue.disabled = this.selectedId == id;
-    this.$inputValue.value = this.transactionFind.value;
-    this.$inputFormOfPayment.value = this.transactionFind.formOfPayment;
-    this.$inputDate.value = this.transactionFind.date;
-    this.$clientID.value = this.transactionFind.clientID;
+    this.$inputValue.value = value;
+    this.$inputFormOfPayment.value = formOfPayment;
+    this.$inputDate.value = date;
+    this.$clientID.value = clientID;
     this.instanceModal().toggle();
     this.setStorage();
   }
@@ -557,10 +535,8 @@ export class TransactionPage extends HTMLElement {
     $client.innerHTML += this.createFormSelectCliente();
   }
   createFormSelectCliente() {
-    const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
-    console.log(clients, this.clientLogged.id);
-    const clienteOptions = clients
-      .filter((client) => client.id != this.clientLogged.id)
+    const clienteOptions = this.clients
+      .filter((client) => client.id != this.clientLogged?.id)
       .map((client) => this.createFormOption(client))
       .join("");
     return /*html*/ `
@@ -582,21 +558,21 @@ export class TransactionPage extends HTMLElement {
         <div class="option" value="">
           Selecione
         </div>
-        <div class="option" value="Debito">
+        <div class="option" value="${eFormOfPayment.DEBITO}">
          ${SVG_ICONS.Debito}
-          Debito
+          ${eFormOfPayment.DEBITO}
         </div>
-        <div class="option" value="Credito">
+        <div class="option" value="${eFormOfPayment.CREDITO}">
           ${SVG_ICONS.Credito}
-          Credito
+          ${eFormOfPayment.CREDITO}
         </div>
-        <div class="option" value="Dinheiro">
+        <div class="option" value="${eFormOfPayment.DINHEIRO}">
          ${SVG_ICONS.Dinheiro}
-          Dinheiro
+          ${eFormOfPayment.DINHEIRO}
         </div>
-        <div class="option" value="Pix">
+        <div class="option" value="${eFormOfPayment.PIX}">
          ${SVG_ICONS.Pix}
-          Pix
+          ${eFormOfPayment.PIX}
         </div>
        </form-select> 
       `;
@@ -611,5 +587,24 @@ export class TransactionPage extends HTMLElement {
   }
   private instanceModal() {
     return Modal.getOrCreateInstance(this.$modal);
+  }
+  debounceEvent(callback: () => void, timeout: number) {
+    let timer: NodeJS.Timeout;
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      console.log(timer);
+
+      timer = setTimeout(() => {
+        console.log(callback);
+
+        callback();
+      }, timeout);
+    };
+  }
+
+  private getDate(dateString: string) {
+    const [day, mouth, year] = dateString.split("/");
+    return new Date(+year, +mouth - 1, +day);
   }
 }
