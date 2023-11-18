@@ -22,6 +22,39 @@ let transactionListMock = [
   },
 ];
 
+const transactionListPage = [
+  {
+    id: 1,
+    value: "500,00",
+    formOfPayment: "Pix",
+    date: "10/11/2023",
+    clientName: "João - 825077-44",
+    clientID: "1",
+    creditLimit: 0,
+    userLoggedID: "1",
+  },
+  {
+    id: 2,
+    value: "500,00",
+    formOfPayment: "Pix",
+    date: "10/11/2023",
+    clientName: "João - 825077-44",
+    clientID: "1",
+    creditLimit: 0,
+    userLoggedID: "1",
+  },
+  {
+    id: 3,
+    value: "500,00",
+    formOfPayment: "Pix",
+    date: "10/11/2023",
+    clientName: "João - 825077-44",
+    clientID: "1",
+    creditLimit: 0,
+    userLoggedID: "1",
+  },
+];
+
 let actuallyId = 1;
 let clientsMock = [clientMock];
 const mockLocalStorage = {
@@ -159,8 +192,6 @@ describe("TransactionPage", () => {
     expect(transactionPage["getDate"](mockDate.date)).toStrictEqual(new Date("2009-09-12T03:00:00.000Z"));
   });
 
-  it("should handle send button click", () => {});
-
   it("should handle modal hidden event", () => {
     transactionPage["onModalHidden"]();
     expect(transactionPage.transactionFind).toBeNull();
@@ -168,8 +199,55 @@ describe("TransactionPage", () => {
     expect(transactionPage.selectedId).toBeNull();
   });
 
-  it("should debounce events correctly", () => {});
+  it("should handle previous page click", () => {
+    expect(transactionPage.$previous.disabled).toBeTruthy();
+    transactionPage.transactionList = transactionListPage;
+    transactionPage.pageSize = 1;
+    transactionPage.page = 1;
+    transactionPage["previousPage"]();
 
+    expect(transactionPage.page).toBe(1);
+    expect(transactionPage.maxPage).toBe(3);
+  });
+  it("should handle next page click", () => {
+    transactionPage.transactionList = transactionListPage;
+    transactionPage.page = 1;
+    transactionPage.pageSize = 1;
+    transactionPage["nextPage"]();
+    expect(transactionPage.$next.disabled).toBeFalsy();
+    expect(transactionPage.page).toBe(2);
+    expect(transactionPage.maxPage).toBe(3);
+
+    transactionPage["nextPage"]();
+    transactionPage["nextPage"]();
+    expect(transactionPage.page).toBe(3);
+  });
+
+  it("should sort events correctly", () => {
+    const $th = document.querySelector<HTMLTableCellElement>("[key=date]");
+    transactionPage["sortByColumn"]($th);
+
+    const $element = $th.querySelector(".sort");
+
+    expect($element.innerHTML.includes("arrow_upward")).toBeTruthy();
+
+    transactionPage["sortByColumn"]($th);
+    expect($element.innerHTML.includes("arrow_downward")).toBeTruthy();
+    transactionPage["sortByColumn"]($th);
+    expect($element.innerHTML).toBe("");
+  });
+  it("should handle sort by direction andKey", () => {
+    transactionPage.transactionList = transactionListPage;
+    const $th = document.querySelector("th");
+    const $element = $th.querySelector(".sort");
+
+    ["id", "value", "formOfPayment", "clientName", "date"].forEach((value) => {
+      transactionPage["sortByDirectionAndKey"]("asc", value);
+      transactionPage["sortByDirectionAndKey"]("desc", value);
+      expect($element.innerHTML.includes("arrow_upward")).toBeFalsy();
+      expect($element.innerHTML.includes("arrow_downward")).toBeFalsy();
+    });
+  });
   it("should add a transaction", () => {
     transactionPage.$inputDate.value = "24/09/2001";
 

@@ -64,7 +64,7 @@ export class TransactionPage extends HTMLElement {
   get filteredList() {
     return this.transactionList.filter((item) => {
       return (
-        item.userLoggedID === this.clientLogged.id &&
+        +item.userLoggedID === +this.clientLogged.id &&
         Object.values(item).some((item) => item.toString().toLowerCase().includes(this.$search.value.toLowerCase()))
       );
     });
@@ -176,7 +176,6 @@ export class TransactionPage extends HTMLElement {
     const $element = $th.querySelector(".sort");
     const isAscendent = $element?.innerHTML?.includes("arrow_upward");
     const isDescendent = $element?.innerHTML?.includes("arrow_downward");
-
     const innerHTML = !isAscendent ? "arrow_upward" : "arrow_downward";
     $element.innerHTML = `
         <span class="material-symbols-outlined">
@@ -206,7 +205,6 @@ export class TransactionPage extends HTMLElement {
   private sortByDirectionAndKey(direction: string, key: string) {
     const compareDate = (date: string) => new Date(date.replace(/(\d{2})\/(\d{2})\/(\d{4})/g, "$2-$1-$3")).getTime();
     const compareCurrency = (currency: string) => +currency.replace(",", ".");
-
     this.transactionList.sort((a, b) => {
       const firstElement = direction === "asc" ? a : b;
       const secondElement = direction === "asc" ? b : a;
@@ -225,6 +223,8 @@ export class TransactionPage extends HTMLElement {
 
   private previousPage() {
     this.page--;
+    this.maxPage = Math.ceil(this.filteredList.length / this.pageSize);
+
     if (this.page <= 1) {
       this.page = 1;
     }
@@ -232,6 +232,7 @@ export class TransactionPage extends HTMLElement {
   }
   private nextPage() {
     this.page++;
+    this.maxPage = Math.ceil(this.filteredList.length / this.pageSize);
 
     if (this.page > this.maxPage) {
       this.page = this.maxPage;
@@ -240,10 +241,6 @@ export class TransactionPage extends HTMLElement {
   }
 
   renderTransactions(transactions: Transaction[] = this.filteredList) {
-    this.maxPage = Math.ceil(this.filteredList.length / this.pageSize);
-    if (this.maxPage < 1) {
-      this.maxPage = 1;
-    }
     this.$previous.disabled = this.page == 1;
     this.$next.disabled = this.maxPage == this.page;
 
@@ -593,11 +590,8 @@ export class TransactionPage extends HTMLElement {
 
     return () => {
       if (timer) clearTimeout(timer);
-      console.log(timer);
 
       timer = setTimeout(() => {
-        console.log(callback);
-
         callback();
       }, timeout);
     };
