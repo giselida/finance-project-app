@@ -65,8 +65,6 @@ router-app {
         &:active {
           background-color: var(--color-pink);
         }
-        .option-menu {
-        }
       }
       .notification {
         position: relative;
@@ -177,7 +175,6 @@ router-app {
   .form {
     @include display-align-content(space-around);
     gap: 10px;
-    margin-bottom: 20px;
   }
 
   .btn {

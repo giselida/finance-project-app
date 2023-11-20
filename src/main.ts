@@ -3,6 +3,7 @@ import { FormSelect } from "./components/form-select/form-select";
 import { AccountPage } from "./pages/account/account.page";
 import { ConfigurationPage } from "./pages/configuration/configuration.page";
 import { ConversionPage } from "./pages/conversion/conversion.page";
+import { Notification } from "./pages/notification/notification.page";
 import { TransactionPage } from "./pages/transaction/transaction.page";
 import "./style.scss";
 
@@ -26,6 +27,10 @@ export const options = [
   {
     selector: "account-page",
     class: AccountPage,
+  },
+  {
+    selector: "notification-page",
+    class: Notification,
   },
   {
     selector: "conversion-page",

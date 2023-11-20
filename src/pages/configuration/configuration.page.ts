@@ -39,15 +39,24 @@ export class ConfigurationPage extends HTMLElement {
         <form class="was-validated">
         <div class="mb-3">
           <label class="form-label">Nome</label>
-          <input type="text" class="form-control form"  required>
+          <input type="text" class="form-control form" required pattern="/^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/">
+          <div class="invalid-feedback">
+     Campo obrigatório!
+    </div>
         </div>
         <div class="mb-3">
           <label  class="form-label">E-mail</label>
           <input type="text" class="form-control form" required >
+          <div class="invalid-feedback">
+     E-mail obrigatório!
+    </div>
         </div>
         <div class="mb-3">
           <label  class="form-label">Senha</label>
       <input type="password" class="form-control form" required>
+      <div class="invalid-feedback">
+     Digite uma senha!
+    </div>
         </div>
        
         <div class="mb-3">

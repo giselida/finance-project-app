@@ -1,0 +1,4 @@
+@import "/src/scss/mixins.scss";
+notification-page {
+  @include pageStyle(column);
+}

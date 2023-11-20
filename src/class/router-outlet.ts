@@ -1,6 +1,7 @@
 import { AccountPage } from "../pages/account/account.page";
 import { ConfigurationPage } from "../pages/configuration/configuration.page";
 import { ConversionPage } from "../pages/conversion/conversion.page";
+import { Notification } from "../pages/notification/notification.page";
 import { TransactionPage } from "../pages/transaction/transaction.page";
 const createMaterialSymbol = (iconName: string, label: string) => {
   return `
@@ -15,6 +16,7 @@ const PAGE_TITLES: { [key: string]: string } = {
   "#configurations": createMaterialSymbol("manufacturing", "Configurações"),
   "#transaction": createMaterialSymbol("paid", "Transação"),
   "#account": createMaterialSymbol("account_circle", "Conta"),
+  "#notifications": createMaterialSymbol("notifications", "Notificações"),
   "#conversion": createMaterialSymbol(" price_change", "Conversor de Moedas"),
 };
 export class RouterOutlet extends HTMLElement {
@@ -45,13 +47,15 @@ export class RouterOutlet extends HTMLElement {
           Conta
         </div>
       </a>
-      <div class="option-menu dropdown-item">
-        <div class="notification">
-          <span class="material-symbols-outlined"> notifications </span>
-          <span class="icon-button__badge">2</span>
+      <a href="#notifications">
+        <div class="option-menu dropdown-item">
+          <div class="notification">
+            <span class="material-symbols-outlined"> notifications </span>
+            <span class="icon-button__badge">2</span>
+          </div>
+          Notificações
         </div>
-        Notificações
-      </div>
+      </a>
       <a href="#configurations">
         <div class="option-menu dropdown-item">
           <span class="material-symbols-outlined"> manufacturing </span>
@@ -61,8 +65,6 @@ export class RouterOutlet extends HTMLElement {
     </div>
   </div>
 </header>
-
-
     <div class="side-bar">
       <a href="#transaction" class="anchors">
          ${PAGE_TITLES["#transaction"]}
@@ -73,7 +75,6 @@ export class RouterOutlet extends HTMLElement {
     </div>
     <main id="root"></main>
     <div id="toast-content"></div>
-
       `;
   }
 
@@ -88,6 +89,7 @@ export class RouterOutlet extends HTMLElement {
       "#configurations": ConfigurationPage,
       "#transaction": TransactionPage,
       "#account": AccountPage,
+      "#notifications": Notification,
       "#conversion": ConversionPage,
     };
 
