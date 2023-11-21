@@ -1,5 +1,5 @@
-import { RouterOutlet } from "./class/router-outlet";
 import { FormSelect } from "./components/form-select/form-select";
+import { RouterOutlet } from "./components/router-outlet/router-outlet";
 import { AccountPage } from "./pages/account/account.page";
 import { ConfigurationPage } from "./pages/configuration/configuration.page";
 import { ConversionPage } from "./pages/conversion/conversion.page";

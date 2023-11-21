@@ -19,10 +19,60 @@ body {
 .air-datepicker-global-container {
   z-index: 999999;
 }
+.header {
+  display: flex;
+  padding: 10px;
+  gap: 8px;
+
+  [href="#notifications"] {
+    position: relative;
+    top: 2px;
+    .material-symbols-outlined {
+      font-size: 22px;
+    }
+    .bg-danger {
+      font-size: 10px;
+      top: 2px;
+
+      font-weight: bold;
+      background-color: var(--color-orange) !important;
+      color: #fff;
+      border: 1px solid #ffffff;
+    }
+  }
+}
+
+b {
+  font-weight: bold;
+}
+.table-container {
+  overflow-y: auto;
+  border-radius: 5px;
+  min-height: 170px;
+  table {
+    margin: 0;
+  }
+  td:first-child,
+  th:first-child {
+    position: sticky;
+    text-align: left;
+    top: 0;
+    left: 0;
+  }
+  td:last-child,
+  th:last-child {
+    position: sticky;
+    top: 0;
+    right: 0;
+  }
+}
 router-app {
   display: block;
 
   header {
+    position: fixed;
+    z-index: 1;
+    width: 100%;
     @include display-align-content(space-between);
     padding: 10px;
     height: 40px;
@@ -41,6 +91,7 @@ router-app {
       background-color: var(--color-pink);
       &.active {
         display: block;
+        left: -70px;
       }
       a {
         text-decoration: none;
@@ -66,28 +117,6 @@ router-app {
           background-color: var(--color-pink);
         }
       }
-      .notification {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-      }
-
-      .icon-button__badge {
-        position: absolute;
-        font-size: 12px;
-        top: 0px;
-        padding: 0px 3px;
-        right: -2px;
-        background-color: var(--color-orange);
-        color: #000000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border-radius: 50%;
-        border: 1px solid #ffffff;
-      }
     }
   }
 
@@ -100,10 +129,14 @@ router-app {
   .side-bar {
     background-color: var(--color-pink);
     position: fixed;
+    z-index: 1;
+    width: 0px;
+    @media screen and (min-width: 900px) {
+      width: 45px;
+    }
     overflow: hidden;
     height: 100%;
-    z-index: 1;
-    width: 45px;
+    top: 40px;
     transition: transform 0.6s ease-in-out, width 0.6s ease-in-out;
     transform: translateX(0rem);
     border-right: 1px solid var(--color-pink-border);
@@ -128,7 +161,7 @@ router-app {
     }
     &.active {
       transform: translateX(0rem);
-      width: 150px;
+      width: 180px;
     }
   }
   .content-row {
@@ -281,13 +314,17 @@ router-app {
     }
   }
   .side-bar + main {
-    margin-left: 45px;
+    @media screen and (min-width: 900px) {
+      margin-left: 45px;
+    }
   }
   .side-bar.active + main {
-    margin-left: 150px;
+    margin-left: 180px;
   }
   main {
+    position: relative;
     transition: margin-left 0.6s;
+    padding-top: 40px;
   }
   .toast {
     display: block;
@@ -317,7 +354,7 @@ router-app {
     display: flex;
     align-items: center;
     color: var(--color-white);
-    gap: 4px;
+    gap: 8px;
     font-weight: bold;
     cursor: pointer;
   }
@@ -336,6 +373,10 @@ router-app {
     &:hover {
       color: var(--color-yellow-light);
     }
+  }
+  td,
+  th {
+    white-space: nowrap;
   }
   td:last-child,
   td:first-child,

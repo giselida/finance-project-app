@@ -1,5 +1,5 @@
 import { SpyInstance, beforeEach, describe, expect, it, vi } from "vitest";
-import { renderToastContent } from "../../toasts/toast.spec";
+import { renderToastContent } from "../../components/toasts/toast.spec";
 import { TransactionPage, eFormOfPayment } from "./transaction.page";
 let clientMock = {
   id: 1,

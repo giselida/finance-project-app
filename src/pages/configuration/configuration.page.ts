@@ -1,5 +1,6 @@
-import { RouterOutlet } from "../../class/router-outlet";
-import { Toasts } from "../../toasts/toast";
+import { RouterOutlet } from "../../components/router-outlet/router-outlet";
+import { Toasts } from "../../components/toasts/toast";
+import { badgeUpdate } from "../../functions/notification";
 import "./configuration.page.scss";
 export interface Cliente {
   id: number;
@@ -17,7 +18,9 @@ export class ConfigurationPage extends HTMLElement {
   $inputPassword: HTMLInputElement;
   $buttonAdd: HTMLButtonElement;
   clientList: Cliente[];
-  client: Cliente;
+  get client(): Cliente {
+    return JSON.parse(localStorage.getItem("client") ?? "{}");
+  }
   maxID: number = 0;
 
   connectedCallback() {
@@ -39,7 +42,7 @@ export class ConfigurationPage extends HTMLElement {
         <form class="was-validated">
         <div class="mb-3">
           <label class="form-label">Nome</label>
-          <input type="text" class="form-control form" required pattern="/^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/">
+          <input type="text" class="form-control form" required>
           <div class="invalid-feedback">
      Campo obrigatório!
     </div>
@@ -75,7 +78,8 @@ export class ConfigurationPage extends HTMLElement {
     </h2>
     <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
       <div class="accordion-body">
-         <table class="table table-hover table-bordered">
+      <div class="table-container">
+      <table class="table table-hover table-bordered">
   <thead class="table-warning">
     <tr>
       <th scope="col">#</th>
@@ -88,6 +92,8 @@ export class ConfigurationPage extends HTMLElement {
   <tbody>
   </tbody>
 </table>
+      </div>
+
 <span class="account-info">
   Você não possui nenhuma conta.
 </span>
@@ -147,8 +153,12 @@ export class ConfigurationPage extends HTMLElement {
       <td>${client.name}</td>
       <td>${client.email}</td> 
       <td class="actions"> 
-      <ion-icon name="bag-check-outline" class="add-account" onclick="document.querySelector('configuration-page').selectClient(${client.id})">
-      </ion-icon>
+      ${
+        this.client?.id != client.id
+          ? `   <ion-icon name="bag-check-outline" class="add-account" onclick="document.querySelector('configuration-page').selectClient(${client.id})">
+      </ion-icon>`
+          : ""
+      }
       <ion-icon name="trash-outline" class="delete" onclick="document.querySelector('configuration-page').removeClient(${client.id})" >
       </ion-icon>
     
@@ -158,8 +168,6 @@ export class ConfigurationPage extends HTMLElement {
     });
   }
   removeClient(id: number) {
-    this.client = JSON.parse(localStorage.getItem("client") ?? "{}");
-
     this.clientList = this.clientList.filter((client) => client.id !== id);
     this.setStorage();
     this.renderList();
@@ -180,6 +188,7 @@ export class ConfigurationPage extends HTMLElement {
     localStorage.setItem("client", JSON.stringify(client));
     this.connectedCallback();
     Toasts.success(`Conta ${client.name} número ${client.accountNumber} foi selecionada com sucesso!`);
+    badgeUpdate();
   }
   private firstClient() {
     const client = this.clientList[0];
@@ -196,7 +205,7 @@ export class ConfigurationPage extends HTMLElement {
     this.$inputName.value = "";
     this.$inputEmail.value = "";
     this.$inputPassword.value = "";
-    this.client = null;
+    localStorage.removeItem("client");
   }
 
   private addClient() {

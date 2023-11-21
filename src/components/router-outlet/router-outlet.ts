@@ -1,8 +1,9 @@
-import { AccountPage } from "../pages/account/account.page";
-import { ConfigurationPage } from "../pages/configuration/configuration.page";
-import { ConversionPage } from "../pages/conversion/conversion.page";
-import { Notification } from "../pages/notification/notification.page";
-import { TransactionPage } from "../pages/transaction/transaction.page";
+import { badgeUpdate } from "../../functions/notification";
+import { AccountPage } from "../../pages/account/account.page";
+import { ConfigurationPage } from "../../pages/configuration/configuration.page";
+import { ConversionPage } from "../../pages/conversion/conversion.page";
+import { Notification } from "../../pages/notification/notification.page";
+import { TransactionPage } from "../../pages/transaction/transaction.page";
 const createMaterialSymbol = (iconName: string, label: string) => {
   return `
       <span class="material-symbols-outlined">
@@ -14,10 +15,10 @@ const createMaterialSymbol = (iconName: string, label: string) => {
 };
 const PAGE_TITLES: { [key: string]: string } = {
   "#configurations": createMaterialSymbol("manufacturing", "Configurações"),
-  "#transaction": createMaterialSymbol("paid", "Transação"),
+  "#transaction": createMaterialSymbol("price_change", "Transação"),
   "#account": createMaterialSymbol("account_circle", "Conta"),
   "#notifications": createMaterialSymbol("notifications", "Notificações"),
-  "#conversion": createMaterialSymbol(" price_change", "Conversor de Moedas"),
+  "#conversion": createMaterialSymbol("currency_exchange", "Conversor"),
 };
 export class RouterOutlet extends HTMLElement {
   connectedCallback() {
@@ -34,7 +35,15 @@ export class RouterOutlet extends HTMLElement {
   <div class="content">
     <span class="material-symbols-outlined menu"> menu </span>
     <span class="page-title"></span>
-  </div>
+  </div>    
+  <div class="header">
+          <a href="#notifications">
+          <div class="notification">
+              <span class="position-absolute start-100 translate-middle badge rounded-pill bg-danger">
+              </span>
+            <span class="material-symbols-outlined"> notifications </span>
+          </div>
+      </a>
   <div class="dropdown">
     <div class="user account">
       <span class="current-user">${client.name ?? ""}</span>
@@ -47,15 +56,7 @@ export class RouterOutlet extends HTMLElement {
           Conta
         </div>
       </a>
-      <a href="#notifications">
-        <div class="option-menu dropdown-item">
-          <div class="notification">
-            <span class="material-symbols-outlined"> notifications </span>
-            <span class="icon-button__badge">2</span>
-          </div>
-          Notificações
-        </div>
-      </a>
+      
       <a href="#configurations">
         <div class="option-menu dropdown-item">
           <span class="material-symbols-outlined"> manufacturing </span>
@@ -63,6 +64,7 @@ export class RouterOutlet extends HTMLElement {
         </div>
       </a>
     </div>
+  </div>
   </div>
 </header>
     <div class="side-bar">
@@ -84,6 +86,8 @@ export class RouterOutlet extends HTMLElement {
   }
 
   private renderOutlet() {
+    badgeUpdate();
+
     const hash = window.location.hash;
     const ROUTES: { [key: string]: typeof HTMLElement } = {
       "#configurations": ConfigurationPage,
@@ -100,6 +104,7 @@ export class RouterOutlet extends HTMLElement {
     });
     document.querySelector(`a[href="${hash}"]`).classList.add("active-router");
     $pageTitle.innerHTML = PAGE_TITLES[hash];
+
     if ($root) $root.innerHTML = "";
     const Page = ROUTES[hash];
     if (Page) {

@@ -18,7 +18,7 @@ transaction-page {
   }
   form {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 10px;
   }
 
@@ -30,14 +30,6 @@ transaction-page {
     background-color: var(--color-yellow-light);
     &:hover {
       background-color: var(--color-yellow);
-    }
-  }
-  .table-container {
-    overflow-y: auto;
-    border-radius: 5px;
-    min-height: 170px;
-    table {
-      margin: 0;
     }
   }
 

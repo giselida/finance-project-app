@@ -1,10 +1,10 @@
 import Currency from "@tadashi/currency";
 import ApexCharts from "apexcharts";
 import { FormSelect } from "../../components/form-select/form-select";
+import { Toasts } from "../../components/toasts/toast";
 import { OPTIONS_CURRENCY } from "../../constants/charts";
 import { COUNTRY_LIST } from "../../constants/countrys";
 import { ExchangeRateApiResponse } from "../../interface/rates";
-import { Toasts } from "../../toasts/toast";
 import "./conversion.page.scss";
 export class ConversionPage extends HTMLElement {
   $input: HTMLInputElement;

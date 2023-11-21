@@ -5,21 +5,24 @@ import ApexCharts from "apexcharts";
 import { Modal } from "bootstrap";
 import IMask from "imask";
 import { FormSelect } from "../../components/form-select/form-select";
+import { Toasts } from "../../components/toasts/toast";
 import { OPTIONS_PAYMENT } from "../../constants/charts";
 import { PT_BR_LOCALE } from "../../constants/date-picker-locale";
 import { SVG_ICONS } from "../../constants/svg-icons";
-import { Toasts } from "../../toasts/toast";
+import { convertStringDate } from "../../functions/date";
+import { badgeUpdate } from "../../functions/notification";
 import { Cliente } from "../configuration/configuration.page";
 import "./transaction.page.scss";
-interface Transaction {
+export interface Transaction {
   id: number;
-  value: string;
+  value: number;
   formOfPayment: string;
   clientName: string;
-  clientID: string;
-  userLoggedID: string;
+  clientID: number;
+  userLoggedID: number;
   creditLimit: number;
   date: string;
+  view: number[];
 }
 
 export enum eFormOfPayment {
@@ -46,7 +49,7 @@ export class TransactionPage extends HTMLElement {
   selectedId: number;
   page: number = 1;
   pageSize: number = 5;
-  maxPage: number;
+
   transactionList: Transaction[];
   transactionFind: Transaction;
   datePicker: AirDatepicker;
@@ -54,6 +57,14 @@ export class TransactionPage extends HTMLElement {
   $tableHeaders: NodeListOf<HTMLTableCellElement>;
   $chart: ApexCharts;
   originalList: any;
+
+  get numberFormat() {
+    const options = {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    };
+    return new Intl.NumberFormat("pt-BR", options);
+  }
 
   get clients(): Cliente[] {
     return JSON.parse(localStorage.getItem("clients") ?? "[]");
@@ -69,12 +80,16 @@ export class TransactionPage extends HTMLElement {
       );
     });
   }
+  get maxPage(): number {
+    return Math.ceil(this.filteredList.length / this.pageSize);
+  }
 
   connectedCallback() {
     this.createInnerHTML();
     this.recoveryElementRef();
     this.setCurrentAmount();
     this.addListeners();
+
     this.renderTransactions();
     this.onChart();
   }
@@ -126,7 +141,7 @@ export class TransactionPage extends HTMLElement {
     $currentBalance.textContent = `${new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
-    }).format(this.clientLogged?.accountAmount)}`;
+    }).format(this.clientLogged?.accountAmount ?? 0)}`;
   }
 
   onChart() {
@@ -138,7 +153,7 @@ export class TransactionPage extends HTMLElement {
         name: value,
         data: listDates.flatMap((date) => {
           const transactionList = this.transactionList.filter((item) => item.formOfPayment == value && item.date == date);
-          return transactionList.length <= 0 ? null : transactionList.map((item) => +item.value.replace(".", "").replace(",", "."));
+          return transactionList.length <= 0 ? null : transactionList.map((item) => +item.value);
         }),
       };
     });
@@ -150,6 +165,11 @@ export class TransactionPage extends HTMLElement {
     this.$chart.render();
     this.$chart.resetSeries();
     this.$chart.updateSeries(OPTIONS_PAYMENT.series);
+    badgeUpdate();
+  }
+
+  private removeMask(value: string) {
+    return +value.replaceAll(".", "").replace(",", ".");
   }
 
   private sendListener() {
@@ -203,8 +223,8 @@ export class TransactionPage extends HTMLElement {
   }
 
   private sortByDirectionAndKey(direction: string, key: string) {
-    const compareDate = (date: string) => new Date(date.replace(/(\d{2})\/(\d{2})\/(\d{4})/g, "$2-$1-$3")).getTime();
-    const compareCurrency = (currency: string) => +currency.replace(",", ".");
+    const compareDate = (date: string) => convertStringDate(date).getTime();
+    const compareCurrency = (currency: number) => currency;
     this.transactionList.sort((a, b) => {
       const firstElement = direction === "asc" ? a : b;
       const secondElement = direction === "asc" ? b : a;
@@ -223,7 +243,6 @@ export class TransactionPage extends HTMLElement {
 
   private previousPage() {
     this.page--;
-    this.maxPage = Math.ceil(this.filteredList.length / this.pageSize);
 
     if (this.page <= 1) {
       this.page = 1;
@@ -232,7 +251,6 @@ export class TransactionPage extends HTMLElement {
   }
   private nextPage() {
     this.page++;
-    this.maxPage = Math.ceil(this.filteredList.length / this.pageSize);
 
     if (this.page > this.maxPage) {
       this.page = this.maxPage;
@@ -242,7 +260,7 @@ export class TransactionPage extends HTMLElement {
 
   renderTransactions(transactions: Transaction[] = this.filteredList) {
     this.$previous.disabled = this.page == 1;
-    this.$next.disabled = this.maxPage == this.page;
+    this.$next.disabled = this.maxPage <= this.page;
 
     const $tbody = document.querySelector("tbody");
     const $table = document.querySelector("table");
@@ -261,7 +279,7 @@ export class TransactionPage extends HTMLElement {
       $tbody.innerHTML += /*html*/ ` 
        <tr id="option-of-transaction-${transaction.id}">
          <td scope="row">${transaction.id}</td>
-         <td>${transaction.value}</td>
+         <td>${this.numberFormat.format(transaction.value)}</td>
          <td>
            ${SVG_ICONS[transaction.formOfPayment]}  
            ${transaction.formOfPayment}
@@ -288,25 +306,27 @@ export class TransactionPage extends HTMLElement {
 
     this.selectedId = null;
     this.transactionFind = this.transactionList.find((transaction) => transaction.id === id);
-    this.$inputValue.value = this.transactionFind.value;
+    this.$inputValue.value = this.transactionFind.value.toString();
     this.$inputFormOfPayment.value = this.transactionFind.formOfPayment;
     this.$inputDate.value = this.transactionFind.date;
-    this.$clientID.value = this.transactionFind.clientID;
+    this.$clientID.value = this.transactionFind.clientID.toString();
 
     this.instanceModal().toggle();
   }
   addTransaction() {
     const { value } = this.$inputValue;
 
-    const formattedValue = +value.replace(".", "").replace(",", ".");
+    const formattedValue = this.removeMask(value);
 
     if (!value || formattedValue <= 0) {
       Toasts.error("Selecione um valor valido!");
       throw new Error("Selecione um valor valido!");
     }
-    const clientLogged = this.clients.find((client) => client.id === this.clientLogged.id);
+    const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
 
-    const clientSelected = this.clients.find((client) => client.id === +this.$clientID.value);
+    const clientLogged = clients.find((client) => client.id === this.clientLogged.id);
+
+    const clientSelected = clients.find((client) => client.id === +this.$clientID.value);
     const inputValue = +formattedValue;
 
     const isCredito = this.$inputFormOfPayment.value === eFormOfPayment.CREDITO;
@@ -316,13 +336,11 @@ export class TransactionPage extends HTMLElement {
       throw new Error("Saldo insuficiente!");
     }
 
-    clientLogged.accountAmount = clientLogged[propertyName] - inputValue;
+    clientLogged[propertyName] = clientLogged[propertyName] - inputValue;
     clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
-
-    localStorage.setItem("client", JSON.stringify(clientLogged));
     this.setCurrentAmount();
     this.objectTransaction(clientSelected);
-    this.setStorageClient(this.clients, clientSelected, clientLogged);
+    this.setStorageClient(clients, clientLogged);
     this.setStorage();
     this.clearForm();
     Toasts.success(this.transactionFind ? "Transação duplicada com sucesso!" : "Transação adicionada com sucesso!");
@@ -331,29 +349,30 @@ export class TransactionPage extends HTMLElement {
   private objectTransaction(clientSelected: Cliente) {
     const newTransaction: Transaction = {
       id: ++this.actuallyId,
-      value: this.$inputValue.value,
+      value: this.removeMask(this.$inputValue.value),
       formOfPayment: this.$inputFormOfPayment.value,
       date: this.$inputDate.value,
       clientName: `${clientSelected.name} - ${clientSelected.accountNumber}`,
-      clientID: this.$clientID.value,
+      clientID: +this.$clientID.value,
       userLoggedID: this.clientLogged.id,
       creditLimit: this.clientLogged.limitCredit,
+      view: [],
     };
 
     this.transactionList.push(newTransaction);
   }
 
-  private setStorageClient(clients: Cliente[], clientSelected: Cliente, clientLogged: Cliente) {
+  private setStorageClient(clients: Cliente[], clientLogged: Cliente) {
     localStorage.setItem("clients", JSON.stringify(clients));
-    localStorage.setItem("client", JSON.stringify(clientSelected));
     localStorage.setItem("client", JSON.stringify(clientLogged));
   }
 
   updateTransaction() {
-    this.transactionFind.value = this.$inputValue.value;
+    this.transactionFind.value = this.removeMask(this.$inputValue.value);
     this.transactionFind.formOfPayment = this.$inputFormOfPayment.value;
     this.transactionFind.date = this.$inputDate.value;
-    this.transactionFind.clientID = this.$clientID.value;
+    this.transactionFind.clientID = +this.$clientID.value;
+    this.transactionFind.view = this.transactionFind.view.filter((value) => value != this.clientLogged.id);
     const client = this.clients.find((client) => client.id === +this.$clientID.value);
     this.transactionFind.userLoggedID = this.clientLogged.id;
     this.transactionFind.clientName = `${client.name} - ${client.accountNumber}`;
@@ -371,10 +390,10 @@ export class TransactionPage extends HTMLElement {
     const { value, formOfPayment, date, clientID } = this.transactionFind;
 
     this.$inputValue.disabled = this.selectedId == id;
-    this.$inputValue.value = value;
+    this.$inputValue.value = this.numberFormat.format(value);
     this.$inputFormOfPayment.value = formOfPayment;
     this.$inputDate.value = date;
-    this.$clientID.value = clientID;
+    this.$clientID.value = clientID.toString();
     this.instanceModal().toggle();
     this.setStorage();
   }
