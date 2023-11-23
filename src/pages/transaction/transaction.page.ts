@@ -324,6 +324,11 @@ export class TransactionPage extends HTMLElement {
     }
     const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
 
+    if (clients.length <= 0) {
+      Toasts.error("Clientes insuficiente!");
+      throw new Error("Clientes insuficiente!");
+    }
+
     const clientLogged = clients.find((client) => client.id === this.clientLogged.id);
 
     const clientSelected = clients.find((client) => client.id === +this.$clientID.value);
@@ -331,7 +336,8 @@ export class TransactionPage extends HTMLElement {
 
     const isCredito = this.$inputFormOfPayment.value === eFormOfPayment.CREDITO;
     const propertyName = isCredito ? "limitCredit" : "accountAmount";
-    if (inputValue > clientLogged[propertyName]) {
+    console.log(clientLogged);
+    if (inputValue > clientLogged?.[propertyName]) {
       Toasts.error("Saldo insuficiente!");
       throw new Error("Saldo insuficiente!");
     }

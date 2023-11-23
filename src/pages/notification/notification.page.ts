@@ -42,7 +42,7 @@ export class Notification extends HTMLElement {
        </div>
        <p class="mb-2">
        ${operationMessage} ${transactionClient.name}-${transactionClient.accountNumber} no valor
-        <b>R$ ${transaction.value} </b> em ${transaction.date} 
+        <b>R$ ${transaction.value.toFixed(2)} </b> em ${transaction.date} 
        </p>
        <small>${shortDate}</small>
     </div>`;

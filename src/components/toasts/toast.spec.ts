@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Toasts } from "./toast";
 
-export function createElementWithClass(elementName: string, classList: string[]) {
+export function createElementWithClass(elementName: string, ...classList: string[]) {
   const $element = document.createElement(elementName);
   $element.classList.add(...classList);
   return $element;

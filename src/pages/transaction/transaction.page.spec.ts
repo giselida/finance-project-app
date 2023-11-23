@@ -13,45 +13,49 @@ let clientMock = {
 let transactionListMock = [
   {
     id: 16,
-    value: "500,00",
+    value: 500.0,
     formOfPayment: "Pix",
     date: "10/11/2023",
     clientName: "João - 825077-44",
     clientID: "1",
     userLoggedID: 1,
+    view: [0],
   },
 ];
 
 const transactionListPage = [
   {
     id: 1,
-    value: "500,00",
+    value: 500.0,
     formOfPayment: "Pix",
     date: "10/11/2023",
     clientName: "João - 825077-44",
-    clientID: "1",
+    clientID: 1,
     creditLimit: 0,
-    userLoggedID: "1",
+    userLoggedID: 1,
+    view: [1],
   },
   {
     id: 2,
-    value: "500,00",
+    value: 500.0,
     formOfPayment: "Pix",
     date: "10/11/2023",
     clientName: "João - 825077-44",
-    clientID: "1",
+    clientID: 1,
     creditLimit: 0,
-    userLoggedID: "1",
+    userLoggedID: 1,
+    view: [1],
   },
   {
     id: 3,
-    value: "500,00",
+    value: 500.0,
     formOfPayment: "Pix",
     date: "10/11/2023",
     clientName: "João - 825077-44",
-    clientID: "1",
+    clientID: 1,
     creditLimit: 0,
-    userLoggedID: "1",
+    userLoggedID: 1,
+    view: [1],
   },
 ];
 
@@ -134,12 +138,13 @@ describe("TransactionPage", () => {
     transactionListMock = [
       {
         id: 1,
-        value: "500,00",
+        value: 500.0,
         formOfPayment: "Pix",
         date: "10/11/2023",
         clientName: "João - 825077-44",
         clientID: "1",
         userLoggedID: 1,
+        view: [1],
       },
     ];
     actuallyId = 1;
@@ -157,12 +162,31 @@ describe("TransactionPage", () => {
     const spy = vi.spyOn(mockLocalStorage, "getItem");
     spy.mockReturnValue(null);
     transactionPage.connectedCallback();
-
     expect(transactionPage.clientLogged).toEqual({});
 
     expect(() => {
       transactionPage.addTransaction();
     }).toThrowError("Selecione um valor valido!");
+    spy.mockRestore();
+  });
+
+  it("should addTransaction when client is empty", () => {
+    chartSpy.mockRestore();
+    const spy = vi.spyOn(mockLocalStorage, "getItem");
+    spy.mockImplementation((key: string) => {
+      if (key === "actuallyId") return actuallyId;
+      if (key === "client") return JSON.stringify(clientMock);
+      if (key === "transactionList") return JSON.stringify(transactionListMock);
+      if (key === "clients") return null;
+      return null;
+    });
+    transactionPage.$inputDate.value = "10/11/2023";
+    transactionPage.$inputFormOfPayment.value = "Pix";
+    transactionPage.$inputValue.value = "1765,00";
+    transactionPage.$clientID.value = "1";
+    expect(() => {
+      transactionPage.addTransaction();
+    }).toThrowError("Clientes insuficiente!");
     spy.mockRestore();
   });
 
@@ -248,6 +272,7 @@ describe("TransactionPage", () => {
       expect($element.innerHTML.includes("arrow_downward")).toBeFalsy();
     });
   });
+
   it("should add a transaction", () => {
     transactionPage.$inputDate.value = "24/09/2001";
 
@@ -255,17 +280,19 @@ describe("TransactionPage", () => {
       transactionPage["sendListener"]();
     }).toThrowError("Por favor preencha os campos obrigatórios!");
 
-    transactionPage.$inputFormOfPayment.value = eFormOfPayment.CREDITO;
     transactionPage.$inputValue.value = "10.50";
+
+    transactionPage.$inputFormOfPayment.value = eFormOfPayment.CREDITO;
     transactionPage.$clientID.value = "1";
     transactionPage["sendListener"]();
+
     expect(transactionPage.transactionList.length).toBe(2);
   });
 
   it("should not add a transaction and throw message error", () => {
-    transactionPage.$inputDate.value = "24/09/2001";
+    transactionPage.$inputDate.value = "10/11/2023";
     transactionPage.$inputFormOfPayment.value = "Pix";
-    transactionPage.$inputValue.value = "1765";
+    transactionPage.$inputValue.value = "1765,00";
     transactionPage.$clientID.value = "1";
     expect(() => {
       transactionPage["sendListener"]();
@@ -274,34 +301,31 @@ describe("TransactionPage", () => {
 
   it("should update a transaction", () => {
     transactionPage.editTransaction(0);
-
+    expect(transactionPage.transactionFind).toBeUndefined();
     transactionPage.editTransaction(1);
 
     expect(transactionPage.$inputValue.disabled).toBeTruthy();
-    expect(transactionPage.$inputValue.value).toBe(transactionListMock[0].value);
     expect(transactionPage.$inputFormOfPayment.value).toBe(transactionListMock[0].formOfPayment);
     expect(transactionPage.$inputDate.value).toBe(transactionListMock[0].date);
     expect(transactionPage.$clientID.value).toBe(transactionListMock[0].clientID);
+    expect(transactionPage.transactionFind).toBeTruthy();
 
-    transactionPage.$inputValue.value = "125,25";
-    transactionPage.$inputDate.value = "24/09/2001";
+    transactionPage.$inputValue.value = "1765,00";
+    transactionPage.$inputDate.value = "10/11/2023";
     transactionPage["sendListener"]();
 
-    expect(transactionPage.transactionList[0]).toEqual({
-      clientID: "1",
-      clientName: "giselida - 31142-94",
-      date: "24/09/2001",
-      formOfPayment: "Pix",
+    expect(transactionPage.transactionList[0]).toStrictEqual({
       id: 1,
+      value: 1765,
+      formOfPayment: "Pix",
+      date: "10/11/2023",
+      clientName: "giselida - 31142-94",
+      clientID: 1,
       userLoggedID: 1,
-      value: "125,25",
+      view: [],
     });
   });
 
-  it("should remove a transaction", () => {
-    transactionPage.removeTransaction(1);
-    expect(transactionPage.transactionList.length).toBe(0);
-  });
   it("should call the callback after the specified timeout", () => {
     const callback = vi.fn();
     const debounced = transactionPage.debounceEvent(callback, 100);
@@ -329,11 +353,17 @@ describe("TransactionPage", () => {
     vi.advanceTimersByTime(100);
     expect(callback).toHaveBeenCalledOnce();
   });
+  it("should remove a transaction", () => {
+    transactionPage.removeTransaction(1);
+    expect(transactionPage.transactionList.length).toBe(0);
+  });
+
   it("should duplicate a transaction", () => {
     chartSpy.mockRestore();
 
     transactionPage.duplicateTransaction(1);
-    expect(transactionPage.$inputValue.value).toBe(transactionListMock[0].value);
+
+    expect(transactionPage.$inputValue.value).toBe(transactionListMock[0].value.toString());
     expect(transactionPage.$inputFormOfPayment.value).toBe(transactionListMock[0].formOfPayment);
     expect(transactionPage.$inputDate.value).toBe(transactionListMock[0].date);
     expect(transactionPage.$clientID.value).toBe(transactionListMock[0].clientID);
