@@ -4,9 +4,12 @@
 transaction-page {
   @include pageStyle(column);
   .container-current-balance {
+    display: flex;
+    gap: 14px;
     align-self: end;
     padding: 10px;
-    .current-balance {
+    .current-balance,
+    .current-limit {
       font-weight: bold;
       &.positive {
         color: green;

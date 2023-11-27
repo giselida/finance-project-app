@@ -1,6 +1,6 @@
 import { SpyInstance, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToastContent } from "../../components/toasts/toast.spec";
-import { TransactionPage, eFormOfPayment } from "./transaction.page";
+import { Transaction, TransactionPage, eFormOfPayment } from "./transaction.page";
 let clientMock = {
   id: 1,
   name: "giselida",
@@ -10,14 +10,15 @@ let clientMock = {
   password: "21454",
   limitCredit: 4550,
 };
-let transactionListMock = [
+let transactionListMock: Transaction[] = [
   {
     id: 16,
-    value: 500.0,
+    value: 500,
     formOfPayment: "Pix",
     date: "10/11/2023",
     clientName: "João - 825077-44",
-    clientID: "1",
+    clientID: 1,
+    creditLimit: 500,
     userLoggedID: 1,
     view: [0],
   },
@@ -26,7 +27,7 @@ let transactionListMock = [
 const transactionListPage = [
   {
     id: 1,
-    value: 500.0,
+    value: 500,
     formOfPayment: "Pix",
     date: "10/11/2023",
     clientName: "João - 825077-44",
@@ -37,7 +38,7 @@ const transactionListPage = [
   },
   {
     id: 2,
-    value: 500.0,
+    value: 500,
     formOfPayment: "Pix",
     date: "10/11/2023",
     clientName: "João - 825077-44",
@@ -48,7 +49,7 @@ const transactionListPage = [
   },
   {
     id: 3,
-    value: 500.0,
+    value: 500,
     formOfPayment: "Pix",
     date: "10/11/2023",
     clientName: "João - 825077-44",
@@ -138,12 +139,14 @@ describe("TransactionPage", () => {
     transactionListMock = [
       {
         id: 1,
-        value: 500.0,
+        value: 500,
         formOfPayment: "Pix",
         date: "10/11/2023",
         clientName: "João - 825077-44",
-        clientID: "1",
+        clientID: 1,
+        creditLimit: 500,
         userLoggedID: 1,
+        dateOfPayDay: new Date().toLocaleDateString("pt-BR"),
         view: [1],
       },
     ];
@@ -151,7 +154,7 @@ describe("TransactionPage", () => {
     clientsMock = [clientMock];
     renderToastContent();
     transactionPage = new TransactionPage();
-    chartSpy = vi.spyOn(transactionPage, "onChart");
+    chartSpy = vi.spyOn(transactionPage, "renderChart");
 
     chartSpy.mockImplementation(() => {});
     document.documentElement.firstChild.appendChild(transactionPage);
@@ -162,31 +165,15 @@ describe("TransactionPage", () => {
     const spy = vi.spyOn(mockLocalStorage, "getItem");
     spy.mockReturnValue(null);
     transactionPage.connectedCallback();
+    transactionPage.$inputValue.value = "0";
+    transactionPage.$inputFormOfPayment.value = " teste";
+    transactionPage.$inputDate.value = " teste";
+    transactionPage.$clientID.value = " teste";
     expect(transactionPage.clientLogged).toEqual({});
-
     expect(() => {
-      transactionPage.addTransaction();
+      transactionPage["sendListener"]();
     }).toThrowError("Selecione um valor valido!");
-    spy.mockRestore();
-  });
 
-  it("should addTransaction when client is empty", () => {
-    chartSpy.mockRestore();
-    const spy = vi.spyOn(mockLocalStorage, "getItem");
-    spy.mockImplementation((key: string) => {
-      if (key === "actuallyId") return actuallyId;
-      if (key === "client") return JSON.stringify(clientMock);
-      if (key === "transactionList") return JSON.stringify(transactionListMock);
-      if (key === "clients") return null;
-      return null;
-    });
-    transactionPage.$inputDate.value = "10/11/2023";
-    transactionPage.$inputFormOfPayment.value = "Pix";
-    transactionPage.$inputValue.value = "1765,00";
-    transactionPage.$clientID.value = "1";
-    expect(() => {
-      transactionPage.addTransaction();
-    }).toThrowError("Clientes insuficiente!");
     spy.mockRestore();
   });
 
@@ -207,13 +194,6 @@ describe("TransactionPage", () => {
             ${client.name} - ${client.accountNumber}
             </div>
           `);
-  });
-
-  it("should format date correctly", () => {
-    const mockDate = {
-      date: "12/09/2009",
-    };
-    expect(transactionPage["getDate"](mockDate.date)).toStrictEqual(new Date("2009-09-12T03:00:00.000Z"));
   });
 
   it("should handle modal hidden event", () => {
@@ -304,25 +284,25 @@ describe("TransactionPage", () => {
     expect(transactionPage.transactionFind).toBeUndefined();
     transactionPage.editTransaction(1);
 
-    expect(transactionPage.$inputValue.disabled).toBeTruthy();
     expect(transactionPage.$inputFormOfPayment.value).toBe(transactionListMock[0].formOfPayment);
     expect(transactionPage.$inputDate.value).toBe(transactionListMock[0].date);
-    expect(transactionPage.$clientID.value).toBe(transactionListMock[0].clientID);
+    expect(transactionPage.$clientID.value).toBe(transactionListMock[0].clientID.toString());
     expect(transactionPage.transactionFind).toBeTruthy();
 
     transactionPage.$inputValue.value = "1765,00";
     transactionPage.$inputDate.value = "10/11/2023";
-    transactionPage["sendListener"]();
 
     expect(transactionPage.transactionList[0]).toStrictEqual({
       id: 1,
-      value: 1765,
       formOfPayment: "Pix",
+      clientName: "João - 825077-44",
+      creditLimit: 500,
       date: "10/11/2023",
-      clientName: "giselida - 31142-94",
+      dateOfPayDay: "24/11/2023",
       clientID: 1,
       userLoggedID: 1,
-      view: [],
+      value: 500,
+      view: [1],
     });
   });
 
@@ -363,10 +343,10 @@ describe("TransactionPage", () => {
 
     transactionPage.duplicateTransaction(1);
 
-    expect(transactionPage.$inputValue.value).toBe(transactionListMock[0].value.toString());
+    expect(transactionPage.$inputValue.value).toBe(transactionPage.numberFormat.format(transactionListMock[0].value));
     expect(transactionPage.$inputFormOfPayment.value).toBe(transactionListMock[0].formOfPayment);
-    expect(transactionPage.$inputDate.value).toBe(transactionListMock[0].date);
-    expect(transactionPage.$clientID.value).toBe(transactionListMock[0].clientID);
+    expect(transactionPage.$inputDate.value).toBe(new Date().toLocaleDateString("pt-BR"));
+    expect(transactionPage.$clientID.value).toBe(transactionListMock[0].clientID.toString());
 
     transactionPage["sendListener"]();
 

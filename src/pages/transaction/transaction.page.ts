@@ -23,6 +23,7 @@ export interface Transaction {
   creditLimit: number;
   date: string;
   view: number[];
+  dateOfPayDay?: string;
 }
 
 export enum eFormOfPayment {
@@ -49,14 +50,13 @@ export class TransactionPage extends HTMLElement {
   selectedId: number;
   page: number = 1;
   pageSize: number = 5;
-
   transactionList: Transaction[];
   transactionFind: Transaction;
   datePicker: AirDatepicker;
   $pageActually: HTMLElement;
   $tableHeaders: NodeListOf<HTMLTableCellElement>;
   $chart: ApexCharts;
-  originalList: any;
+  originalList: Transaction[];
 
   get numberFormat() {
     const options = {
@@ -69,7 +69,7 @@ export class TransactionPage extends HTMLElement {
   get clients(): Cliente[] {
     return JSON.parse(localStorage.getItem("clients") ?? "[]");
   }
-  get clientLogged() {
+  get clientLogged(): Cliente {
     return JSON.parse(localStorage.getItem("client") || "{}");
   }
   get filteredList() {
@@ -81,351 +81,20 @@ export class TransactionPage extends HTMLElement {
     });
   }
   get maxPage(): number {
+    this.displayBadgeNotifications();
     return Math.ceil(this.filteredList.length / this.pageSize);
   }
-
-  connectedCallback() {
-    this.createInnerHTML();
-    this.recoveryElementRef();
-    this.setCurrentAmount();
-    this.addListeners();
-
-    this.renderTransactions();
-    this.onChart();
-  }
-
-  recoveryElementRef() {
-    if (!this.clientLogged?.id) {
-      localStorage.removeItem("transactionList");
-    }
-
-    this.originalList = JSON.parse(localStorage.getItem("transactionList")) ?? [];
-    this.transactionList = this.originalList.filter((item: Transaction) => item.userLoggedID === this.clientLogged?.id);
-    const [$formInputValue, $formInputFormOfPayment, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
-    this.$inputValue = $formInputValue as HTMLInputElement;
-    this.$inputFormOfPayment = $formInputFormOfPayment as FormSelect;
-    this.$inputDate = $formInputDate as HTMLInputElement;
-    this.$clientID = $formInputName as HTMLInputElement;
-    this.$modal = document.querySelector("#staticBackdrop");
-    this.$tableHeaders = document.querySelectorAll("th");
-    this.$btnSend = document.querySelector(".btn-send");
-    this.$edit = document.querySelector(".edit");
-    this.$delete = document.querySelector(".delete");
-    this.$search = document.querySelector(".form-search");
-    this.$previous = document.querySelector(".page-previous");
-    this.$next = document.querySelector(".page-next");
-    this.$pageActually = document.querySelector(".page-actually");
-  }
-  addListeners() {
-    IMask(this.$inputDate, {
-      mask: "00/00/0000",
-    });
-    this.mask = Currency.data(this.$inputValue) || new Currency(this.$inputValue);
-    this.$btnSend.addEventListener("click", () => this.sendListener());
-    this.$modal.addEventListener("hidden.bs.modal", () => this.onModalHidden());
-    this.$search.addEventListener(
-      "input",
-      this.debounceEvent(() => this.renderTransactions(), 500)
-    );
-    this.$tableHeaders.forEach(($th) => $th.addEventListener("click", () => this.sortByColumn($th)));
-    this.$next.addEventListener("click", () => this.nextPage());
-    this.$previous.addEventListener("click", () => this.previousPage());
-    this.datePicker = new AirDatepicker(this.$inputDate, { locale: PT_BR_LOCALE });
-  }
-  private setCurrentAmount() {
-    const $currentBalance = document.querySelector(".current-balance");
-    $currentBalance.classList.remove("positive");
-    $currentBalance.classList.remove("negative");
-
-    $currentBalance.classList.add(this.clientLogged?.accountAmount > 0 ? "positive" : "negative");
-    $currentBalance.textContent = `${new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(this.clientLogged?.accountAmount ?? 0)}`;
-  }
-
-  onChart() {
-    const dates = this.transactionList.map((value) => value.date);
-    dates.sort((a, b) => this.getDate(a).getTime() - this.getDate(b).getTime());
-    const listDates = [...new Set(dates)];
-    OPTIONS_PAYMENT.series = Object.values(eFormOfPayment).map((value) => {
-      return {
-        name: value,
-        data: listDates.flatMap((date) => {
-          const transactionList = this.transactionList.filter((item) => item.formOfPayment == value && item.date == date);
-          return transactionList.length <= 0 ? null : transactionList.map((item) => +item.value);
-        }),
-      };
-    });
-    OPTIONS_PAYMENT.xaxis.categories = Array.from(
-      { length: Math.max(...OPTIONS_PAYMENT.series.map((value) => value.data.length)) },
-      (_, k) => listDates[k] ?? "-"
-    );
-    this.$chart = new ApexCharts(document.querySelector("#chart-payment"), OPTIONS_PAYMENT);
-    this.$chart.render();
-    this.$chart.resetSeries();
-    this.$chart.updateSeries(OPTIONS_PAYMENT.series);
-    badgeUpdate();
-  }
-
-  private removeMask(value: string) {
-    return +value.replaceAll(".", "").replace(",", ".");
-  }
-
-  private sendListener() {
-    if (!this.$inputValue.value || !this.$inputFormOfPayment.value || !this.$inputDate.value || !this.$clientID.value) {
-      Toasts.error("Por favor preencha os campos obrigatórios!");
-      throw new Error("Por favor preencha os campos obrigatórios!");
-    }
-
-    const methodKey = !this.selectedId ? "addTransaction" : "updateTransaction";
-    this[methodKey]();
-    this.instanceModal().toggle();
-    this.onChart();
-    this.renderTransactions();
-  }
-
-  private onModalHidden() {
-    this.transactionFind = null;
-    this.selectedId = null;
-    this.$inputValue.disabled = false;
-    this.clearForm();
-  }
-
-  private sortByColumn($th: HTMLTableCellElement) {
-    const $element = $th.querySelector(".sort");
-    const isAscendent = $element?.innerHTML?.includes("arrow_upward");
-    const isDescendent = $element?.innerHTML?.includes("arrow_downward");
-    const innerHTML = !isAscendent ? "arrow_upward" : "arrow_downward";
-    $element.innerHTML = `
-        <span class="material-symbols-outlined">
-        ${innerHTML}
-        </span>
-        `;
-
-    if (isDescendent) {
-      $element.innerHTML = "";
-    }
-    const $sorts = document.querySelectorAll(".sort");
-
-    if ([...$sorts].every((element) => element.innerHTML == "")) {
-      this.transactionList.sort((a, b) => a.id - b.id);
-    } else {
-      $sorts.forEach((element) => {
-        if (element.innerHTML == "") return;
-        const $th = element.parentElement.parentElement;
-        const direction = element.innerHTML.includes("arrow_upward") ? "asc" : "desc";
-        this.sortByDirectionAndKey(direction, $th.getAttribute("key"));
-      });
-    }
-
-    this.renderTransactions();
-  }
-
-  private sortByDirectionAndKey(direction: string, key: string) {
-    const compareDate = (date: string) => convertStringDate(date).getTime();
-    const compareCurrency = (currency: number) => currency;
-    this.transactionList.sort((a, b) => {
-      const firstElement = direction === "asc" ? a : b;
-      const secondElement = direction === "asc" ? b : a;
-
-      if (key === "id") return firstElement[key] - secondElement[key];
-
-      if (key === "value") return compareCurrency(firstElement[key]) - compareCurrency(secondElement[key]);
-
-      if (key === "formOfPayment") return firstElement[key].localeCompare(secondElement[key]);
-
-      if (key === "clientName") return firstElement[key].localeCompare(secondElement[key]);
-
-      if (key === "date") return compareDate(firstElement[key]) - compareDate(secondElement[key]);
-    });
-  }
-
-  private previousPage() {
-    this.page--;
-
-    if (this.page <= 1) {
-      this.page = 1;
-    }
-    this.renderTransactions();
-  }
-  private nextPage() {
-    this.page++;
-
-    if (this.page > this.maxPage) {
-      this.page = this.maxPage;
-    }
-    this.renderTransactions();
-  }
-
-  renderTransactions(transactions: Transaction[] = this.filteredList) {
-    this.$previous.disabled = this.page == 1;
-    this.$next.disabled = this.maxPage <= this.page;
-
-    const $tbody = document.querySelector("tbody");
-    const $table = document.querySelector("table");
-    const $pagination = document.querySelector<HTMLElement>(".container-pagination");
-
-    $pagination.hidden = this.filteredList.length < 1;
-
-    $table.hidden = this.filteredList.length < 1;
-
-    const actuallyPage = (this.page - 1) * this.pageSize;
-    const nextPage = actuallyPage + this.pageSize;
-
-    $tbody.innerHTML = "";
-    this.$pageActually.textContent = this.page.toString();
-    transactions.slice(actuallyPage, nextPage).forEach((transaction) => {
-      $tbody.innerHTML += /*html*/ ` 
-       <tr id="option-of-transaction-${transaction.id}">
-         <td scope="row">${transaction.id}</td>
-         <td>${this.numberFormat.format(transaction.value)}</td>
-         <td>
-           ${SVG_ICONS[transaction.formOfPayment]}  
-           ${transaction.formOfPayment}
-      </td>
-      <td>${transaction.date}</td>
-      <td>${transaction.clientName}</td>
-      <td>
-        <ion-icon name="brush-outline" class="edit" onclick="document.querySelector('transaction-page').editTransaction(${
-          transaction.id
-        })"></ion-icon>
-        <ion-icon name="trash-outline" class="delete" onclick="document.querySelector('transaction-page').removeTransaction(${
-          transaction.id
-        })"></ion-icon>
-        <ion-icon name="duplicate-outline" class="duplicate"
-        onclick="document.querySelector('transaction-page').duplicateTransaction(${transaction.id})"></ion-icon>
-      </td>
-    </tr>`;
-    });
-  }
-
-  duplicateTransaction(id: number) {
-    const $titleModal = document.querySelector(".modal-title");
-    $titleModal.textContent = "Duplicar transação";
-
-    this.selectedId = null;
-    this.transactionFind = this.transactionList.find((transaction) => transaction.id === id);
-    this.$inputValue.value = this.transactionFind.value.toString();
-    this.$inputFormOfPayment.value = this.transactionFind.formOfPayment;
-    this.$inputDate.value = this.transactionFind.date;
-    this.$clientID.value = this.transactionFind.clientID.toString();
-
-    this.instanceModal().toggle();
-  }
-  addTransaction() {
-    const { value } = this.$inputValue;
-
-    const formattedValue = this.removeMask(value);
-
-    if (!value || formattedValue <= 0) {
-      Toasts.error("Selecione um valor valido!");
-      throw new Error("Selecione um valor valido!");
-    }
-    const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
-
-    if (clients.length <= 0) {
-      Toasts.error("Clientes insuficiente!");
-      throw new Error("Clientes insuficiente!");
-    }
-
-    const clientLogged = clients.find((client) => client.id === this.clientLogged.id);
-
-    const clientSelected = clients.find((client) => client.id === +this.$clientID.value);
-    const inputValue = +formattedValue;
-
-    const isCredito = this.$inputFormOfPayment.value === eFormOfPayment.CREDITO;
-    const propertyName = isCredito ? "limitCredit" : "accountAmount";
-    console.log(clientLogged);
-    if (inputValue > clientLogged?.[propertyName]) {
-      Toasts.error("Saldo insuficiente!");
-      throw new Error("Saldo insuficiente!");
-    }
-
-    clientLogged[propertyName] = clientLogged[propertyName] - inputValue;
-    clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
-    this.setCurrentAmount();
-    this.objectTransaction(clientSelected);
-    this.setStorageClient(clients, clientLogged);
-    this.setStorage();
-    this.clearForm();
-    Toasts.success(this.transactionFind ? "Transação duplicada com sucesso!" : "Transação adicionada com sucesso!");
-  }
-
-  private objectTransaction(clientSelected: Cliente) {
-    const newTransaction: Transaction = {
-      id: ++this.actuallyId,
-      value: this.removeMask(this.$inputValue.value),
-      formOfPayment: this.$inputFormOfPayment.value,
-      date: this.$inputDate.value,
-      clientName: `${clientSelected.name} - ${clientSelected.accountNumber}`,
-      clientID: +this.$clientID.value,
-      userLoggedID: this.clientLogged.id,
-      creditLimit: this.clientLogged.limitCredit,
-      view: [],
-    };
-
-    this.transactionList.push(newTransaction);
-  }
-
-  private setStorageClient(clients: Cliente[], clientLogged: Cliente) {
-    localStorage.setItem("clients", JSON.stringify(clients));
-    localStorage.setItem("client", JSON.stringify(clientLogged));
-  }
-
-  updateTransaction() {
-    this.transactionFind.value = this.removeMask(this.$inputValue.value);
-    this.transactionFind.formOfPayment = this.$inputFormOfPayment.value;
-    this.transactionFind.date = this.$inputDate.value;
-    this.transactionFind.clientID = +this.$clientID.value;
-    this.transactionFind.view = this.transactionFind.view.filter((value) => value != this.clientLogged.id);
-    const client = this.clients.find((client) => client.id === +this.$clientID.value);
-    this.transactionFind.userLoggedID = this.clientLogged.id;
-    this.transactionFind.clientName = `${client.name} - ${client.accountNumber}`;
-    this.setStorage();
-  }
-  editTransaction(id: number) {
-    const $titleModal = document.querySelector(".modal-title");
-    $titleModal.textContent = "Editar transação";
-    this.selectedId = id;
-
-    this.transactionFind = this.transactionList.find((transaction) => transaction.id === this.selectedId);
-
-    if (!this.transactionFind) return;
-
-    const { value, formOfPayment, date, clientID } = this.transactionFind;
-
-    this.$inputValue.disabled = this.selectedId == id;
-    this.$inputValue.value = this.numberFormat.format(value);
-    this.$inputFormOfPayment.value = formOfPayment;
-    this.$inputDate.value = date;
-    this.$clientID.value = clientID.toString();
-    this.instanceModal().toggle();
-    this.setStorage();
-  }
-
-  removeTransaction(id: number) {
-    this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
-    this.renderTransactions();
-    Toasts.success("Transação removida com sucesso!");
-    this.onChart();
-    this.setStorage();
-  }
-  private setStorage() {
-    localStorage.setItem(
-      "transactionList",
-      JSON.stringify([
-        ...this.originalList.filter((item: Transaction) => item.userLoggedID !== this.clientLogged.id),
-        ...this.transactionList,
-      ])
-    );
-    localStorage.setItem("actuallyId", this.actuallyId.toString());
-  }
-
   createInnerHTML() {
     this.innerHTML = /*html*/ `
 
-    <div class="container-current-balance">Saldo: <span class="current-balance">0,00</span></div>
+    <div class="container-current-balance">
+      <div class="item">
+        Saldo: <span class="current-balance">0,00</span>
+      </div>
+      <div class="item">
+        Limite de Crédito: <span class="current-limit">0,00</span>
+      </div>
+    </div>
     <div id="chart-payment"></div>
     <div class="content-row mb-3">
       <button type="button" class="btn btn-transaction" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
@@ -519,6 +188,12 @@ export class TransactionPage extends HTMLElement {
                 <div class="sort"></div>
               </div>
             </th>
+            <th scope="col" key="dateOfPayDay">
+              <div class="row-header">
+                <span>Data do pagamento</span>
+                <div class="sort"></div>
+              </div>
+            </th>
             <th scope="col" key="name">
               <div class="row-header">
                 <span>Nome</span>
@@ -556,6 +231,327 @@ export class TransactionPage extends HTMLElement {
     const $client = this.querySelector(".client");
     $client.innerHTML += this.createFormSelectCliente();
   }
+  renderTransactions(transactions: Transaction[] = this.filteredList) {
+    this.validPayment();
+
+    this.$previous.disabled = this.page == 1;
+    this.$next.disabled = this.maxPage <= this.page;
+
+    const $tbody = document.querySelector("tbody");
+    const $table = document.querySelector("table");
+    const $pagination = document.querySelector<HTMLElement>(".container-pagination");
+
+    $pagination.hidden = this.filteredList.length < 1;
+
+    $table.hidden = this.filteredList.length < 1;
+
+    const actuallyPage = (this.page - 1) * this.pageSize;
+    const nextPage = actuallyPage + this.pageSize;
+
+    $tbody.innerHTML = "";
+    this.$pageActually.textContent = this.page.toString();
+    transactions.slice(actuallyPage, nextPage).forEach((transaction) => {
+      $tbody.innerHTML += /*html*/ ` 
+       <tr id="option-of-transaction-${transaction.id}">
+         <td scope="row">${transaction.id}</td>
+         <td>${this.numberFormat.format(transaction.value)}</td>
+         <td>
+           ${SVG_ICONS[transaction.formOfPayment]}  
+           ${transaction.formOfPayment}
+      </td>
+      <td>${transaction.date}</td>
+      <td>${
+        transaction?.dateOfPayDay
+          ? new Date(transaction?.dateOfPayDay).toLocaleDateString("pt-BR", {
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              month: "2-digit",
+              year: "2-digit",
+            }) ?? "-"
+          : "-"
+      }</td>
+      <td>${transaction.clientName}</td>
+      <td>
+        <ion-icon
+         name="brush-outline"
+         class="edit ${this.hiddenElement(!!transaction.dateOfPayDay)}" 
+         onclick="document.querySelector('transaction-page').editTransaction(${transaction.id})">
+        </ion-icon>
+        <ion-icon
+         name="trash-outline" 
+         class="delete ${this.hiddenElement(!!transaction.dateOfPayDay)}"
+         onclick="document.querySelector('transaction-page').removeTransaction(${transaction.id})">
+        </ion-icon>
+        <ion-icon
+         name="duplicate-outline"
+         class="duplicate"
+         onclick="document.querySelector('transaction-page').duplicateTransaction(${transaction.id})">
+        </ion-icon>
+      </td>
+    </tr>`;
+    });
+  }
+  private applySort() {
+    const $sorts = document.querySelectorAll(".sort");
+    $sorts.forEach((element) => {
+      if (element.innerHTML == "") return;
+      const $th = element.parentElement.parentElement;
+      const direction = element.innerHTML.includes("arrow_upward") ? "asc" : "desc";
+      this.sortByDirectionAndKey(direction, $th.getAttribute("key"));
+    });
+  }
+
+  connectedCallback() {
+    this.createInnerHTML();
+    this.setElementRef();
+    this.displayClientAmount();
+    this.setEventListeners();
+    this.renderTransactions();
+    this.renderChart();
+  }
+
+  setElementRef() {
+    if (!this.clientLogged?.id) {
+      localStorage.removeItem("transactionList");
+    }
+
+    this.originalList = JSON.parse(localStorage.getItem("transactionList")) ?? [];
+    this.transactionList = this.originalList.filter((item: Transaction) => item.userLoggedID === this.clientLogged?.id);
+    const [$formInputValue, $formInputFormOfPayment, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
+    this.$inputValue = $formInputValue as HTMLInputElement;
+    this.$inputFormOfPayment = $formInputFormOfPayment as FormSelect;
+    this.$inputDate = $formInputDate as HTMLInputElement;
+    this.$clientID = $formInputName as HTMLInputElement;
+    this.$modal = document.querySelector("#staticBackdrop");
+    this.$tableHeaders = document.querySelectorAll("th");
+    this.$btnSend = document.querySelector(".btn-send");
+    this.$edit = document.querySelector(".edit");
+    this.$delete = document.querySelector(".delete");
+    this.$search = document.querySelector(".form-search");
+    this.$previous = document.querySelector(".page-previous");
+    this.$next = document.querySelector(".page-next");
+    this.$pageActually = document.querySelector(".page-actually");
+  }
+  setEventListeners() {
+    const self = this;
+    this.mask = Currency.data(this.$inputValue) || new Currency(this.$inputValue);
+    this.$btnSend.addEventListener("click", () => this.sendListener());
+    this.$modal.addEventListener("hidden.bs.modal", () => this.onModalHidden());
+    this.$search.addEventListener(
+      "input",
+      this.debounceEvent(() => this.renderTransactions(), 500)
+    );
+    this.$tableHeaders.forEach(($th) => $th.addEventListener("click", () => this.sortByColumn($th)));
+    this.$next.addEventListener("click", () => this.nextPage());
+    this.$previous.addEventListener("click", () => this.previousPage());
+    this.datePicker = new AirDatepicker(this.$inputDate, {
+      locale: PT_BR_LOCALE,
+      onRenderCell({ date }) {
+        const isDisabled = self.validateDateIsFuture(date);
+        return {
+          disabled: isDisabled,
+        };
+      },
+    });
+
+    IMask(this.$inputDate, {
+      mask: "00/00/0000",
+      validate(value, masked) {
+        if (value.length === 10) {
+          const isDisabled = self.validateDateIsFuture(convertStringDate(value));
+          if (isDisabled) masked.reset();
+          return !isDisabled;
+        }
+        return true;
+      },
+    });
+  }
+
+  debounceEvent(callback: () => void, timeout: number) {
+    let timer: NodeJS.Timeout;
+
+    return () => {
+      if (timer) clearTimeout(timer);
+
+      timer = setTimeout(() => {
+        callback();
+      }, timeout);
+    };
+  }
+
+  renderChart() {
+    const dates = this.transactionList.map((value) => value.date);
+    dates.sort((a, b) => convertStringDate(a).getTime() - convertStringDate(b).getTime());
+    const listDates = [...new Set(dates)];
+
+    OPTIONS_PAYMENT.series = Object.values(eFormOfPayment).map((value) => {
+      return {
+        name: value,
+        data: listDates.flatMap((date) => {
+          const transactionList = this.transactionList.filter((item) => item.formOfPayment == value && item.date == date);
+          return +transactionList
+            .reduce((acc, item) => {
+              acc += item.value;
+              return acc;
+            }, 0)
+            .toFixed(2);
+        }),
+      };
+    });
+
+    OPTIONS_PAYMENT.xaxis.categories = listDates.map((value) => `${value.split("/").reverse().join("/")} GMT`);
+    this.$chart = ApexCharts.getChartByID("#chart-payment") || new ApexCharts(document.querySelector("#chart-payment"), OPTIONS_PAYMENT);
+
+    this.$chart.render();
+    this.$chart.resetSeries();
+    this.$chart.updateSeries(OPTIONS_PAYMENT.series);
+  }
+
+  private validateDateIsFuture(date: Date) {
+    const today = new Date();
+    today.setDate(today.getDate() - 1);
+    const isDisabled = today.getTime() > date.getTime();
+    return isDisabled;
+  }
+  private displayBadgeNotifications = badgeUpdate;
+
+  private displayClientAmount() {
+    [".current-balance", ".current-limit"].forEach((item) => {
+      const $item = document.querySelector(item);
+      $item.classList.remove("positive");
+      $item.classList.remove("negative");
+      const key = item === ".current-balance" ? "accountAmount" : "limitCredit";
+      $item.classList.add(this.clientLogged?.[key] > 0 ? "positive" : "negative");
+      $item.textContent = `${new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(this.clientLogged?.[key] ?? 0)}`;
+    });
+  }
+  private removeMask(value: string) {
+    return +value.replaceAll(".", "").replace(",", ".");
+  }
+
+  private sendListener() {
+    if (!this.$inputValue.value || !this.$inputFormOfPayment.value || !this.$inputDate.value || !this.$clientID.value) {
+      Toasts.error("Por favor preencha os campos obrigatórios!");
+      throw new Error("Por favor preencha os campos obrigatórios!");
+    }
+
+    if (this.removeMask(this.$inputValue.value) <= 0) {
+      Toasts.error("Selecione um valor valido!");
+      throw new Error("Selecione um valor valido!");
+    }
+
+    const methodKey = !this.selectedId ? "addTransaction" : "updateTransaction";
+    this[methodKey]();
+    this.instanceModal().toggle();
+    this.renderChart();
+    this.applySort();
+    this.renderTransactions();
+  }
+  private onModalHidden() {
+    this.transactionFind = null;
+    this.selectedId = null;
+    this.formDisabled(false);
+    this.clearForm();
+  }
+
+  private sortByColumn($th: HTMLTableCellElement) {
+    const $element = $th.querySelector(".sort");
+    const isAscendent = $element?.innerHTML?.includes("arrow_upward");
+    const isDescendent = $element?.innerHTML?.includes("arrow_downward");
+    const innerHTML = !isAscendent ? "arrow_upward" : "arrow_downward";
+    $element.innerHTML = `
+        <span class="material-symbols-outlined">
+        ${innerHTML}
+        </span>
+        `;
+
+    if (isDescendent) {
+      $element.innerHTML = "";
+    }
+    const $sorts = document.querySelectorAll(".sort");
+
+    if ([...$sorts].every((element) => element.innerHTML == "")) {
+      this.transactionList.sort((a, b) => a.id - b.id);
+    } else {
+      this.applySort();
+    }
+
+    this.renderTransactions();
+  }
+
+  duplicateTransaction(id: number) {
+    const $titleModal = document.querySelector(".modal-title");
+    $titleModal.textContent = "Duplicar transação";
+
+    this.selectedId = null;
+    this.transactionFind = this.transactionList.find((transaction) => transaction.id === id);
+    this.$inputValue.value = this.numberFormat.format(this.transactionFind.value);
+    this.$inputFormOfPayment.value = this.transactionFind.formOfPayment;
+    this.$inputDate.value = !this.validateDateIsFuture(convertStringDate(this.transactionFind.date))
+      ? this.transactionFind.date
+      : new Date().toLocaleDateString("pt-BR");
+    this.$clientID.value = this.transactionFind.clientID.toString();
+
+    this.instanceModal().toggle();
+  }
+  addTransaction() {
+    const clientSelected = this.clients.find((client) => client.id === +this.$clientID.value);
+
+    this.displayClientAmount();
+    this.objectTransaction(clientSelected);
+    this.saveTransactionList();
+    this.clearForm();
+    this.validPayment();
+    Toasts.success(this.transactionFind ? "Transação duplicada com sucesso!" : "Transação adicionada com sucesso!");
+  }
+
+  updateTransaction() {
+    this.transactionFind.value = this.removeMask(this.$inputValue.value);
+    this.transactionFind.formOfPayment = this.$inputFormOfPayment.value;
+    this.transactionFind.date = this.$inputDate.value;
+    this.transactionFind.clientID = +this.$clientID.value;
+    this.transactionFind.view = this.transactionFind.view.filter((value) => value != this.clientLogged.id);
+    const client = this.clients.find((client) => client.id === +this.$clientID.value);
+    this.transactionFind.userLoggedID = this.clientLogged.id;
+    this.transactionFind.clientName = `${client?.name} - ${client?.accountNumber}`;
+    this.validTransaction(this.transactionFind);
+    this.validPayment();
+    this.saveTransactionList();
+  }
+  editTransaction(id: number) {
+    const $titleModal = document.querySelector(".modal-title");
+    $titleModal.textContent = "Editar transação";
+    this.selectedId = id;
+
+    this.transactionFind = this.transactionList.find((transaction) => transaction.id === this.selectedId);
+
+    if (!this.transactionFind) return;
+
+    const { value, formOfPayment, date, clientID } = this.transactionFind;
+
+    if (this.transactionFind.dateOfPayDay) {
+      this.formDisabled(true);
+    }
+    this.$inputValue.value = this.numberFormat.format(value);
+    this.$inputFormOfPayment.value = formOfPayment;
+    this.$inputDate.value = date;
+    this.$clientID.value = clientID.toString();
+    this.instanceModal().toggle();
+    this.saveTransactionList();
+  }
+
+  removeTransaction(id: number) {
+    this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
+    this.renderTransactions();
+    Toasts.success("Transação removida com sucesso!");
+    this.renderChart();
+    this.saveTransactionList();
+  }
+
   createFormSelectCliente() {
     const clienteOptions = this.clients
       .filter((client) => client.id != this.clientLogged?.id)
@@ -570,7 +566,7 @@ export class TransactionPage extends HTMLElement {
   createFormOption(client: Cliente) {
     return `
            <div class="option" value="${client.id}">
-            ${client.name} - ${client.accountNumber}
+            ${client?.name} - ${client?.accountNumber}
             </div>
           `;
   }
@@ -599,6 +595,139 @@ export class TransactionPage extends HTMLElement {
        </form-select> 
       `;
   }
+  private sortByDirectionAndKey(direction: string, key: string) {
+    const compareDate = (date: string) => convertStringDate(date)?.getTime() ?? 0;
+    const compareCurrency = (currency: number) => currency;
+    this.transactionList.sort((a, b) => {
+      const firstElement = direction === "asc" ? a : b;
+      const secondElement = direction === "asc" ? b : a;
+      if (key === "id") return firstElement[key] - secondElement[key];
+
+      if (key === "value") return compareCurrency(firstElement[key]) - compareCurrency(secondElement[key]);
+
+      if (key === "formOfPayment") return firstElement[key].localeCompare(secondElement[key]);
+
+      if (key === "clientName") return firstElement[key].localeCompare(secondElement[key]);
+
+      if (key === "dateOfPayDay")
+        return convertStringDate(firstElement?.[key])?.getTime() ?? 0 - convertStringDate(secondElement?.[key])?.getTime() ?? 0;
+
+      if (key === "date") return compareDate(firstElement?.[key]) - compareDate(secondElement?.[key]);
+    });
+  }
+
+  private previousPage() {
+    this.page--;
+
+    if (this.page <= 1) {
+      this.page = 1;
+    }
+    this.renderTransactions();
+  }
+  private nextPage() {
+    this.page++;
+
+    if (this.page > this.maxPage) {
+      this.page = this.maxPage;
+    }
+    this.renderTransactions();
+  }
+  private hiddenElement(condition: boolean) {
+    return condition ? "hidden" : "";
+  }
+  private validPayment() {
+    this.transactionList.forEach((transaction) => {
+      const actuallyDate = new Date().toLocaleDateString("pt-BR");
+      const transactionDate = convertStringDate(transaction.date)?.toLocaleDateString();
+
+      if (!transaction.dateOfPayDay && actuallyDate === transactionDate) {
+        try {
+          this.makePayment(transaction);
+          transaction.dateOfPayDay = new Date().toISOString();
+          this.displayClientAmount();
+          this.displayBadgeNotifications();
+          this.saveTransactionList();
+        } catch {
+          const nonPayDayList = this.filteredList.filter((value) => !value.dateOfPayDay);
+          nonPayDayList.forEach((value) => {
+            const text = `A  transação do ID:${value.id} não foi enviada`;
+            if (convertStringDate(value.date).toLocaleDateString("pt-BR") === new Date().toLocaleDateString("pt-BR")) Toasts.error(text);
+          });
+        }
+      }
+    });
+  }
+
+  private makePayment(transaction: Transaction): { clientSelected: Cliente; clients: Cliente[]; clientLogged: Cliente } {
+    const clients = this.clients;
+    const clientSelected = clients.find((client) => client.id === transaction.clientID);
+    const inputValue = +transaction.value;
+    const isCredito = transaction.formOfPayment === eFormOfPayment.CREDITO;
+    const propertyName = isCredito ? "limitCredit" : "accountAmount";
+    const clientLogged = clients.find((client) => client.id === this.clientLogged.id);
+
+    this.validTransaction(transaction);
+
+    const valueOfDebit = +clientLogged?.[propertyName].toFixed(2);
+
+    clientLogged[propertyName] = valueOfDebit - inputValue;
+    clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
+
+    this.saveClientes(clients, clientLogged);
+
+    return { clientSelected, clients, clientLogged };
+  }
+
+  private objectTransaction(clientSelected: Cliente) {
+    const newTransaction: Transaction = {
+      id: ++this.actuallyId,
+      value: this.removeMask(this.$inputValue.value),
+      formOfPayment: this.$inputFormOfPayment.value,
+      date: this.$inputDate.value,
+      clientName: `${clientSelected?.name} - ${clientSelected?.accountNumber}`,
+      clientID: +this.$clientID.value,
+      userLoggedID: this.clientLogged.id,
+      creditLimit: this.clientLogged.limitCredit,
+      view: [],
+    };
+    this.validTransaction(newTransaction);
+
+    this.transactionList.push(newTransaction);
+  }
+
+  private validTransaction(transaction: Transaction) {
+    const clientLogged = this.clients.find((client) => client.id === this.clientLogged.id);
+    const propertyName = transaction.formOfPayment === eFormOfPayment.CREDITO ? "limitCredit" : "accountAmount";
+    const valueOfDebit = +clientLogged?.[propertyName].toFixed(2);
+
+    if (transaction.value > valueOfDebit) {
+      Toasts.error("Saldo insuficiente!");
+      throw new Error("Saldo insuficiente!");
+    }
+  }
+
+  private saveClientes(clients: Cliente[], clientLogged: Cliente) {
+    localStorage.setItem("clients", JSON.stringify(clients));
+    localStorage.setItem("client", JSON.stringify(clientLogged));
+  }
+
+  private formDisabled(isDisabled: boolean) {
+    this.$inputValue.disabled = isDisabled;
+    this.$inputDate.disabled = isDisabled;
+    this.$inputFormOfPayment.disabled = isDisabled;
+    this.$inputValue.disabled = isDisabled;
+    this.$clientID.disabled = isDisabled;
+  }
+
+  private saveTransactionList() {
+    const transactionList = [
+      ...this.originalList.filter((item: Transaction) => item.userLoggedID !== this.clientLogged.id),
+      ...this.transactionList,
+    ];
+    transactionList.sort((a, b) => a.id - b.id);
+    localStorage.setItem("transactionList", JSON.stringify(transactionList));
+    localStorage.setItem("actuallyId", this.actuallyId.toString());
+  }
   private clearForm() {
     const $titleModal = document.querySelector(".modal-title");
     $titleModal.textContent = "Adicionar transação";
@@ -609,21 +738,5 @@ export class TransactionPage extends HTMLElement {
   }
   private instanceModal() {
     return Modal.getOrCreateInstance(this.$modal);
-  }
-  debounceEvent(callback: () => void, timeout: number) {
-    let timer: NodeJS.Timeout;
-
-    return () => {
-      if (timer) clearTimeout(timer);
-
-      timer = setTimeout(() => {
-        callback();
-      }, timeout);
-    };
-  }
-
-  private getDate(dateString: string) {
-    const [day, mouth, year] = dateString.split("/");
-    return new Date(+year, +mouth - 1, +day);
   }
 }

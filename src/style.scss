@@ -1,7 +1,7 @@
 @import "./scss/reset.scss";
 @import "./scss/mixins.scss";
 :root {
-  --color-pink: #ff0f52;
+  --color-pink: #fe5e71;
   --color-orange-light: #f2b97bfc;
   --color-orange: #ff8f16;
   --color-yellow: #ffea38;
@@ -15,7 +15,7 @@
 }
 body {
   background-color: var(--color-white);
-  font-family: Roboto, serif;
+  font-family: "Open Sans", sans-serif;
 }
 .air-datepicker-global-container {
   z-index: 999999;
@@ -72,7 +72,7 @@ router-app {
 
   header {
     position: fixed;
-    z-index: 1;
+    z-index: 500;
     width: 100%;
     @include display-align-content(space-between);
     padding: 10px;
@@ -246,6 +246,9 @@ router-app {
     font-weight: 700;
     margin-bottom: 5px;
   }
+  .hidden {
+    display: none;
+  }
 
   .form-select {
     gap: 10px;
@@ -256,6 +259,12 @@ router-app {
     white-space: nowrap;
     text-overflow: ellipsis;
     background-size: 18px 52px, calc(7.75em + 3.375rem) calc(7.75em + 69.375rem) !important;
+
+    &[disabled="true"] {
+      background-color: var(--bs-secondary-bg) !important;
+      border-color: var(--bs-secondary-bg) !important;
+      cursor: default !important;
+    }
     .search-input {
       position: sticky;
       top: 0;

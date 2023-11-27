@@ -1,13 +1,17 @@
 import { Cliente } from "../configuration/configuration.page";
 import "./account.page.scss";
 export class AccountPage extends HTMLElement {
-  clientList: Cliente[];
   $inputRange: HTMLInputElement;
   $creditValue: HTMLElement;
+  clients: Cliente[];
+  clientLogged: Cliente;
 
-  get clientLogged() {
-    return JSON.parse(localStorage.getItem("client") ?? "{}");
+  constructor() {
+    super();
+    this.clients = JSON.parse(localStorage.getItem("clients") ?? "[]");
+    this.clientLogged = JSON.parse(localStorage.getItem("client") ?? "{}");
   }
+
   connectedCallback() {
     this.createInnerHtml();
     this.recoveryElementRef();
@@ -17,7 +21,7 @@ export class AccountPage extends HTMLElement {
     const $card = document.querySelector<HTMLElement>(".card");
     const $accountInfo = document.querySelector<HTMLElement>(".account-info");
     this.$creditValue = document.querySelector(".credit-value");
-    this.$inputRange = document.querySelector(".form-range");
+    this.$inputRange = document.querySelector("input[type='range']");
 
     if (!this.clientLogged.id) {
       $card.style.display = "none";
@@ -25,39 +29,37 @@ export class AccountPage extends HTMLElement {
     }
   }
 
+  private setRangeColor() {
+    const { value, max } = this.$inputRange;
+    const progress = (+value / +max) * 100;
+
+    this.$inputRange.style.setProperty(
+      "--input-range-color",
+      `linear-gradient(to right, #FE5E71 0%, #FE5E71 ${progress}%, #FCD3E4 ${progress}%, #FCD3E4 100%)`
+    );
+  }
   private addListeners() {
+    this.setRangeColor();
     this.rangeListener();
   }
 
   private rangeListener() {
-    const clients: Cliente[] = JSON.parse(localStorage.getItem("clients") ?? "[]");
-
-    const clientLogged = clients.find((client) => client.id === this.clientLogged.id);
-    this.$inputRange.addEventListener(
-      "input",
-      this.debounceEvent(() => {
-        const formRangeValue = +this.$inputRange.value;
-        this.$creditValue.textContent = `Limite de crédito: ${new Intl.NumberFormat("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        }).format(formRangeValue)}`;
-        clientLogged.limitCredit = formRangeValue;
-
-        localStorage.setItem("client", JSON.stringify(clientLogged));
-        localStorage.setItem("clients", JSON.stringify(clients));
-      }, 500)
-    );
+    this.$inputRange.addEventListener("input", () => {
+      const formRangeValue = +this.$inputRange.value;
+      this.$creditValue.textContent = `Limite de crédito: ${new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(formRangeValue)}`;
+      this.clientLogged.limitCredit = formRangeValue;
+      this.setRangeColor();
+    });
   }
-  debounceEvent(callback: any, timeout: number) {
-    let timer: any;
 
-    return () => {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => {
-        callback();
-      }, timeout);
-    };
+  disconnectedCallback() {
+    localStorage.setItem("client", JSON.stringify(this.clientLogged));
+    localStorage.setItem("clients", JSON.stringify(this.clients));
   }
+
   private createInnerHtml() {
     const currencyFormatter = new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -78,7 +80,7 @@ export class AccountPage extends HTMLElement {
     <div class="credit-value">Limite de crédito: ${currencyFormatter.format(limitCredit ?? 0)}</div>
     <div class="mt-3">
       <label for="customRange1" class="form-label">Defina seu limite de Crédito</label>
-      <input type="range" class="form form-range" min="0" max="10000" value="${limitCredit ?? 0}" step="50" required />
+      <input type="range" class="form" min="0" max="10000" value="${limitCredit ?? 0}" step="50" required />
     </div>
   </div>
 </div>

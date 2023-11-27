@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import { RouterOutlet } from "../../components/router-outlet/router-outlet";
 import { Toasts } from "../../components/toasts/toast";
 import { badgeUpdate } from "../../functions/notification";
@@ -168,19 +169,32 @@ export class ConfigurationPage extends HTMLElement {
     });
   }
   removeClient(id: number) {
-    this.clientList = this.clientList.filter((client) => client.id !== id);
-    this.setStorage();
-    this.renderList();
-    if (this.client.id == id) {
-      localStorage.removeItem("client");
-      const router = document.querySelector<RouterOutlet>("router-app");
-      if (!router) return;
-      router["createInnerHTML"]();
-      router["renderOutlet"]();
-      router["onInit"]();
-      this.firstClient();
-    }
-    Toasts.success("Conta removida com sucesso!");
+    Swal.fire({
+      title: "Você tem certeza?",
+      text: "Você não poderá desfazer esta alteração!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sim, quero deletar!",
+      cancelButtonText: "Cancelar",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.clientList = this.clientList.filter((client) => client.id !== id);
+        this.setStorage();
+        this.renderList();
+        if (this.client.id == id) {
+          localStorage.removeItem("client");
+          const router = document.querySelector<RouterOutlet>("router-app");
+          if (!router) return;
+          router["createInnerHTML"]();
+          router["renderOutlet"]();
+          router["onInit"]();
+          this.firstClient();
+        }
+        Toasts.success("Conta removida com sucesso!");
+      }
+    });
   }
   selectClient(id: number) {
     const client = this.clientList.find((client) => client.id == id);

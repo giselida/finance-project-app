@@ -1,14 +1,44 @@
 import { ApexOptions } from "apexcharts";
 
 export const OPTIONS_PAYMENT: ApexOptions = {
-  chart: {
-    height: 250,
-    type: "bar",
-  },
   series: [],
-  colors: ["#FFD700", "#006400", "#3CB371", "#48D1CC"],
+  chart: {
+    type: "bar",
+    height: 350,
+    stacked: true,
+  },
+  stroke: {
+    width: 1,
+    colors: ["#fff"],
+  },
+
+  plotOptions: {
+    bar: {
+      horizontal: false,
+    },
+  },
   xaxis: {
+    type: "datetime",
     categories: [],
+  },
+  fill: {
+    opacity: 1,
+  },
+  colors: ["#FFD700", "#000000", "#3CB371", "#48D1CC"],
+  yaxis: {
+    labels: {
+      formatter: (val) => {
+        const options = {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        };
+        return new Intl.NumberFormat("pt-BR", options).format(val);
+      },
+    },
+  },
+  legend: {
+    position: "top",
+    horizontalAlign: "left",
   },
 };
 

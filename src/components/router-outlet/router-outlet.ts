@@ -111,6 +111,10 @@ export class RouterOutlet extends HTMLElement {
       const page = new Page();
       $root?.append(page);
     }
+    const $menu = document.querySelector<HTMLElement>(".dropdown-menu");
+    $menu?.addEventListener("mouseleave", () => {
+      $menu.classList.remove("active");
+    });
   }
 
   onInit() {

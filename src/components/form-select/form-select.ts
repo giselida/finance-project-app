@@ -2,7 +2,15 @@ export class FormSelect extends HTMLElement {
   options: HTMLElement[];
   _value: string;
   $backdrop: HTMLElement;
+  _disabled: boolean;
 
+  set disabled(value) {
+    this._disabled = value;
+    this.setAttribute("disabled", `${this._disabled}`);
+  }
+  get disabled() {
+    return this._disabled;
+  }
   set value(value) {
     this._value = value;
     this.setAttribute("value", this._value);
@@ -48,7 +56,9 @@ export class FormSelect extends HTMLElement {
     this.value = this.getAttribute("value");
 
     this.addEventListener("click", () => {
+      if (this.disabled) return;
       this.$backdrop = document.querySelector<HTMLElement>(".backdrop");
+
       if (!this.$backdrop) {
         this.createBackdrop();
         return;
@@ -134,11 +144,12 @@ export class FormSelect extends HTMLElement {
       $backdrop.remove();
     });
   }
-  debounceEvent(callback: any, timeout: number) {
-    let timer: any;
+  debounceEvent(callback: () => void, timeout: number) {
+    let timer: NodeJS.Timeout;
 
     return () => {
       if (timer) clearTimeout(timer);
+
       timer = setTimeout(() => {
         callback();
       }, timeout);

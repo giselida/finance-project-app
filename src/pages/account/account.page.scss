@@ -17,4 +17,24 @@ account-page {
     background-color: white;
     border-radius: 5px;
   }
+  input[type="range"] {
+    background: var(--input-range-color);
+    border: solid 2px #fe5e71;
+    border-radius: 8px;
+    height: 8px;
+    width: 100%;
+    outline: none;
+    transition: background 450ms ease-in;
+    appearance: none;
+
+    &::-webkit-slider-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      -webkit-appearance: none;
+      box-shadow: 0 0 0 1.5px white inset;
+      cursor: ew-resize;
+      background: #fe5e71;
+    }
+  }
 }
