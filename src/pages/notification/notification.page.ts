@@ -1,6 +1,6 @@
 import { convertStringDate } from "../../functions/date";
 import { badgeUpdate } from "../../functions/notification";
-import { Cliente } from "../configuration/configuration.page";
+import { Cliente } from "../account/account.page";
 import { Transaction } from "../transaction/transaction.page";
 import "./notification.page.scss";
 export class Notification extends HTMLElement {

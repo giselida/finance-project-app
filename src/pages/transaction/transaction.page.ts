@@ -11,7 +11,7 @@ import { PT_BR_LOCALE } from "../../constants/date-picker-locale";
 import { SVG_ICONS } from "../../constants/svg-icons";
 import { convertStringDate } from "../../functions/date";
 import { badgeUpdate } from "../../functions/notification";
-import { Cliente } from "../configuration/configuration.page";
+import { Cliente } from "../account/account.page";
 import "./transaction.page.scss";
 export interface Transaction {
   id: number;

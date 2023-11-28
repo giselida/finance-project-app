@@ -1,7 +1,6 @@
 import { FormSelect } from "./components/form-select/form-select";
 import { RouterOutlet } from "./components/router-outlet/router-outlet";
 import { AccountPage } from "./pages/account/account.page";
-import { ConfigurationPage } from "./pages/configuration/configuration.page";
 import { ConversionPage } from "./pages/conversion/conversion.page";
 import { Notification } from "./pages/notification/notification.page";
 import { TransactionPage } from "./pages/transaction/transaction.page";
@@ -13,8 +12,8 @@ export const options = [
     class: FormSelect,
   },
   {
-    selector: "configuration-page",
-    class: ConfigurationPage,
+    selector: "account-page",
+    class: AccountPage,
   },
   {
     selector: "transaction-page",
@@ -24,10 +23,7 @@ export const options = [
     selector: "router-app",
     class: RouterOutlet,
   },
-  {
-    selector: "account-page",
-    class: AccountPage,
-  },
+
   {
     selector: "notification-page",
     class: Notification,

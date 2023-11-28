@@ -1,6 +1,5 @@
 import { badgeUpdate } from "../../functions/notification";
 import { AccountPage } from "../../pages/account/account.page";
-import { ConfigurationPage } from "../../pages/configuration/configuration.page";
 import { ConversionPage } from "../../pages/conversion/conversion.page";
 import { Notification } from "../../pages/notification/notification.page";
 import { TransactionPage } from "../../pages/transaction/transaction.page";
@@ -14,7 +13,6 @@ const createMaterialSymbol = (iconName: string, label: string) => {
       </span>`;
 };
 const PAGE_TITLES: { [key: string]: string } = {
-  "#configurations": createMaterialSymbol("manufacturing", "Configurações"),
   "#transaction": createMaterialSymbol("price_change", "Transação"),
   "#account": createMaterialSymbol("account_circle", "Conta"),
   "#notifications": createMaterialSymbol("notifications", "Notificações"),
@@ -57,12 +55,7 @@ export class RouterOutlet extends HTMLElement {
         </div>
       </a>
       
-      <a href="#configurations">
-        <div class="option-menu dropdown-item">
-          <span class="material-symbols-outlined"> manufacturing </span>
-          Configurações
-        </div>
-      </a>
+    
     </div>
   </div>
   </div>
@@ -90,9 +83,8 @@ export class RouterOutlet extends HTMLElement {
 
     const hash = window.location.hash;
     const ROUTES: { [key: string]: typeof HTMLElement } = {
-      "#configurations": ConfigurationPage,
-      "#transaction": TransactionPage,
       "#account": AccountPage,
+      "#transaction": TransactionPage,
       "#notifications": Notification,
       "#conversion": ConversionPage,
     };
