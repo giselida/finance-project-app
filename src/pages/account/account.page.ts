@@ -53,7 +53,7 @@ export class AccountPage extends HTMLElement {
 <span class="account-info">
   Você não possui uma conta selecionada!
 </span>
-<div class="card mb-2">
+<div class="card">
   <div class="card-header">Conta selecionada</div>
   <div class="card-body">
     <div class="card-title"><span class="info">Nome:</span> ${name ?? ""} </div>
@@ -75,7 +75,7 @@ export class AccountPage extends HTMLElement {
 <div class="content-row">
   <h1 class="title">Contas cadastradas</h1>
   <button type="button" class="btn btn-account" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-   <span class="material-symbols-outlined">
+   <span class="material-symbols-outlined icon">
 group_add
 </span>
     Criar uma conta
@@ -122,8 +122,8 @@ group_add
   </div>
 </div>
 <div class="table-container">
-  <table class="table table-hover table-bordered">
-    <thead class="table-warning">
+  <table class="table table-hover ">
+    <thead>
       <tr>
         <th scope="col">#</th>
         <th scope="col">Numero da conta</th>
@@ -214,22 +214,25 @@ group_add
     this.clientList.forEach((client) => {
       $tbody.innerHTML += `
        <tr>
-       <th scope="row">${client.id}</th>
-      <td>${client.accountNumber}</td>
-      <td>${client.name}</td>
-      <td>${client.email}</td> 
-      <td class="actions"> 
-      ${
-        this.client?.id != client.id
-          ? `   <ion-icon name="bag-check-outline" class="add-account" onclick="document.querySelector('configuration-page').selectClient(${client.id})">
-      </ion-icon>`
-          : ""
-      }
-      <ion-icon name="trash-outline" class="delete" onclick="document.querySelector('configuration-page').removeClient(${client.id})" >
-      </ion-icon>
-    
-      </td> 
-    </tr>
+  <th scope="row">${client.id}</th>
+  <td>${client.accountNumber}</td>
+  <td>${client.name}</td>
+  <td>${client.email}</td>
+  <td class="actions">
+    ${
+      this.client?.id != client.id
+        ? `
+    <span class="material-symbols-outlined add-account" onclick="document.querySelector('configuration-page').selectClient(${client.id})">
+      fact_check
+    </span>
+    `
+        : ""
+    }
+    <span class="material-icons-outlined delete" onclick="document.querySelector('configuration-page').removeClient(${client.id})">
+      delete
+    </span>
+  </td>
+</tr>
       `;
     });
   }

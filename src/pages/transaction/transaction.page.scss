@@ -79,7 +79,27 @@ transaction-page {
       }
     }
   }
-
+  .table-container {
+    overflow-y: auto;
+    border-radius: 5px;
+    min-height: 170px;
+    table {
+      margin: 0;
+    }
+    td:first-child,
+    th:first-child {
+      position: sticky;
+      text-align: left;
+      top: 0;
+      left: 0;
+    }
+    td:last-child,
+    th:last-child {
+      position: sticky;
+      top: 0;
+      right: 0;
+    }
+  }
   #chart-payment {
     margin-bottom: 20px;
   }

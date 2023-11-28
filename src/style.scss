@@ -9,7 +9,7 @@
   --color-white: #fffbe6;
   --color-black: #000000;
   --color-red: #f80505;
-  --color-yellow-dark: #c5bf22;
+  --color-yellow-dark: #ff8f16;
   --color-pink-border: #dc3545;
   --color-gray-light: #ededed;
   --color-gray-medium: #d9d9d9;
@@ -48,27 +48,7 @@ body {
 b {
   font-weight: bold;
 }
-.table-container {
-  overflow-y: auto;
-  border-radius: 5px;
-  min-height: 170px;
-  table {
-    margin: 0;
-  }
-  td:first-child,
-  th:first-child {
-    position: sticky;
-    text-align: left;
-    top: 0;
-    left: 0;
-  }
-  td:last-child,
-  th:last-child {
-    position: sticky;
-    top: 0;
-    right: 0;
-  }
-}
+
 router-app {
   display: block;
 
