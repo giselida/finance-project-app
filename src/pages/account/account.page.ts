@@ -92,31 +92,28 @@ group_add
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-2" id="staticBackdropLabel">Criar uma nova conta</h1>
+        <h1 class="modal-title" id="staticBackdropLabel">Criar uma nova conta</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form class="was-validated">
           <div class="mb-3">
-            <label class="form-label">Nome</label>
-            <input type="text" class="form-control form" required />
-            <div class="invalid-feedback">Campo obrigatório!</div>
+            <label class="form-label">Nome <div class="required">*</div></label>
+            <input type="text" class="form-control form" placeholder="Digite o nome do usuário" required />
           </div>
           <div class="mb-3">
-            <label class="form-label">E-mail</label>
-            <input type="text" class="form-control form" required />
-            <div class="invalid-feedback">E-mail obrigatório!</div>
+            <label class="form-label">E-mail<div class="required">*</div></label>
+            <input type="text" class="form-control form" placeholder="Digite o email do usuário" required />
           </div>
           <div class="mb-3">
-            <label class="form-label">Senha</label>
-            <input type="password" class="form-control form" required />
-            <div class="invalid-feedback">Digite uma senha!</div>
+            <label class="form-label">Senha<div class="required">*</div></label>
+            <input type="password" class="form-control form" placeholder="Digite a senha do usuário" required />
           </div>
         </form>
       </div>
       <div class="modal-footer">
+        <button type="button" class="btn btn-closed" data-bs-dismiss="modal">Cancelar</button>
         <button class="btn btn-add" type="submit">Cadastrar</button>
-        <button type="button" class="btn btn-closed" data-bs-dismiss="modal">Fechar</button>
       </div>
     </div>
   </div>
@@ -185,7 +182,10 @@ group_add
   }
   private sendListener() {
     this.$buttonAdd.addEventListener("click", () => {
-      if (!this.$inputName.value || !this.$inputEmail.value || !this.$inputPassword.value) return;
+      if (!this.$inputName.value || !this.$inputEmail.value || !this.$inputPassword.value) {
+        Toasts.error("Por favor preencha os campos obrigatórios!");
+        throw new Error("Por favor preencha os campos obrigatórios!");
+      }
       this.addClient();
       this.renderList();
       this.instanceModal().toggle();
@@ -222,13 +222,13 @@ group_add
     ${
       this.client?.id != client.id
         ? `
-    <span class="material-symbols-outlined add-account" onclick="document.querySelector('configuration-page').selectClient(${client.id})">
+    <span class="material-symbols-outlined add-account" onclick="document.querySelector('account-page').selectClient(${client.id})">
       fact_check
     </span>
     `
         : ""
     }
-    <span class="material-icons-outlined delete" onclick="document.querySelector('configuration-page').removeClient(${client.id})">
+    <span class="material-icons-outlined delete" onclick="document.querySelector('account-page').removeClient(${client.id})">
       delete
     </span>
   </td>
@@ -239,12 +239,12 @@ group_add
   removeClient(id: number) {
     Swal.fire({
       title: "Você tem certeza?",
-      text: "Você não poderá desfazer esta alteração!",
+      text: "Esta é uma ação irreversível será aplicada imediatamente",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Sim, quero deletar!",
+      confirmButtonText: "Confirmar",
       cancelButtonText: "Cancelar",
     }).then((result) => {
       if (result.isConfirmed) {
@@ -272,8 +272,6 @@ group_add
     this.client = client;
     this.$currentUser.innerHTML = client.name;
 
-    console.log(this.client?.id, client);
-
     Toasts.success(`Conta ${client.name} número ${client.accountNumber} foi selecionada com sucesso!`);
     badgeUpdate();
     this.setStorage();
@@ -285,7 +283,6 @@ group_add
     this.$inputName.value = "";
     this.$inputEmail.value = "";
     this.$inputPassword.value = "";
-    localStorage.removeItem("client");
   }
 
   private addClient() {

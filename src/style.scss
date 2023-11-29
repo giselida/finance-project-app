@@ -2,18 +2,20 @@
 @import "./scss/mixins.scss";
 :root {
   --color-pink: #fe5e71;
+  --color-pink-light: #fcd3e47a;
   --color-orange-light: #f2b97bfc;
   --color-orange: #ff8f16;
   --color-yellow: #ffea38;
   --color-yellow-light: #fffb93;
-  --color-white: #fffbe6;
+  --color-white: #ffff;
   --color-black: #000000;
-  --color-red: #f80505;
+  --color-red: #ff0202;
   --color-yellow-dark: #ff8f16;
-  --color-pink-border: #dc3545;
+  --color-red-border: #dc3545;
   --color-gray-light: #ededed;
   --color-gray-medium: #d9d9d9;
   --color-gray-dark: #979595;
+  --color-line-gray: #7c7a7a;
 }
 body {
   background-color: var(--color-gray-light);
@@ -60,7 +62,7 @@ router-app {
     padding: 10px;
     height: 40px;
     background-color: var(--color-pink);
-    box-shadow: inset 0px -1px 1px 0px var(--color-pink-border);
+    box-shadow: inset 0px -1px 1px 0px var(--color-red-border);
     font-size: 20px;
     .material-symbols-outlined {
       cursor: pointer;
@@ -123,12 +125,12 @@ router-app {
     top: 40px;
     transition: transform 0.6s ease-in-out, width 0.6s ease-in-out;
     transform: translateX(0rem);
-    border-right: 1px solid var(--color-pink-border);
+    border-right: 1px solid var(--color-red-border);
     .anchors {
       cursor: pointer;
       @include display-align-content();
       padding: 10px;
-      border-bottom: 1px solid var(--color-pink-border);
+      border-bottom: 1px solid var(--color-red-border);
       color: var(--color-white);
       font-weight: 700;
       text-decoration: none;
@@ -355,7 +357,7 @@ router-app {
     color: var(--color-red);
     cursor: pointer;
     &:hover {
-      color: var(--color-pink-border);
+      color: var(--color-red-border);
     }
   }
   .edit,
