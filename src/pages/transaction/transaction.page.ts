@@ -44,16 +44,16 @@ export class TransactionPage extends HTMLElement {
   $delete: HTMLSpanElement;
   $modal: HTMLElement;
   $order: HTMLElement;
+  selectedId: number;
+  actuallyId: number = +localStorage.getItem("actuallyId");
   $previous: HTMLButtonElement;
   $next: HTMLButtonElement;
-  actuallyId: number = +localStorage.getItem("actuallyId");
-  selectedId: number;
+  $pageActually: HTMLElement;
   page: number = 1;
   pageSize: number = 5;
   transactionList: Transaction[];
   transactionFind: Transaction;
   datePicker: AirDatepicker;
-  $pageActually: HTMLElement;
   $tableHeaders: NodeListOf<HTMLTableCellElement>;
   $chart: ApexCharts;
   originalList: Transaction[];
@@ -239,11 +239,10 @@ export class TransactionPage extends HTMLElement {
 
     const $tbody = document.querySelector("tbody");
     const $table = document.querySelector("table");
+    $table.hidden = this.filteredList.length < 1;
     const $pagination = document.querySelector<HTMLElement>(".container-pagination");
 
     $pagination.hidden = this.filteredList.length < 1;
-
-    $table.hidden = this.filteredList.length < 1;
 
     const actuallyPage = (this.page - 1) * this.pageSize;
     const nextPage = actuallyPage + this.pageSize;

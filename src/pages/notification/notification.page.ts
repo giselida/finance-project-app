@@ -20,7 +20,7 @@ export class Notification extends HTMLElement {
     this.innerHTML = `
     <div class="list-group">
     ${this.transactionList
-      .reverse()
+      .toReversed()
       .map((transaction) => {
         const isCurrentUser = this.clientLogged.id === transaction.userLoggedID;
         const transactionClient = this.clients.find((client) => {
@@ -39,11 +39,11 @@ export class Notification extends HTMLElement {
       !transaction.view.includes(this.clientLogged.id) ? "active" : ""
     }" aria-current="true" id="${transaction.id}" >
        <div class="d-flex w-100 justify-content-between">
-          <h5 class="mb-2">Transferência ${operationTitle} com sucesso !</h5>
-          <small>${transaction.date}</small>
-       </div>
-       <p class="mb-2">
-       ${operationMessage} ${transactionClient.name}-${transactionClient.accountNumber} no valor
+          <h5 class="title mb-2">Transferência ${operationTitle} com sucesso !</h5>
+          </div>
+        <div class="current-date">${transaction.date}</div>
+       <p class="description mb-2">
+       ${operationMessage} ${transactionClient?.name}-${transactionClient?.accountNumber} no valor
         <b>R$ ${transaction.value.toFixed(2)} </b> em ${transaction.date} 
        </p>
        <small>${shortDate}</small>

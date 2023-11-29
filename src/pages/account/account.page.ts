@@ -1,5 +1,6 @@
 import { Modal } from "bootstrap";
 import Swal from "sweetalert2";
+import warningImage from "../../assets/release_alert.png";
 import { RouterOutlet } from "../../components/router-outlet/router-outlet";
 import { Toasts } from "../../components/toasts/toast";
 import { badgeUpdate } from "../../functions/notification";
@@ -24,6 +25,11 @@ export class AccountPage extends HTMLElement {
   clientList: Cliente[];
   client: Cliente;
   $modal: HTMLElement;
+  $previous: HTMLButtonElement;
+  $next: HTMLButtonElement;
+  $pageActually: HTMLElement;
+  page: number = 1;
+  pageSize: number = 5;
   constructor() {
     super();
     this.getStorage();
@@ -38,7 +44,9 @@ export class AccountPage extends HTMLElement {
     return document.querySelector(".current-user");
   }
   maxID: number = 0;
-
+  get maxPage(): number {
+    return Math.ceil(this.clientList.length / this.pageSize);
+  }
   connectedCallback() {
     this.createInnerHTML();
     this.recoveryElementRef();
@@ -132,6 +140,23 @@ group_add
     <tbody></tbody>
   </table>
 </div>
+<nav class="container-pagination" aria-label="Page navigation">
+      <ul class="pagination">
+        <li class="page-item">
+          <button class="page-link page-previous" aria-label="Previous" disabled>
+            <span class="previous">&laquo;</span>
+          </button>
+        </li>
+        <li class="page-item">
+          <div class="page-link page-actually">1</div>
+        </li>
+        <li class="page-item">
+          <button class="page-link page-next" aria-label="Next" disabled>
+            <span class="next">&raquo;</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
 `;
   }
 
@@ -147,12 +172,16 @@ group_add
     this.$inputPassword = $inputPassword as HTMLInputElement;
     this.$creditValue = document.querySelector(".limit-credit-value");
     this.$inputRange = document.querySelector("input[type='range']");
-
+    this.$previous = document.querySelector(".page-previous");
+    this.$next = document.querySelector(".page-next");
+    this.$pageActually = document.querySelector(".page-actually");
     this.addListeners();
     this.renderList();
   }
 
   private addListeners() {
+    this.$next.addEventListener("click", () => this.nextPage());
+    this.$previous.addEventListener("click", () => this.previousPage());
     this.sendListener();
     this.rangeListener();
     this.setRangeColor();
@@ -206,12 +235,21 @@ group_add
     const clientLength = this.clientList.length < 1;
     const $card = document.querySelector<HTMLElement>(".card");
     const $accountInfo = document.querySelector<HTMLElement>(".account-info");
+    this.$previous.disabled = this.page == 1;
+    this.$next.disabled = this.maxPage <= this.page;
+    const $pagination = document.querySelector<HTMLElement>(".container-pagination");
+
+    $pagination.hidden = this.clientList.length < 1;
+
+    const actuallyPage = (this.page - 1) * this.pageSize;
+    const nextPage = actuallyPage + this.pageSize;
 
     $card.style.display = !this.client.id ? "none" : "block";
     $accountInfo.style.display = !this.client.id ? "block" : "none";
     $table.hidden = clientLength;
     $tbody.innerHTML = "";
-    this.clientList.forEach((client) => {
+    this.$pageActually.textContent = this.page.toString();
+    this.clientList.slice(actuallyPage, nextPage).forEach((client) => {
       $tbody.innerHTML += `
        <tr>
   <th scope="row">${client.id}</th>
@@ -236,16 +274,35 @@ group_add
       `;
     });
   }
+  private previousPage() {
+    this.page--;
+
+    if (this.page <= 1) {
+      this.page = 1;
+    }
+    this.renderList();
+  }
+  private nextPage() {
+    this.page++;
+
+    if (this.page > this.maxPage) {
+      this.page = this.maxPage;
+    }
+    this.renderList();
+  }
   removeClient(id: number) {
     Swal.fire({
-      title: "Você tem certeza?",
-      text: "Esta é uma ação irreversível será aplicada imediatamente",
-      icon: "warning",
+      title: `
+      <img src="${warningImage}" />
+      Você tem certeza?
+      `,
+      html: "Esta é uma <b>ação irreversível</b> <br>será aplicada imediatamente",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
+      confirmButtonColor: "#ffff",
+      cancelButtonColor: "#fe5e71",
       confirmButtonText: "Confirmar",
       cancelButtonText: "Cancelar",
+      focusConfirm: false,
     }).then((result) => {
       if (result.isConfirmed) {
         this.clientList = this.clientList.filter((client) => client.id !== id);
@@ -273,10 +330,10 @@ group_add
     this.$currentUser.innerHTML = client.name;
 
     Toasts.success(`Conta ${client.name} número ${client.accountNumber} foi selecionada com sucesso!`);
-    badgeUpdate();
     this.setStorage();
     this.getStorage();
     this.connectedCallback();
+    badgeUpdate();
   }
 
   cleanForms() {

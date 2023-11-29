@@ -2,12 +2,30 @@
 notification-page {
   @include pageStyle(column);
   .list-group-item {
-    background-color: var(--color-gray-light);
-    border: 1px solid var(--color-black);
+    background-color: var(--color-white);
+    border: 1px solid var(--color-gray-medium);
+    margin-bottom: 10px;
+    border-radius: 4px;
     &.active {
-      background-color: var(--color-yellow-light);
-      border: 1px solid var(--color-black);
-      color: var(--color-black);
+      background-color: var(--color-pink);
+      border: 1px solid var(--color-red);
+      color: var(--color-white);
+      .current-date {
+        border: 1px solid white;
+        color: var(--color-white);
+      }
+    }
+    .title {
+      font-weight: 600;
+    }
+    .current-date {
+      position: absolute;
+      right: 15px;
+      top: 25px;
+      border: 1px solid var(--color-pink);
+      color: var(--color-pink);
+      padding: 5px 10px;
+      border-radius: 4px;
     }
   }
 }

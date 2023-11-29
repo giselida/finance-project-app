@@ -1,9 +1,19 @@
 @import "/src/scss/reset.scss";
 @import "/src/scss/mixins.scss";
+div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm {
+  color: var(--color-pink) !important;
+  border: 1px solid var(--color-pink);
+}
 
+div:where(.swal2-container) button:where(.swal2-styled).swal2-default-outline:focus {
+  box-shadow: none;
+}
+div:where(.swal2-container).swal2-center > .swal2-popup {
+  border-top: 5px solid var(--color-pink);
+  border-radius: 12px;
+}
 account-page {
   @include pageStyle(column);
-
   .account-info {
     @include display-none(true);
     border: 1px solid var(--color-red-border);
@@ -115,6 +125,27 @@ account-page {
       max-width: 200px;
     }
   }
+  .table-container {
+    overflow-y: auto;
+    border-radius: 5px;
+    min-height: 170px;
+    table {
+      margin: 0;
+    }
+    td:first-child,
+    th:first-child {
+      position: sticky;
+      top: 0;
+      left: 0;
+    }
+    td:last-child,
+    th:last-child {
+      position: sticky;
+      top: 0;
+      right: 0;
+    }
+  }
+
   td:last-child,
   td:first-child,
   th:last-child,
