@@ -50,7 +50,7 @@ export class TransactionPage extends HTMLElement {
   $next: HTMLButtonElement;
   $pageActually: HTMLElement;
   page: number = 1;
-  pageSize: number = 5;
+  pageSize: number = 10;
   transactionList: Transaction[];
   transactionFind: Transaction;
   datePicker: AirDatepicker;
@@ -98,14 +98,14 @@ export class TransactionPage extends HTMLElement {
     <div id="chart-payment"></div>
     <div class="content-row mb-3">
       <button type="button" class="btn btn-transaction" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-        <span class="material-symbols-outlined icon"> forward </span>
+        <span class="material-symbols-outlined icon"> sync_alt</span>
         Fazer uma transação
       </button>
       <div class="group-input">
         <div class="input-group-text">
           <span class="material-symbols-outlined"> search </span>
         </div>
-        <input type="text" class="form-search" />
+        <input type="text" class="form-search" placeholder="Pesquisar" />
       </div>
     </div>
 
@@ -127,7 +127,7 @@ export class TransactionPage extends HTMLElement {
           <div class="modal-body">
             <form class="was-validated">
               <div class="form-input">
-                <label class="col-form-label">Valor:</label>
+                <label class="form-label">Valor<div class="required">*</div></label>
                 <input
                   type="text"
                   class="form-control"
@@ -135,34 +135,30 @@ export class TransactionPage extends HTMLElement {
                   pattern="[0-9]+,[0-9]{2}||[0-9]+(.[0-9]{3})*,[0-9]{2}"
                   required
                 />  
-                <div class="valid-feedback">
-                </div>
-                <div class="invalid-feedback">
-                </div>
               </div>
               <div class="form-input description">
-                <label class="col-form-label">Forma de pagamento:</label>
+                <label class="form-label">Forma de pagamento<div class="required">*</div></label>
               </div>
               <div class="form-input">
-                <label class="col-form-label">Data:</label>
+                <label class="form-label">Data<div class="required">*</div></label>
                 <input type="text" class="form-control" required />
               </div>
               <div class="form-input client">
-                <label class="col-form-label">Cliente:</label>
+                <label class="form-label">Cliente<div class="required">*</div></label>
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-send">Enviar</button>
-            <button type="button" class="btn btn-closed" data-bs-dismiss="modal">Fechar</button>
+            <button type="button" class="btn btn-closed" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-add">Cadastrar</button>
           </div>
         </div>
       </div>
     </div>
 
     <div class="table-container">
-      <table class="table table-hover table-bordered">
-        <thead class="table-warning">
+      <table class="table table-hover ">
+        <thead>
           <tr style="position: sticky; top: 0">
             <th scope="col" key="id">
               <div class="row-header">
@@ -272,21 +268,25 @@ export class TransactionPage extends HTMLElement {
       }</td>
       <td>${transaction.clientName}</td>
       <td>
-        <ion-icon
-         name="brush-outline"
-         class="edit ${this.hiddenElement(!!transaction.dateOfPayDay)}" 
-         onclick="document.querySelector('transaction-page').editTransaction(${transaction.id})">
-        </ion-icon>
-        <ion-icon
-         name="trash-outline" 
-         class="delete ${this.hiddenElement(!!transaction.dateOfPayDay)}"
-         onclick="document.querySelector('transaction-page').removeTransaction(${transaction.id})">
-        </ion-icon>
-        <ion-icon
-         name="duplicate-outline"
-         class="duplicate"
-         onclick="document.querySelector('transaction-page').duplicateTransaction(${transaction.id})">
-        </ion-icon>
+        
+       
+        <span class="material-icons-outlined edit ${this.hiddenElement(
+          !!transaction.dateOfPayDay
+        )}"onclick="document.querySelector('transaction-page').editTransaction(${transaction.id})">
+edit
+</span>
+<span class="material-icons-outlined duplicate" onclick="document.querySelector('transaction-page').duplicateTransaction(${
+        transaction.id
+      })">
+content_copy
+</span>
+         <span class="material-icons-outlined delete ${this.hiddenElement(
+           !!transaction.dateOfPayDay
+         )}" onclick="document.querySelector('transaction-page').removeTransaction(${transaction.id})">
+          delete
+         </span>
+       
+        
       </td>
     </tr>`;
     });
@@ -324,7 +324,7 @@ export class TransactionPage extends HTMLElement {
     this.$clientID = $formInputName as HTMLInputElement;
     this.$modal = document.querySelector("#staticBackdrop");
     this.$tableHeaders = document.querySelectorAll("th");
-    this.$btnSend = document.querySelector(".btn-send");
+    this.$btnSend = document.querySelector(".btn-add");
     this.$edit = document.querySelector(".edit");
     this.$delete = document.querySelector(".delete");
     this.$search = document.querySelector(".form-search");

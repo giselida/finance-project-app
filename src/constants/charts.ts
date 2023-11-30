@@ -24,7 +24,7 @@ export const OPTIONS_PAYMENT: ApexOptions = {
   fill: {
     opacity: 1,
   },
-  colors: ["#FFD700", "#000000", "#3CB371", "#48D1CC"],
+  colors: ["#BC3A3A", "#D9A3A3", "#FFBFBF", "#D06767"],
   yaxis: {
     labels: {
       formatter: (val) => {

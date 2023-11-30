@@ -25,30 +25,37 @@ transaction-page {
     gap: 10px;
   }
 
+  .group-input {
+    @include display-align-content();
+    border-radius: 5px;
+    .input-group-text {
+      border: none;
+      background-color: var(--color-white);
+      border-radius: 5px 0px 0px 5px;
+      padding: 10px;
+    }
+    .form-search {
+      border: none;
+      padding: 9px;
+      border-radius: 0px 5px 5px 0px;
+    }
+    :focus-visible {
+      outline: none;
+    }
+  }
+
   .material-symbols-outlined {
     font-size: 16px;
   }
   .btn-transaction {
     max-width: 200px;
-    background-color: var(--color-yellow-light);
+    background-color: var(--color-white);
+    color: var(--color-pink);
     &:hover {
-      background-color: var(--color-yellow);
+      background-color: var(--color-pink-light);
     }
   }
 
-  .modal-footer {
-    .btn-send {
-      background-color: var(--color-yellow-light);
-      &:hover {
-        background-color: var(--color-yellow);
-      }
-    }
-    .btn-closed {
-      &:hover {
-        background-color: var(--color-yellow-light);
-      }
-    }
-  }
   .row-header {
     display: flex;
     align-items: center;
@@ -80,6 +87,6 @@ transaction-page {
     }
   }
   #chart-payment {
-    margin-bottom: 20px;
+    margin-bottom: 30px;
   }
 }

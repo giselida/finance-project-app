@@ -44,8 +44,8 @@ export class RouterOutlet extends HTMLElement {
       </a>
   <div class="dropdown">
     <div class="user account">
-      <span class="current-user">${client.name ?? ""}</span>
       <span class="material-symbols-outlined"> account_circle </span>
+      <span class="current-user">${client.name ?? ""}</span>
     </div>
     <div class="account-menu dropdown-menu">
       <a href="#account">

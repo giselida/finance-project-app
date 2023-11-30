@@ -3,14 +3,11 @@
 :root {
   --color-pink: #fe5e71;
   --color-pink-light: #fcd3e47a;
-  --color-orange-light: #f2b97bfc;
+  --color-pink-medium: #ffbfbf;
   --color-orange: #ff8f16;
-  --color-yellow: #ffea38;
   --color-yellow-light: #fffb93;
   --color-white: #ffff;
-  --color-black: #000000;
   --color-red: #ff0202;
-  --color-yellow-dark: #ff8f16;
   --color-red-border: #dc3545;
   --color-gray-light: #ededed;
   --color-gray-medium: #d9d9d9;
@@ -32,6 +29,7 @@ body {
   [href="#notifications"] {
     position: relative;
     top: 2px;
+    left: -5px;
     .material-symbols-outlined {
       font-size: 22px;
     }
@@ -53,7 +51,50 @@ b {
 
 router-app {
   display: block;
-
+  .modal {
+    --bs-modal-width: 600px;
+    --bs-modal-border-radius: 12px;
+    .modal-header {
+      border-top: 5px solid var(--color-pink);
+      .modal-title {
+        font-weight: 600;
+        font-size: 18px;
+      }
+      .btn-close {
+        padding: 2px;
+        width: 30px;
+        height: 5px;
+        --bs-btn-close-color: var(--color-red);
+        --bs-btn-close-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ff0202'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e");
+        &:focus {
+          box-shadow: none;
+        }
+      }
+    }
+    .form-label {
+      display: flex;
+    }
+    .was-validated :has(.form-control.is-invalid, .form-control:invalid) {
+      .required {
+        color: var(--color-red);
+      }
+    }
+    .modal-footer {
+      .btn-closed {
+        padding: 5px 16px 5px 16px;
+        font-weight: 600;
+        &:hover {
+          background-color: var(--color-pink-light);
+        }
+      }
+      .btn-add {
+        color: var(--color-white);
+        background-color: var(--color-pink);
+        padding: 5px 16px 5px 16px;
+        font-weight: 600;
+      }
+    }
+  }
   header {
     position: fixed;
     z-index: 500;
@@ -154,26 +195,6 @@ router-app {
     @include display-align-content(space-between);
     flex-wrap: wrap;
     gap: 10px;
-
-    .group-input {
-      @include display-align-content();
-      border: 1px solid var(--color-orange);
-      border-radius: 5px;
-      .input-group-text {
-        background-color: var(--color-yellow-light);
-        border-radius: 5px 0px 0px 5px;
-        border-right-color: var(--color-orange);
-        padding: 9px;
-      }
-      .form-search {
-        border: none;
-        padding: 8px;
-        border-radius: 0px 5px 5px 0px;
-      }
-      :focus-visible {
-        outline: none;
-      }
-    }
   }
 
   .input-group {
@@ -187,7 +208,7 @@ router-app {
       border-color: var(--color-orange);
     }
     :focus {
-      box-shadow: 0px 0px 2px 1px var(--color-orange-light);
+      box-shadow: 0px 0px 2px 1px var(--color-yellow-light);
     }
   }
 
@@ -215,11 +236,12 @@ router-app {
     @include display-align-content();
     position: relative;
     top: 10px;
-    background-color: var(--color-yellow-light);
+    background-color: var(--color-white);
     transition: background-color ease-out 0.5s;
+    border: 1px solid var(--color-gray-dark);
     &:hover {
-      background-color: var(--color-yellow);
-      border: 1px solid var(--color-orange);
+      background-color: var(--color-gray-light);
+      border: 1px solid var(--color-gray-dark);
     }
   }
 
@@ -260,6 +282,7 @@ router-app {
       text-transform: uppercase;
       border-radius: 5px;
     }
+
     .backdrop {
       display: flex;
       flex-direction: column;
@@ -269,7 +292,7 @@ router-app {
       top: 40px;
       left: 0;
       border-radius: 5px;
-      border: 1px solid var(--color-orange);
+      border: 1px solid var(--color-pink);
       z-index: 9999;
       max-height: 250px;
       overflow-y: auto;
@@ -285,10 +308,7 @@ router-app {
           border-radius: 0px 0px 5px 5px;
         }
         &:not(:last-child) {
-          border-bottom: 1px solid var(--color-orange);
-        }
-        &:hover {
-          background: var(--color-yellow-light);
+          border-bottom: 1px solid var(--color-pink);
         }
       }
       &::-webkit-scrollbar {
@@ -296,15 +316,15 @@ router-app {
       }
 
       &::-webkit-scrollbar-track {
-        background: var(--color-yellow-light);
+        background: var(--color-pink-light);
       }
 
       &::-webkit-scrollbar-thumb {
-        background: var(--color-orange);
+        background: var(--color-pink);
       }
 
       &::-webkit-scrollbar-thumb:hover {
-        background: var(--color-yellow-dark);
+        background: var(--color-pink-medium);
       }
     }
   }
@@ -360,10 +380,16 @@ router-app {
       color: var(--color-red-border);
     }
   }
-  .edit,
+  .edit {
+    color: var(--color-pink);
+    cursor: pointer;
+    &:hover {
+      color: var(--color-pink-medium);
+    }
+  }
   .duplicate,
   .add-account {
-    color: var(--color-yellow-dark);
+    color: var(--color-orange);
     cursor: pointer;
     &:hover {
       color: var(--color-yellow-light);
