@@ -43,16 +43,16 @@ export const OPTIONS_PAYMENT: ApexOptions = {
 };
 
 export const OPTIONS_CURRENCY: ApexOptions = {
-  series: [],
+  colors: ["#D0E8FFB2", "#FEC6C6"],
+  series: [100, 20],
   chart: {
-    height: 350,
-    type: "heatmap",
+    height: 450,
+    type: "pie",
   },
-  dataLabels: {
-    enabled: false,
-  },
-  colors: ["#ff8f16"],
-  title: {
-    text: "Gráfico mapa de calor",
+  labels: ["USD", "BRL"],
+  responsive: [],
+  legend: {
+    fontWeight: 700,
+    position: "top",
   },
 };

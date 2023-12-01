@@ -2,6 +2,8 @@
 @import "./scss/mixins.scss";
 :root {
   --color-pink: #fe5e71;
+  --color-violet-light: #ebe5fc;
+  --color-black: #000;
   --color-pink-light: #fcd3e47a;
   --color-pink-medium: #ffbfbf;
   --color-orange: #ff8f16;
@@ -10,6 +12,7 @@
   --color-red: #ff0202;
   --color-red-border: #dc3545;
   --color-gray-light: #ededed;
+  --color-gray: #f8f9fa;
   --color-gray-medium: #d9d9d9;
   --color-gray-dark: #979595;
   --color-line-gray: #7c7a7a;
@@ -20,6 +23,9 @@ body {
 }
 .air-datepicker-global-container {
   z-index: 999999;
+}
+.line {
+  border-bottom: 0.2px solid var(--color-line-gray);
 }
 .header {
   display: flex;
@@ -51,6 +57,7 @@ b {
 
 router-app {
   display: block;
+
   .modal {
     --bs-modal-width: 600px;
     --bs-modal-border-radius: 12px;
@@ -115,7 +122,7 @@ router-app {
       display: none;
       right: 5px;
       top: 31px;
-      background-color: var(--color-pink);
+      background-color: var(--color-white);
       &.active {
         display: block;
         left: -40px;
@@ -126,19 +133,24 @@ router-app {
 
       &:has(.dropdown-item:active) {
         background-color: var(--color-pink);
-        filter: hue-rotate(17deg);
+      }
+      &:hover {
+        background-color: var(--color-violet-light);
       }
 
       .dropdown-item {
+        font-weight: 600;
+        .material-symbols-outlined {
+          cursor: pointer;
+          color: var(--color-black);
+        }
         cursor: pointer;
         display: flex;
         align-items: center;
         gap: 10px;
-        color: var(--color-white);
-
+        color: var(--color-black);
         &:hover {
-          filter: brightness(85%);
-          background-color: var(--color-pink);
+          background-color: var(--color-violet-light);
         }
         &:active {
           background-color: var(--color-pink);
@@ -201,20 +213,26 @@ router-app {
     margin-top: 10px;
     flex-wrap: wrap;
     .input-group-text {
-      background-color: var(--color-yellow-light);
-      border-color: var(--color-orange);
+      background-color: var(--color-gray);
+      border-color: var(--color-gray-light);
     }
     .form-control {
-      border-color: var(--color-orange);
+      border-color: var(--color-gray-light);
     }
     :focus {
-      box-shadow: 0px 0px 2px 1px var(--color-yellow-light);
+      box-shadow: 0px 0px 2px 1px var(--color-gray-medium);
     }
   }
 
   .form {
     @include display-align-content(space-around);
     gap: 10px;
+    margin-bottom: 20px;
+
+    flex-wrap: nowrap;
+    @media screen and (max-width: 900px) {
+      flex-wrap: wrap;
+    }
   }
 
   .btn {
@@ -235,10 +253,9 @@ router-app {
   .btn-alt {
     @include display-align-content();
     position: relative;
-    top: 10px;
     background-color: var(--color-white);
     transition: background-color ease-out 0.5s;
-    border: 1px solid var(--color-gray-dark);
+    border: 1px solid var(--color-gray-light);
     &:hover {
       background-color: var(--color-gray-light);
       border: 1px solid var(--color-gray-dark);
@@ -261,8 +278,8 @@ router-app {
     gap: 10px;
     position: relative;
     cursor: pointer;
-    --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ff8f16' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-    border: 1px solid var(--color-orange);
+    --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23979595' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    border: 1px solid var(--color-gray-light);
     white-space: nowrap;
     text-overflow: ellipsis;
     background-size: 18px 52px, calc(7.75em + 3.375rem) calc(7.75em + 69.375rem) !important;
@@ -276,7 +293,7 @@ router-app {
       position: sticky;
       top: 0;
       z-index: 1;
-      border: 1px solid #fffb93;
+      border: 1px solid var(--color-gray-dark);
       padding: 5px;
       padding-left: 10px;
       text-transform: uppercase;
@@ -292,7 +309,7 @@ router-app {
       top: 40px;
       left: 0;
       border-radius: 5px;
-      border: 1px solid var(--color-pink);
+      border: 1px solid var(--color-gray-light);
       z-index: 9999;
       max-height: 250px;
       overflow-y: auto;
@@ -308,7 +325,7 @@ router-app {
           border-radius: 0px 0px 5px 5px;
         }
         &:not(:last-child) {
-          border-bottom: 1px solid var(--color-pink);
+          border-bottom: 1px solid var(--color-gray-light);
         }
       }
       &::-webkit-scrollbar {
@@ -316,15 +333,15 @@ router-app {
       }
 
       &::-webkit-scrollbar-track {
-        background: var(--color-pink-light);
+        background: var(--color-gray-light);
       }
 
       &::-webkit-scrollbar-thumb {
-        background: var(--color-pink);
+        background: var(--color-gray-dark);
       }
 
       &::-webkit-scrollbar-thumb:hover {
-        background: var(--color-pink-medium);
+        background: var(--color-gray-medium);
       }
     }
   }
@@ -373,27 +390,25 @@ router-app {
     font-weight: bold;
     cursor: pointer;
   }
-  .delete {
-    color: var(--color-red);
+  .delete,
+  .edit,
+  .duplicate,
+  .add-account {
     cursor: pointer;
     &:hover {
-      color: var(--color-red-border);
+      filter: brightness(80%);
+      transform: scale(1.05);
     }
+  }
+  .delete {
+    color: var(--color-red);
   }
   .edit {
     color: var(--color-pink);
-    cursor: pointer;
-    &:hover {
-      color: var(--color-pink-medium);
-    }
   }
   .duplicate,
   .add-account {
     color: var(--color-orange);
-    cursor: pointer;
-    &:hover {
-      color: var(--color-yellow-light);
-    }
   }
   td,
   th {
@@ -436,6 +451,9 @@ router-app {
         &:disabled {
           cursor: not-allowed;
           background-color: var(--color-pink-light);
+        }
+        &:hover {
+          filter: contrast(85%);
         }
       }
     }

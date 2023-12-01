@@ -6,6 +6,9 @@ notification-page {
     border: 1px solid var(--color-gray-medium);
     margin-bottom: 10px;
     border-radius: 4px;
+    &:hover {
+      filter: brightness(80%);
+    }
     &.active {
       background-color: var(--color-pink);
       border: 1px solid var(--color-red);

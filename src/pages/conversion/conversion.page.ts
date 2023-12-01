@@ -47,6 +47,13 @@ export class ConversionPage extends HTMLElement {
     this.$textsOfCards = document.querySelectorAll(".card-text");
     this.$symbolToCoin = document.querySelector(".input-group-text");
     this.maskInstance = new Currency(this.$input);
+    this.renderChart();
+  }
+
+  private renderChart() {
+    this.$chartCurrency = new ApexCharts(document.querySelector("#chart-currency"), OPTIONS_CURRENCY);
+    this.$chartCurrency.render();
+    this.$chartCurrency.updateSeries(OPTIONS_CURRENCY.series);
   }
 
   private addListeners(): void {
@@ -152,20 +159,9 @@ export class ConversionPage extends HTMLElement {
 
   private onChart(valueInput: number, conversionValue: number, valueFrom: string, valueTo: string) {
     const listCurrency = [+valueInput.toFixed(2), +conversionValue.toFixed(2)];
-    OPTIONS_CURRENCY.series = [
-      {
-        name: valueTo,
-        data: [listCurrency[1]],
-      },
-      {
-        name: valueFrom,
-        data: [listCurrency[0]],
-      },
-    ];
-    this.$chartCurrency = new ApexCharts(document.querySelector("#chart-currency"), OPTIONS_CURRENCY);
-
-    this.$chartCurrency.render();
-    this.$chartCurrency.updateSeries(OPTIONS_CURRENCY.series);
+    OPTIONS_CURRENCY.series = [listCurrency[1], listCurrency[0]];
+    OPTIONS_CURRENCY.labels = [valueFrom, valueTo];
+    this.renderChart();
   }
 
   private removeMask(value: string) {
@@ -229,56 +225,64 @@ export class ConversionPage extends HTMLElement {
 
   private createInnerHTML() {
     this.innerHTML = /*html*/ `
-     <div class="input-group mb-3">
-      <span class="input-group-text">$</span>
-      <input
-        type="text"
-        class="form-control"
-        autocomplete="transaction-currency"
-        value="0,00"
-        pattern="[0-9]+,[0-9]{2}||[0-9]+(.[0-9]{3})*,[0-9]{2}"
-        required
-      />
-    </div>
-    <div class="button-group">
-      <button type="button" class="btn btn-search">
-        <span class="material-symbols-outlined icon"> travel_explore </span>
-        Pesquisar
-      </button>
-      <button type="button" class="btn btn-clean">
-        <span class="material-symbols-outlined icon"> close </span>
-        Limpar
-      </button>
-    </div>
-    <div class="form">
-      <div class="form-group">
-        <label>Converter de :</label>
+<div class="row-content">
+    <div class="card w-25">
+      <div class="input-group mb-3">
+        <span class="input-group-text">$</span>
+        <input
+          type="text"
+          class="form-control"
+          autocomplete="transaction-currency"
+          value="0,00"
+          pattern="[0-9]+,[0-9]{2}||[0-9]+(.[0-9]{3})*,[0-9]{2}"
+          required
+        />
       </div>
-      <button type="button" class="btn btn-alt">
-        <span class="material-symbols-outlined">sync_alt</span>
-      </button>
-      <div class="form-group-2">
-        <label>Para :</label>
+      <div class="form">
+        <div class="form-group">
+        </div>
+        <button type="button" class="btn btn-alt">
+          <span class="material-symbols-outlined">sync_alt</span>
+        </button>
+        <div class="form-group-2">
+        </div>
+      </div>  <div class="button-group">
+        <button type="button" class="btn btn-search">
+          <span class="material-symbols-outlined icon"> search </span>
+          Pesquisar
+        </button>
+        <button type="button" class="btn btn-clean">
+          <span class="material-symbols-outlined icon"> close </span>
+          Limpar
+        </button>
       </div>
-    </div>
-    <h5 class="h5">Resultado da conversão</h5>
-    <div class="result">
-      <div class="card">
-        <div class="card-header from">Conversão de:<span></span></div>
-        <div class="card-body">
-          Valor a converter:
-          <div class="card-text"></div>
+<div class="line"></div>
+
+      <div class="result">
+        <div class="card ">
+          <div class="card-header">Resultado da conversão</div>
+          <div class="card-body">
+            <div class="from"><b>Conversão de:</b><span></span></div>
+            <div class="content">
+              <b>Valor a converter:</b>
+              <div class="card-text"></div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="to"><b>Conversão para:</b><span></span></div>
+            <div class="content "> 
+              <b> Resultado da conversão:</b>
+              <div class="card-text"></div>
+           </div>
+          </div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-header to">Para:<span></span></div>
-        <div class="card-body">
-          Resultado da conversão:
-          <div class="card-text"></div>
-        </div>
-      </div>
+      
     </div>
-    <div id="chart-currency"></div>
+    <div class="card w-75">
+      <div id="chart-currency"></div>
+    </div>
+</div>
       `;
   }
   private createFormSelect() {

@@ -41,9 +41,7 @@ account-page {
     .info {
       font-weight: 600 !important;
     }
-    .line {
-      border-bottom: 0.2px solid var(--color-line-gray);
-    }
+
     .limit-credit {
       margin-top: 20px;
       .form-label {
@@ -83,6 +81,10 @@ account-page {
       color: var(--color-red-border);
       background-color: var(--color-white);
       max-width: 200px;
+      &:hover {
+        color: var(--color-pink);
+        background-color: var(--color-violet-light);
+      }
     }
   }
   .table-container {

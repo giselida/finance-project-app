@@ -4,6 +4,8 @@ import "air-datepicker/air-datepicker.css";
 import ApexCharts from "apexcharts";
 import { Modal } from "bootstrap";
 import IMask from "imask";
+import Swal from "sweetalert2";
+import warningImage from "../../assets/release_alert.png";
 import { FormSelect } from "../../components/form-select/form-select";
 import { Toasts } from "../../components/toasts/toast";
 import { OPTIONS_PAYMENT } from "../../constants/charts";
@@ -50,7 +52,7 @@ export class TransactionPage extends HTMLElement {
   $next: HTMLButtonElement;
   $pageActually: HTMLElement;
   page: number = 1;
-  pageSize: number = 10;
+  pageSize: number = 5;
   transactionList: Transaction[];
   transactionFind: Transaction;
   datePicker: AirDatepicker;
@@ -544,11 +546,27 @@ content_copy
   }
 
   removeTransaction(id: number) {
-    this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
-    this.renderTransactions();
-    Toasts.success("Transação removida com sucesso!");
-    this.renderChart();
-    this.saveTransactionList();
+    Swal.fire({
+      title: `
+      <img src="${warningImage}" />
+      Você tem certeza?
+      `,
+      html: "Esta é uma <b>ação irreversível</b> <br>será aplicada imediatamente",
+      showCancelButton: true,
+      confirmButtonColor: "#ffff",
+      cancelButtonColor: "#fe5e71",
+      confirmButtonText: "Confirmar",
+      cancelButtonText: "Cancelar",
+      focusConfirm: false,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
+        this.renderTransactions();
+        Toasts.success("Transação removida com sucesso!");
+      }
+      this.renderChart();
+      this.saveTransactionList();
+    });
   }
 
   createFormSelectCliente() {
