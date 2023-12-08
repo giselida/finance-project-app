@@ -7,6 +7,7 @@ import IMask from "imask";
 import Swal from "sweetalert2";
 import warningImage from "../../assets/release_alert.png";
 import { FormSelect } from "../../components/form-select/form-select";
+import { RouterOutlet } from "../../components/router-outlet/router-outlet";
 import { Toasts } from "../../components/toasts/toast";
 import { OPTIONS_PAYMENT } from "../../constants/charts";
 import { PT_BR_LOCALE } from "../../constants/date-picker-locale";
@@ -23,6 +24,7 @@ export interface Transaction {
   clientID: number;
   userLoggedID: number;
   creditLimit: number;
+  creditLimitUsed?: number;
   date: string;
   view: number[];
   dateOfPayDay?: string;
@@ -112,7 +114,7 @@ export class TransactionPage extends HTMLElement {
     </div>
 
     <div
-      class="modal fade"
+      class="modal fade "
       id="staticBackdrop"
       data-bs-backdrop="static"
       data-bs-keyboard="false"
@@ -120,7 +122,7 @@ export class TransactionPage extends HTMLElement {
       aria-labelledby="staticBackdropLabel"
       aria-hidden="true"
     >
-      <div class="modal-dialog">
+      <div class="modal-dialog  modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h1 class="modal-title fs-2" id="staticBackdropLabel">Transação</h1>
@@ -143,7 +145,7 @@ export class TransactionPage extends HTMLElement {
               </div>
               <div class="form-input">
                 <label class="form-label">Data<div class="required">*</div></label>
-                <input type="text" class="form-control" required />
+                <input type="text" class="form-control icon-calendar" required />
               </div>
               <div class="form-input client">
                 <label class="form-label">Cliente<div class="required">*</div></label>
@@ -244,9 +246,9 @@ export class TransactionPage extends HTMLElement {
 
     const actuallyPage = (this.page - 1) * this.pageSize;
     const nextPage = actuallyPage + this.pageSize;
-
     $tbody.innerHTML = "";
     this.$pageActually.textContent = this.page.toString();
+    localStorage.setItem("actuallyPage", this.page.toString());
     transactions.slice(actuallyPage, nextPage).forEach((transaction) => {
       $tbody.innerHTML += /*html*/ ` 
        <tr id="option-of-transaction-${transaction.id}">
@@ -319,6 +321,7 @@ content_copy
 
     this.originalList = JSON.parse(localStorage.getItem("transactionList")) ?? [];
     this.transactionList = this.originalList.filter((item: Transaction) => item.userLoggedID === this.clientLogged?.id);
+    this.page = +localStorage.getItem("actuallyPage");
     const [$formInputValue, $formInputFormOfPayment, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
     this.$inputValue = $formInputValue as HTMLInputElement;
     this.$inputFormOfPayment = $formInputFormOfPayment as FormSelect;
@@ -348,6 +351,7 @@ content_copy
     this.$previous.addEventListener("click", () => this.previousPage());
     this.datePicker = new AirDatepicker(this.$inputDate, {
       locale: PT_BR_LOCALE,
+
       onRenderCell({ date }) {
         const isDisabled = self.validateDateIsFuture(date);
         return {
@@ -422,7 +426,7 @@ content_copy
       const $item = document.querySelector(item);
       $item.classList.remove("positive");
       $item.classList.remove("negative");
-      const key = item === ".current-balance" ? "accountAmount" : "limitCredit";
+      const key = item === ".current-balance" ? "accountAmount" : "limitCreditCurrent";
       $item.classList.add(this.clientLogged?.[key] > 0 ? "positive" : "negative");
       $item.textContent = `${new Intl.NumberFormat("pt-BR", {
         style: "currency",
@@ -444,9 +448,14 @@ content_copy
       Toasts.error("Selecione um valor valido!");
       throw new Error("Selecione um valor valido!");
     }
+    const router = document.querySelector<RouterOutlet>("router-app");
 
     const methodKey = !this.selectedId ? "addTransaction" : "updateTransaction";
     this[methodKey]();
+    if (!router) return;
+    router["createInnerHTML"]();
+    router["renderOutlet"]();
+    router["onInit"]();
     this.instanceModal().toggle();
     this.renderChart();
     this.applySort();
@@ -574,11 +583,20 @@ content_copy
       .filter((client) => client.id != this.clientLogged?.id)
       .map((client) => this.createFormOption(client))
       .join("");
+
+    const emptyHTML =
+      clienteOptions.length <= 1
+        ? `<div class="option" value="">
+        Crie uma conta <a href="#account" onclick="document.querySelector('.modal-backdrop')?.remove('show')">aqui</a>
+        </div>`
+        : "";
+
     return /*html*/ `
        <form-select class="form-control is-invalid" required placeholder="Selecione">
-        ${clienteOptions}
-       </form-select>
-    `;
+         ${emptyHTML}
+         ${clienteOptions}
+        </form-select>
+        `;
   }
   createFormOption(client: Cliente) {
     return `
@@ -680,13 +698,16 @@ content_copy
     const clientSelected = clients.find((client) => client.id === transaction.clientID);
     const inputValue = +transaction.value;
     const isCredito = transaction.formOfPayment === eFormOfPayment.CREDITO;
-    const propertyName = isCredito ? "limitCredit" : "accountAmount";
+    const propertyName = isCredito ? "limitCreditCurrent" : "accountAmount";
     const clientLogged = clients.find((client) => client.id === this.clientLogged.id);
 
     this.validTransaction(transaction);
 
     const valueOfDebit = +clientLogged?.[propertyName].toFixed(2);
 
+    if (isCredito) {
+      clientLogged.limitCreditUsed = clientLogged.limitCreditUsed + inputValue;
+    }
     clientLogged[propertyName] = valueOfDebit - inputValue;
     clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
 
@@ -705,6 +726,7 @@ content_copy
       clientID: +this.$clientID.value,
       userLoggedID: this.clientLogged.id,
       creditLimit: this.clientLogged.limitCredit,
+      creditLimitUsed: this.clientLogged.limitCreditUsed,
       view: [],
     };
     this.validTransaction(newTransaction);
@@ -714,7 +736,7 @@ content_copy
 
   private validTransaction(transaction: Transaction) {
     const clientLogged = this.clients.find((client) => client.id === this.clientLogged.id);
-    const propertyName = transaction.formOfPayment === eFormOfPayment.CREDITO ? "limitCredit" : "accountAmount";
+    const propertyName = transaction.formOfPayment === eFormOfPayment.CREDITO ? "limitCreditCurrent" : "accountAmount";
     const valueOfDebit = +clientLogged?.[propertyName].toFixed(2);
 
     if (transaction.value > valueOfDebit) {

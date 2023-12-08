@@ -7,7 +7,7 @@ notification-page {
     margin-bottom: 10px;
     border-radius: 4px;
     &:hover {
-      filter: brightness(80%);
+      filter: contrast(75%);
     }
     &.active {
       background-color: var(--color-pink);

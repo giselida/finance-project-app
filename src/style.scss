@@ -24,6 +24,20 @@ body {
 .air-datepicker-global-container {
   z-index: 999999;
 }
+.air-datepicker-cell {
+  &:hover {
+    border-radius: 50%;
+  }
+}
+.air-datepicker-cell.-selected- {
+  border-radius: 50%;
+  color: #fff;
+  border: none;
+  background: var(--color-pink) !important;
+}
+.air-datepicker-cell.-current- {
+  color: var(--color-pink);
+}
 .line {
   border-bottom: 0.2px solid var(--color-line-gray);
 }
@@ -99,6 +113,9 @@ router-app {
         background-color: var(--color-pink);
         padding: 5px 16px 5px 16px;
         font-weight: 600;
+        &:hover {
+          filter: brightness(80%);
+        }
       }
     }
   }
@@ -140,20 +157,22 @@ router-app {
 
       .dropdown-item {
         font-weight: 600;
-        .material-symbols-outlined {
-          cursor: pointer;
-          color: var(--color-black);
-        }
         cursor: pointer;
         display: flex;
         align-items: center;
         gap: 10px;
         color: var(--color-black);
+        .material-symbols-outlined {
+          cursor: pointer;
+          color: var(--color-black);
+        }
         &:hover {
           background-color: var(--color-violet-light);
+          color: var(--color-pink);
         }
         &:active {
           background-color: var(--color-pink);
+          color: var(--color-white);
         }
       }
     }
@@ -394,10 +413,11 @@ router-app {
   .edit,
   .duplicate,
   .add-account {
+    transition: transform 0.2s ease-in-out;
     cursor: pointer;
     &:hover {
-      filter: brightness(80%);
       transform: scale(1.05);
+      filter: brightness(80%);
     }
   }
   .delete {

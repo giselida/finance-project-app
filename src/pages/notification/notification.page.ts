@@ -15,11 +15,11 @@ export class Notification extends HTMLElement {
   }
   connectedCallback() {
     this.transactionList = JSON.parse(localStorage.getItem("transactionList") ?? "[]");
-    this.transactionList = this.transactionList.filter((value) => value.dateOfPayDay);
-
+    const transaction = this.transactionList.filter((value) => value.dateOfPayDay);
+    console.log(this.transactionList);
     this.innerHTML = `
     <div class="list-group">
-    ${this.transactionList
+    ${transaction
       .toReversed()
       .map((transaction) => {
         const isCurrentUser = this.clientLogged.id === transaction.userLoggedID;

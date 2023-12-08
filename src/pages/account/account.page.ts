@@ -13,6 +13,8 @@ export interface Cliente {
   accountAmount: number;
   password: string;
   limitCredit: number;
+  limitCreditUsed: number;
+  limitCreditCurrent: number;
 }
 
 export class AccountPage extends HTMLElement {
@@ -30,6 +32,7 @@ export class AccountPage extends HTMLElement {
   $pageActually: HTMLElement;
   page: number = 1;
   pageSize: number = 5;
+  $usedCreditValue: HTMLElement;
   constructor() {
     super();
     this.getStorage();
@@ -56,7 +59,8 @@ export class AccountPage extends HTMLElement {
       style: "currency",
       currency: "BRL",
     });
-    const { name, accountNumber, accountAmount, limitCredit } = this.client;
+    const { name, accountNumber, accountAmount, limitCredit, limitCreditCurrent } = this.client;
+
     this.innerHTML = /*html*/ `
 <span class="account-info">
   Você não possui uma conta selecionada!
@@ -75,8 +79,14 @@ export class AccountPage extends HTMLElement {
         <span class="limit-credit-value"> 
          ${currencyFormatter.format(limitCredit ?? 0)}
         </span>
+        <span class="info">Limite de crédito disponível:</span>
+        <span class="available-credit-value"> 
+         ${currencyFormatter.format(limitCreditCurrent ?? 0)}
+        </span>
       </div>
-      <input type="range" class="form" min="0" max="10000" value="${limitCredit ?? 0}" step="50" required />
+      <div class="range">
+        <input type="range" class="form" min="0" max="10000" value="${limitCredit ?? 0}" step="50" required />
+      </div>
     </div>
   </div>
 </div>
@@ -97,7 +107,7 @@ group_add
   tabindex="-1"
   aria-labelledby="staticBackdropLabel"
   aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h1 class="modal-title" id="staticBackdropLabel">Criar uma nova conta</h1>
@@ -115,7 +125,7 @@ group_add
           </div>
           <div class="mb-3">
             <label class="form-label">Senha<div class="required">*</div></label>
-            <input type="password" class="form-control form" placeholder="Digite a senha do usuário" required />
+            <input type="password" class="form-control form" placeholder="Digite a senha do usuário" autocomplete="off" required />
           </div>
         </form>
       </div>
@@ -171,6 +181,7 @@ group_add
     this.$inputEmail = $inputEmail as HTMLInputElement;
     this.$inputPassword = $inputPassword as HTMLInputElement;
     this.$creditValue = document.querySelector(".limit-credit-value");
+    this.$usedCreditValue = document.querySelector(".available-credit-value");
     this.$inputRange = document.querySelector("input[type='range']");
     this.$previous = document.querySelector(".page-previous");
     this.$next = document.querySelector(".page-next");
@@ -189,12 +200,19 @@ group_add
   private rangeListener() {
     this.$inputRange.addEventListener("input", () => {
       const formRangeValue = +this.$inputRange.value;
+      const limitCredit = +this.$inputRange.value - this.client.limitCreditUsed;
       this.$creditValue.textContent = `${new Intl.NumberFormat("pt-BR", {
         style: "currency",
         currency: "BRL",
       }).format(formRangeValue)}`;
+      this.$usedCreditValue.textContent = `${new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(limitCredit)}`;
       const client = this.clientList.find((client) => client.id == this.client.id);
       client.limitCredit = formRangeValue;
+      client.limitCreditCurrent = limitCredit;
+
       this.client = client;
       this.setRangeColor();
       this.setStorage();
@@ -202,13 +220,27 @@ group_add
   }
   private setRangeColor() {
     const { value, max } = this.$inputRange;
+    const $range = document.querySelector<HTMLDivElement>(".range");
     const progress = (+value / +max) * 100;
+    const barColor = "#FCD3E4";
+    const primaryColor = "#FE5E71";
+    const secondaryColor = "#bd3647";
+    const secondaryBarColor = "#d5374a42";
+    const limitProgress = (+value / +this.client.limitCreditUsed) * 100;
 
-    this.$inputRange.style.setProperty(
+    $range.style.setProperty("--width", `${this.client.limitCreditUsed / 100}%`);
+
+    $range.style.setProperty(
       "--input-range-color",
-      `linear-gradient(to right, #FE5E71 0%, #FE5E71 ${progress}%, #FCD3E4 ${progress}%, #FCD3E4 100%)`
+      `linear-gradient(to right, ${primaryColor} ${progress}%, ${primaryColor} ${progress}%, ${barColor} ${progress}%, ${barColor} 100%)`
+    );
+
+    $range.style.setProperty(
+      "--limit-range-color",
+      `linear-gradient(to right, ${secondaryColor} ${limitProgress}%, ${secondaryColor} ${limitProgress}%, ${secondaryBarColor} ${progress}%, ${secondaryBarColor} 100%)`
     );
   }
+
   private sendListener() {
     this.$buttonAdd.addEventListener("click", () => {
       if (!this.$inputName.value || !this.$inputEmail.value || !this.$inputPassword.value) {
@@ -304,7 +336,11 @@ group_add
       cancelButtonText: "Cancelar",
       focusConfirm: false,
     }).then((result) => {
+      const client = this.clientList.find((client) => client.id == id);
       if (result.isConfirmed) {
+        if (this.client.name === client.name) {
+          this.$currentUser.innerHTML = "";
+        }
         this.clientList = this.clientList.filter((client) => client.id !== id);
         this.client = this.client.id == id ? ({} as Cliente) : this.client;
         this.setStorage();
@@ -324,7 +360,7 @@ group_add
   selectClient(id: number) {
     const client = this.clientList.find((client) => client.id == id);
     if (client && !this.client?.id) {
-      if (client.accountAmount == 0) client.accountAmount = 100;
+      if (client.accountAmount == 0) client.accountAmount = 10000;
     }
     this.client = client;
     this.$currentUser.innerHTML = client.name;
@@ -352,6 +388,8 @@ group_add
       accountAmount: 0,
       password: this.$inputPassword.value,
       limitCredit: 0,
+      limitCreditUsed: 0,
+      limitCreditCurrent: 0,
     };
     this.clientList.push(objectClient);
     this.setStorage();
