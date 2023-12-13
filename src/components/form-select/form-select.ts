@@ -12,25 +12,35 @@ export class FormSelect extends HTMLElement {
     return this._disabled;
   }
   set value(value) {
-    this._value = value;
-    this.setAttribute("value", this._value);
     this.classList.remove("is-valid");
     this.classList.remove("is-invalid");
+
+    const isInvalidMethod = !value ? "add" : "remove";
+    const isValidMethod = !value ? "remove" : "add";
+
+    if (this.getAttribute("required") != null) {
+      this.classList[isInvalidMethod]("is-invalid");
+      this.classList[isValidMethod]("is-valid");
+    }
+
+    this._value = value;
+    this.setAttribute("value", this._value);
+
     if (!value) {
-      if (this.getAttribute("required") != null) {
-        this.classList.add("is-invalid");
-        this.classList.remove("is-valid");
-      }
       this.innerHTML = this.getAttribute("placeholder") ?? "Selecione ...";
     } else {
       const optionSelected = this.options.find((option) => option.getAttribute("value") === this.getAttribute("value"));
       if (optionSelected) {
-        this.innerHTML = optionSelected.innerHTML;
-        if (this.getAttribute("required") != null) {
-          this.classList.remove("is-invalid");
-          this.classList.add("is-valid");
-        }
+        this.innerHTML = `
+            <span abbrev class="selected-value">
+            ${optionSelected.innerHTML}
+           </span>
+       `;
       }
+      this.querySelector(".selected-value")?.addEventListener("click", (event) => {
+        this.stopPropagation(event as MouseEvent);
+        this.onclick();
+      });
     }
   }
   get value() {
@@ -52,28 +62,31 @@ export class FormSelect extends HTMLElement {
     this.classList.add("form-select");
 
     this.options = [...this.children] as HTMLElement[];
-
     this.value = this.getAttribute("value");
 
-    this.addEventListener("click", () => {
-      if (this.disabled) return;
-      this.$backdrop = document.querySelector<HTMLElement>(".backdrop");
-
-      if (!this.$backdrop) {
-        this.createBackdrop();
-        return;
-      }
-      if (!this.hasSearch) this.$backdrop?.remove();
+    document.documentElement.addEventListener("click", (event) => {
+      setTimeout(() => {
+        this.$backdrop = document.querySelector<HTMLElement>(".backdrop");
+        this.stopPropagation(event);
+        const item = event.target as HTMLElement;
+        if (item.tagName != "FORM-SELECT" && item.tagName != "INPUT") {
+          this.$backdrop?.remove();
+        }
+      }, 50);
     });
-
-    document.querySelector("html").addEventListener("click", (event) => {
-      this.stopPropagation(event);
-      const item = event.target as HTMLElement;
-      if (item.tagName != "FORM-SELECT" && item.tagName != "INPUT") {
-        this.$backdrop?.remove();
-      }
-    });
+    this.addEventListener("click", this.onclick);
   }
+
+  onclick = () => {
+    this.$backdrop = document.querySelector<HTMLElement>(".backdrop");
+    if (this.disabled) return;
+
+    if (!this.$backdrop) {
+      this.createBackdrop();
+      return;
+    }
+    if (!this.hasSearch) this.$backdrop?.remove();
+  };
 
   private stopPropagation(event: MouseEvent) {
     event.stopPropagation();
@@ -88,6 +101,7 @@ export class FormSelect extends HTMLElement {
       `;
     }
     this.$backdrop.classList.add("backdrop");
+
     this.options
       .map((value) => {
         return value.cloneNode(true) as HTMLElement;
@@ -99,6 +113,7 @@ export class FormSelect extends HTMLElement {
 
     this.append(this.$backdrop);
     const $searchInput = document.querySelector<HTMLInputElement>(".search-input");
+
     $searchInput?.addEventListener(
       "input",
       this.debounceEvent(() => {
@@ -118,7 +133,9 @@ export class FormSelect extends HTMLElement {
           });
       }, 500)
     );
+
     this.$backdrop.focus();
+
     if (this.hasSearch) {
       $searchInput.focus();
     }
@@ -131,7 +148,6 @@ export class FormSelect extends HTMLElement {
       const option = event.target as HTMLElement;
       this.innerHTML = option.innerHTML;
       this.value = option.getAttribute("value");
-
       this.classList.remove("is-valid");
       this.classList.remove("is-invalid");
 

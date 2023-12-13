@@ -186,6 +186,7 @@ group_add
     this.$previous = document.querySelector(".page-previous");
     this.$next = document.querySelector(".page-next");
     this.$pageActually = document.querySelector(".page-actually");
+
     this.addListeners();
     this.renderList();
   }
@@ -271,7 +272,7 @@ group_add
     this.$next.disabled = this.maxPage <= this.page;
     const $pagination = document.querySelector<HTMLElement>(".container-pagination");
 
-    $pagination.hidden = this.clientList.length < 1;
+    $pagination.hidden = clientLength;
 
     const actuallyPage = (this.page - 1) * this.pageSize;
     const nextPage = actuallyPage + this.pageSize;
@@ -338,7 +339,7 @@ group_add
     }).then((result) => {
       const client = this.clientList.find((client) => client.id == id);
       if (result.isConfirmed) {
-        if (this.client.name === client.name) {
+        if (this.client.id === client.id) {
           this.$currentUser.innerHTML = "";
         }
         this.clientList = this.clientList.filter((client) => client.id !== id);
@@ -359,6 +360,7 @@ group_add
   }
   selectClient(id: number) {
     const client = this.clientList.find((client) => client.id == id);
+
     if (client && !this.client?.id) {
       if (client.accountAmount == 0) client.accountAmount = 10000;
     }
@@ -392,8 +394,11 @@ group_add
       limitCreditCurrent: 0,
     };
     this.clientList.push(objectClient);
+
     this.setStorage();
     this.cleanForms();
     Toasts.success("Conta criada com sucesso!");
+    if (!this.client.id) this.selectClient(objectClient.id);
+    location.reload();
   }
 }

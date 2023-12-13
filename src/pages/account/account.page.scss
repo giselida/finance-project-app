@@ -14,14 +14,7 @@ div:where(.swal2-container).swal2-center > .swal2-popup {
 }
 account-page {
   @include pageStyle(column);
-  .account-info {
-    @include display-none(true);
-    border: 1px solid var(--color-red-border);
-    padding: 10px;
-    background-color: var(--color-white);
-    border-radius: 5px;
-    margin-bottom: 10px;
-  }
+
   .card {
     border: 1px solid var(--color-gray-dark);
     margin-bottom: 45px;

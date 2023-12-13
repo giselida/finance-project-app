@@ -7,7 +7,6 @@ import IMask from "imask";
 import Swal from "sweetalert2";
 import warningImage from "../../assets/release_alert.png";
 import { FormSelect } from "../../components/form-select/form-select";
-import { RouterOutlet } from "../../components/router-outlet/router-outlet";
 import { Toasts } from "../../components/toasts/toast";
 import { OPTIONS_PAYMENT } from "../../constants/charts";
 import { PT_BR_LOCALE } from "../../constants/date-picker-locale";
@@ -78,9 +77,13 @@ export class TransactionPage extends HTMLElement {
   }
   get filteredList() {
     return this.transactionList.filter((item) => {
+      const isSameID = +item.userLoggedID === +this.clientLogged.id;
       return (
-        +item.userLoggedID === +this.clientLogged.id &&
-        Object.values(item).some((item) => item.toString().toLowerCase().includes(this.$search.value.toLowerCase()))
+        +isSameID &&
+        Object.values(item).some((item) => {
+          if (typeof item === "number") return item.toString().replace(".", ",").includes(this.$search.value.toLowerCase());
+          return item.toString().toLowerCase().includes(this.$search.value.toLowerCase());
+        })
       );
     });
   }
@@ -145,7 +148,7 @@ export class TransactionPage extends HTMLElement {
               </div>
               <div class="form-input">
                 <label class="form-label">Data<div class="required">*</div></label>
-                <input type="text" class="form-control icon-calendar" required />
+                <input type="text" pattern="^(3[01]|[12][0-9]|0[1-9])/(1[0-2]|0[1-9])/[0-9]{4}$" class="form-control icon-calendar" required />
               </div>
               <div class="form-input client">
                 <label class="form-label">Cliente<div class="required">*</div></label>
@@ -248,7 +251,7 @@ export class TransactionPage extends HTMLElement {
     const nextPage = actuallyPage + this.pageSize;
     $tbody.innerHTML = "";
     this.$pageActually.textContent = this.page.toString();
-    localStorage.setItem("actuallyPage", this.page.toString());
+    window.history.replaceState({}, "", `?page=${this.page}#transaction`);
     transactions.slice(actuallyPage, nextPage).forEach((transaction) => {
       $tbody.innerHTML += /*html*/ ` 
        <tr id="option-of-transaction-${transaction.id}">
@@ -313,6 +316,10 @@ content_copy
     this.renderTransactions();
     this.renderChart();
   }
+  disconnectedCallback() {
+    window.history.replaceState({}, "", `?${window.location.hash}`);
+    this.$chart.destroy();
+  }
 
   setElementRef() {
     if (!this.clientLogged?.id) {
@@ -321,7 +328,8 @@ content_copy
 
     this.originalList = JSON.parse(localStorage.getItem("transactionList")) ?? [];
     this.transactionList = this.originalList.filter((item: Transaction) => item.userLoggedID === this.clientLogged?.id);
-    this.page = +localStorage.getItem("actuallyPage");
+    this.page = +(location.search?.replace("?page=", "") || 1);
+
     const [$formInputValue, $formInputFormOfPayment, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
     this.$inputValue = $formInputValue as HTMLInputElement;
     this.$inputFormOfPayment = $formInputFormOfPayment as FormSelect;
@@ -344,7 +352,10 @@ content_copy
     this.$modal.addEventListener("hidden.bs.modal", () => this.onModalHidden());
     this.$search.addEventListener(
       "input",
-      this.debounceEvent(() => this.renderTransactions(), 500)
+      this.debounceEvent(() => {
+        this.page = 1;
+        this.renderTransactions();
+      }, 500)
     );
     this.$tableHeaders.forEach(($th) => $th.addEventListener("click", () => this.sortByColumn($th)));
     this.$next.addEventListener("click", () => this.nextPage());
@@ -359,7 +370,6 @@ content_copy
         };
       },
     });
-
     IMask(this.$inputDate, {
       mask: "00/00/0000",
       validate(value, masked) {
@@ -368,7 +378,6 @@ content_copy
           if (isDisabled) masked.reset();
           return !isDisabled;
         }
-        return true;
       },
     });
   }
@@ -389,8 +398,7 @@ content_copy
     const dates = this.transactionList.map((value) => value.date);
     dates.sort((a, b) => convertStringDate(a).getTime() - convertStringDate(b).getTime());
     const listDates = [...new Set(dates)];
-
-    OPTIONS_PAYMENT.series = Object.values(eFormOfPayment).map((value) => {
+    const series = Object.values(eFormOfPayment).map((value) => {
       return {
         name: value,
         data: listDates.flatMap((date) => {
@@ -404,13 +412,11 @@ content_copy
         }),
       };
     });
-
+    OPTIONS_PAYMENT.series = series;
     OPTIONS_PAYMENT.xaxis.categories = listDates.map((value) => `${value.split("/").reverse().join("/")} GMT`);
+    if (this.$chart) this.$chart.destroy();
     this.$chart = ApexCharts.getChartByID("#chart-payment") || new ApexCharts(document.querySelector("#chart-payment"), OPTIONS_PAYMENT);
-
     this.$chart.render();
-    this.$chart.resetSeries();
-    this.$chart.updateSeries(OPTIONS_PAYMENT.series);
   }
 
   private validateDateIsFuture(date: Date) {
@@ -439,7 +445,9 @@ content_copy
   }
 
   private sendListener() {
-    if (!this.$inputValue.value || !this.$inputFormOfPayment.value || !this.$inputDate.value || !this.$clientID.value) {
+    const isValidDate = this.$inputDate.value && this.$inputDate.value.length === 10 && this.compareDate(this.$inputDate.value) > 0;
+
+    if (!this.$inputValue.value || !this.$inputFormOfPayment.value || !this.$clientID.value || !isValidDate) {
       Toasts.error("Por favor preencha os campos obrigatórios!");
       throw new Error("Por favor preencha os campos obrigatórios!");
     }
@@ -448,14 +456,10 @@ content_copy
       Toasts.error("Selecione um valor valido!");
       throw new Error("Selecione um valor valido!");
     }
-    const router = document.querySelector<RouterOutlet>("router-app");
 
     const methodKey = !this.selectedId ? "addTransaction" : "updateTransaction";
     this[methodKey]();
-    if (!router) return;
-    router["createInnerHTML"]();
-    router["renderOutlet"]();
-    router["onInit"]();
+
     this.instanceModal().toggle();
     this.renderChart();
     this.applySort();
@@ -578,6 +582,13 @@ content_copy
     });
   }
 
+  goToAccountPage() {
+    document.querySelector(".modal-backdrop")?.remove();
+    setTimeout(() => {
+      document.querySelector<HTMLButtonElement>('[data-bs-target="#staticBackdrop"]')?.click();
+    }, 500);
+  }
+
   createFormSelectCliente() {
     const clienteOptions = this.clients
       .filter((client) => client.id != this.clientLogged?.id)
@@ -586,10 +597,14 @@ content_copy
 
     const emptyHTML =
       clienteOptions.length <= 1
-        ? `<div class="option" value="">
-        Crie uma conta <a href="#account" onclick="document.querySelector('.modal-backdrop')?.remove('show')">aqui</a>
+        ? `
+        <div class="option" value="">
+        Crie uma conta <a href="#account" onclick="document.querySelector('transaction-page').goToAccountPage()">aqui</a>
         </div>`
-        : "";
+        : `
+        <div class="option" value="">
+        Selecione
+        </div>`;
 
     return /*html*/ `
        <form-select class="form-control is-invalid" required placeholder="Selecione">
@@ -600,8 +615,10 @@ content_copy
   }
   createFormOption(client: Cliente) {
     return `
-           <div class="option" value="${client.id}">
-            ${client?.name} - ${client?.accountNumber}
+           <div class="option" value="${client.id}" title="${client?.name} - ${client?.accountNumber}">
+           <span abbrev>
+           ${client?.name} - ${client?.accountNumber}
+           </span>
             </div>
           `;
   }
@@ -631,7 +648,6 @@ content_copy
       `;
   }
   private sortByDirectionAndKey(direction: string, key: string) {
-    const compareDate = (date: string) => convertStringDate(date)?.getTime() ?? 0;
     const compareCurrency = (currency: number) => currency;
     this.transactionList.sort((a, b) => {
       const firstElement = direction === "asc" ? a : b;
@@ -645,10 +661,13 @@ content_copy
       if (key === "clientName") return firstElement[key].localeCompare(secondElement[key]);
 
       if (key === "dateOfPayDay")
-        return convertStringDate(firstElement?.[key])?.getTime() ?? 0 - convertStringDate(secondElement?.[key])?.getTime() ?? 0;
+        return convertStringDate(firstElement?.[key])?.getTime() - convertStringDate(secondElement?.[key])?.getTime();
 
-      if (key === "date") return compareDate(firstElement?.[key]) - compareDate(secondElement?.[key]);
+      if (key === "date") return this.compareDate(firstElement?.[key]) - this.compareDate(secondElement?.[key]);
     });
+  }
+  compareDate(date: string) {
+    return convertStringDate(date)?.getTime() ?? 0;
   }
 
   private previousPage() {
@@ -673,8 +692,7 @@ content_copy
   private validPayment() {
     this.transactionList.forEach((transaction) => {
       const actuallyDate = new Date().toLocaleDateString("pt-BR");
-      const transactionDate = convertStringDate(transaction.date)?.toLocaleDateString();
-
+      const transactionDate = convertStringDate(transaction.date)?.toLocaleDateString("pt-BR");
       if (!transaction.dateOfPayDay && actuallyDate === transactionDate) {
         try {
           this.makePayment(transaction);

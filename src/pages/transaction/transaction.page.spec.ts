@@ -1,5 +1,6 @@
 import { SpyInstance, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToastContent } from "../../components/toasts/toast.spec";
+import { Cliente } from "../account/account.page";
 import { Transaction, TransactionPage, eFormOfPayment } from "./transaction.page";
 let clientMock = {
   id: 1,
@@ -186,7 +187,7 @@ describe("TransactionPage", () => {
       email: "teste@teste",
       limitCredit: 500,
       password: "123",
-    };
+    } as Cliente;
     const result = transactionPage.createFormOption(client);
 
     expect(result).toEqual(`

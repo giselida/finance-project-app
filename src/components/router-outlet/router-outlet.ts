@@ -35,7 +35,7 @@ export class RouterOutlet extends HTMLElement {
     <span class="page-title"></span>
   </div>    
   <div class="header">
-          <a href="#notifications">
+          <a href="#notifications" title="Notificações">
           <div class="notification">
               <span class="position-absolute start-100 translate-middle badge rounded-pill bg-danger">
               </span>
@@ -45,7 +45,7 @@ export class RouterOutlet extends HTMLElement {
   <div class="dropdown">
     <div class="user account">
       <span class="material-symbols-outlined"> account_circle </span>
-      <span class="current-user">${client.name ?? ""}</span>
+      <span class="current-user" title="${client.name}">${client.name ?? ""}</span>
     </div>
     <div class="account-menu dropdown-menu">
       <a href="#account">
@@ -61,10 +61,10 @@ export class RouterOutlet extends HTMLElement {
   </div>
 </header>
     <div class="side-bar">
-      <a href="#transaction" class="anchors">
+      <a href="#transaction" class="anchors" title="Transação">
          ${PAGE_TITLES["#transaction"]}
       </a>
-      <a href="#conversion" class="anchors">
+      <a href="#conversion" class="anchors" title="Conversor">
         ${PAGE_TITLES["#conversion"]}
       </a>
     </div>

@@ -51,9 +51,12 @@ export class ConversionPage extends HTMLElement {
   }
 
   private renderChart() {
-    this.$chartCurrency = new ApexCharts(document.querySelector("#chart-currency"), OPTIONS_CURRENCY);
+    this.$chartCurrency =
+      ApexCharts.getChartByID("#chart-currency") || new ApexCharts(document.querySelector("#chart-currency"), OPTIONS_CURRENCY);
     this.$chartCurrency.render();
-    this.$chartCurrency.updateSeries(OPTIONS_CURRENCY.series);
+  }
+  disconnectedCallback() {
+    this.$chartCurrency?.destroy();
   }
 
   private addListeners(): void {

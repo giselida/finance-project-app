@@ -21,6 +21,14 @@ notification-page {
     .title {
       font-weight: 600;
     }
+    @media screen and (max-width: 900px) {
+      .current-date {
+        display: none;
+      }
+      small {
+        font-weight: bold;
+      }
+    }
     .current-date {
       position: absolute;
       right: 15px;

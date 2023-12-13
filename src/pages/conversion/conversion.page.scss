@@ -29,7 +29,7 @@ conversion-page {
   .row-content {
     display: flex;
     gap: 10px;
-    min-height: calc(100vh - 100px);
+    min-height: calc(100vh - 60px);
     @media screen and (max-width: 600px) {
       flex-direction: column;
       align-items: center;

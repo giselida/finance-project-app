@@ -46,6 +46,13 @@ body {
   padding: 10px;
   gap: 8px;
 
+  [href="#notifications"],
+  .user {
+    transition: transform 0.5s ease-in-out;
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
   [href="#notifications"] {
     position: relative;
     top: 2px;
@@ -53,6 +60,12 @@ body {
     .material-symbols-outlined {
       font-size: 22px;
     }
+    &:hover {
+      .material-symbols-outlined {
+        color: var(--color-yellow-light);
+      }
+    }
+
     .bg-danger {
       font-size: 10px;
       top: 2px;
@@ -71,7 +84,53 @@ b {
 
 router-app {
   display: block;
+  .account-info {
+    @include display-none(true);
+    border: 1px solid var(--color-red-border);
+    padding: 10px;
+    background-color: var(--color-white);
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+  [abbrev] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    position: relative;
+    z-index: -1;
+  }
+  .selected-value {
+    z-index: 0;
+    [abbrev] {
+      z-index: 0;
+    }
+  }
 
+  @media screen and (max-width: 900px) {
+    .item {
+      white-space: nowrap;
+    }
+    .container-current-balance {
+      gap: 0;
+      position: relative;
+      left: 15px;
+      .item:first-child {
+        margin-right: 5px;
+      }
+    }
+    .apexcharts-toolbar {
+      right: -51px !important;
+    }
+  }
+
+  .current-user {
+    font-size: clamp(11px, 5vw, 16px);
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+    white-space: nowrap;
+  }
   .modal {
     --bs-modal-width: 600px;
     --bs-modal-border-radius: 12px;
@@ -79,7 +138,7 @@ router-app {
       border-top: 5px solid var(--color-pink);
       .modal-title {
         font-weight: 600;
-        font-size: 18px;
+        font-size: 18px !important;
       }
       .btn-close {
         padding: 2px;
@@ -129,21 +188,28 @@ router-app {
     background-color: var(--color-pink);
     box-shadow: inset 0px -1px 1px 0px var(--color-red-border);
     font-size: 20px;
+
     .material-symbols-outlined {
+      font-weight: 500;
+      color: var(--color-white);
+    }
+    .material-symbols-outlined.menu {
       cursor: pointer;
       font-weight: 500;
       color: var(--color-white);
+
+      &:hover {
+        color: var(--color-yellow-light);
+      }
     }
 
     .account-menu {
       display: none;
-      right: 5px;
       top: 31px;
+      right: -15px;
       background-color: var(--color-white);
-      &.active {
-        display: block;
-        left: -40px;
-      }
+      width: 150px;
+
       a {
         text-decoration: none;
       }
@@ -154,7 +220,15 @@ router-app {
       &:hover {
         background-color: var(--color-violet-light);
       }
-
+      &.active {
+        display: block;
+        &:has(.active-router) {
+          background-color: var(--color-pink);
+        }
+      }
+      .active-router .dropdown-item:hover {
+        background-color: var(--color-pink-light);
+      }
       .dropdown-item {
         font-weight: 600;
         cursor: pointer;
@@ -169,10 +243,16 @@ router-app {
         &:hover {
           background-color: var(--color-violet-light);
           color: var(--color-pink);
+          .material-symbols-outlined {
+            color: var(--color-pink);
+          }
         }
         &:active {
           background-color: var(--color-pink);
           color: var(--color-white);
+          .material-symbols-outlined {
+            color: var(--color-white);
+          }
         }
       }
     }
@@ -181,6 +261,9 @@ router-app {
   .active-router {
     color: var(--color-yellow-light) !important;
     .material-symbols-outlined {
+      color: var(--color-yellow-light) !important;
+    }
+    .dropdown-item {
       color: var(--color-yellow-light) !important;
     }
   }
@@ -206,7 +289,7 @@ router-app {
       color: var(--color-white);
       font-weight: 700;
       text-decoration: none;
-      transition: all 0.2s ease-in-out;
+      transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
 
       .material-symbols-outlined {
         color: var(--color-white);
@@ -215,6 +298,9 @@ router-app {
       }
       &:hover {
         transform: scale(1.05);
+        .material-symbols-outlined {
+          color: var(--color-yellow-light);
+        }
       }
     }
     &.active {
@@ -249,9 +335,6 @@ router-app {
     margin-bottom: 20px;
 
     flex-wrap: nowrap;
-    @media screen and (max-width: 900px) {
-      flex-wrap: wrap;
-    }
   }
 
   .btn {
@@ -432,6 +515,7 @@ router-app {
   }
   td,
   th {
+    padding-bottom: 0.2rem !important;
     white-space: nowrap;
   }
   td:last-child,

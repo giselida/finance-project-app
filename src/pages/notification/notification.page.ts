@@ -16,8 +16,10 @@ export class Notification extends HTMLElement {
   connectedCallback() {
     this.transactionList = JSON.parse(localStorage.getItem("transactionList") ?? "[]");
     const transaction = this.transactionList.filter((value) => value.dateOfPayDay);
-    console.log(this.transactionList);
-    this.innerHTML = `
+
+    this.innerHTML = `<span class="account-info">
+  Você não possui notificações!
+</span>
     <div class="list-group">
     ${transaction
       .toReversed()
@@ -25,6 +27,7 @@ export class Notification extends HTMLElement {
         const isCurrentUser = this.clientLogged.id === transaction.userLoggedID;
         const transactionClient = this.clients.find((client) => {
           const propertyName = !isCurrentUser ? "userLoggedID" : "clientID";
+
           return client.id === +transaction[propertyName];
         });
         const operationTitle = !isCurrentUser ? "recebida" : "enviada";
@@ -34,6 +37,7 @@ export class Notification extends HTMLElement {
           month: "long",
           year: "numeric",
         });
+
         return `  
     <div class="list-group-item list-group-item-action ${
       !transaction.view.includes(this.clientLogged.id) ? "active" : ""
@@ -60,9 +64,11 @@ export class Notification extends HTMLElement {
         localStorage.setItem("transactionList", JSON.stringify(this.transactionList));
         badgeUpdate();
       });
-      $item.addEventListener("contextmenu", (event) => {
-        event.preventDefault();
-      });
+      // $item.addEventListener("contextmenu", (event) => {
+      //   event.preventDefault();
+      // });
     });
+    const $accountInfo = document.querySelector<HTMLElement>(".account-info");
+    $accountInfo.style.display = transaction.length < 1 ? "block" : "none";
   }
 }
