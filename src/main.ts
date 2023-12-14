@@ -33,7 +33,6 @@ export const options = [
     class: ConversionPage,
   },
 ];
-
 options.forEach((option) => {
   customElements.define(option.selector, option.class);
 });

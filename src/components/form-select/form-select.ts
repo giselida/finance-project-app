@@ -65,11 +65,12 @@ export class FormSelect extends HTMLElement {
     this.value = this.getAttribute("value");
 
     document.documentElement.addEventListener("click", (event) => {
+      this.stopPropagation(event);
       setTimeout(() => {
         this.$backdrop = document.querySelector<HTMLElement>(".backdrop");
-        this.stopPropagation(event);
         const item = event.target as HTMLElement;
-        if (item.tagName != "FORM-SELECT" && item.tagName != "INPUT") {
+        const isBackdrop = item.className?.includes && item.className.includes("backdrop");
+        if (item.tagName != "FORM-SELECT" && item.tagName != "INPUT" && !isBackdrop) {
           this.$backdrop?.remove();
         }
       }, 50);
@@ -144,10 +145,8 @@ export class FormSelect extends HTMLElement {
   changeOption($element: HTMLElement, $backdrop: HTMLElement) {
     $element.addEventListener("click", (event) => {
       this.stopPropagation(event);
-
-      const option = event.target as HTMLElement;
-      this.innerHTML = option.innerHTML;
-      this.value = option.getAttribute("value");
+      this.innerHTML = $element.innerHTML;
+      this.value = $element.getAttribute("value");
       this.classList.remove("is-valid");
       this.classList.remove("is-invalid");
 

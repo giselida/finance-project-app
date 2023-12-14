@@ -24,20 +24,7 @@ body {
 .air-datepicker-global-container {
   z-index: 999999;
 }
-.air-datepicker-cell {
-  &:hover {
-    border-radius: 50%;
-  }
-}
-.air-datepicker-cell.-selected- {
-  border-radius: 50%;
-  color: #fff;
-  border: none;
-  background: var(--color-pink) !important;
-}
-.air-datepicker-cell.-current- {
-  color: var(--color-pink);
-}
+
 .line {
   border-bottom: 0.2px solid var(--color-line-gray);
 }
@@ -562,4 +549,42 @@ router-app {
       }
     }
   }
+}
+.air-datepicker-nav--action path {
+  stroke: var(--color-pink);
+}
+.air-datepicker-nav--title,
+.air-datepicker-body--day-name,
+.air-datepicker-nav--title i {
+  color: var(--color-pink);
+}
+
+.air-datepicker-cell {
+  color: var(--color-orange);
+  border-radius: 50%;
+  &.-disabled- {
+    cursor: not-allowed;
+    color: var(--color-pink);
+    background: var(--color-pink-medium);
+    filter: opacity(0.6);
+  }
+  &.-current- {
+    color: var(--color-pink);
+    background: var(--color-pink-light);
+    border: 1px solid var(--color-pink);
+  }
+  &:hover {
+    border-radius: 50%;
+  }
+  &.-selected- {
+    border-radius: 50%;
+    color: #fff;
+    border: none;
+    background: var(--color-pink) !important;
+  }
+}
+
+.air-datepicker-cell.-day-.-other-month- {
+  color: #eb7373;
+  font-weight: bold;
 }

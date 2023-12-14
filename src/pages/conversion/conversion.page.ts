@@ -51,6 +51,8 @@ export class ConversionPage extends HTMLElement {
   }
 
   private renderChart() {
+    if (this.$chartCurrency) this.$chartCurrency.destroy();
+
     this.$chartCurrency =
       ApexCharts.getChartByID("#chart-currency") || new ApexCharts(document.querySelector("#chart-currency"), OPTIONS_CURRENCY);
     this.$chartCurrency.render();
@@ -290,6 +292,7 @@ export class ConversionPage extends HTMLElement {
   }
   private createFormSelect() {
     const options = [...COUNTRY_LIST]
+      .toSorted((a, b) => a.currency.localeCompare(b.currency) - b.currency.localeCompare(a.currency))
       .map((value) => {
         const currency = value.currency;
         const unicode = currency.slice(0, -1).toLowerCase();
