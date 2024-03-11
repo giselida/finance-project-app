@@ -1,4 +1,5 @@
 import { badgeUpdate } from "../../functions/notification";
+import { AccountPayPage } from "../../pages/account-pay/account-pay.page";
 import { AccountPage } from "../../pages/account/account.page";
 import { ConversionPage } from "../../pages/conversion/conversion.page";
 import { Notification } from "../../pages/notification/notification.page";
@@ -17,6 +18,7 @@ const PAGE_TITLES: { [key: string]: string } = {
   "#account": createMaterialSymbol("account_circle", "Conta"),
   "#notifications": createMaterialSymbol("notifications", "Notificações"),
   "#conversion": createMaterialSymbol("currency_exchange", "Conversor"),
+  "#accountPay": createMaterialSymbol("credit_score", "Pagamento"),
 };
 export class RouterOutlet extends HTMLElement {
   connectedCallback() {
@@ -26,7 +28,7 @@ export class RouterOutlet extends HTMLElement {
     this.onInit();
   }
   private createInnerHTML() {
-    const client = JSON.parse(localStorage.getItem("client") ?? "{}");
+    const client = JSON.parse(localStorage.getItem("client") || "{}");
 
     this.innerHTML = /*html*/ `
 <header>
@@ -67,6 +69,9 @@ export class RouterOutlet extends HTMLElement {
       <a href="#conversion" class="anchors" title="Conversor">
         ${PAGE_TITLES["#conversion"]}
       </a>
+      <a href="#accountPay" class="anchors" title="Pagamento">
+        ${PAGE_TITLES["#accountPay"]}
+      </a>
     </div>
     <main id="root"></main>
     <div id="toast-content"></div>
@@ -87,6 +92,7 @@ export class RouterOutlet extends HTMLElement {
       "#transaction": TransactionPage,
       "#notifications": Notification,
       "#conversion": ConversionPage,
+      "#accountPay": AccountPayPage,
     };
 
     const $root = document.querySelector("#root");

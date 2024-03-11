@@ -17,7 +17,8 @@ export class Notification extends HTMLElement {
     this.transactionList = JSON.parse(localStorage.getItem("transactionList") ?? "[]");
     const transaction = this.transactionList.filter((value) => value.dateOfPayDay);
 
-    this.innerHTML = `<span class="account-info">
+    this.innerHTML = /*html*/ `
+    <span class="account-info">
   Você não possui notificações!
 </span>
     <div class="list-group">
@@ -38,7 +39,7 @@ export class Notification extends HTMLElement {
           year: "numeric",
         });
 
-        return `  
+        return /*html*/ `  
     <div class="list-group-item list-group-item-action ${
       !transaction.view.includes(this.clientLogged.id) ? "active" : ""
     }" aria-current="true" id="${transaction.id}" >

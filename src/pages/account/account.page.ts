@@ -4,6 +4,7 @@ import warningImage from "../../assets/release_alert.png";
 import { RouterOutlet } from "../../components/router-outlet/router-outlet";
 import { Toasts } from "../../components/toasts/toast";
 import { badgeUpdate } from "../../functions/notification";
+import { ClientCard } from "../account-pay/account-pay.page";
 import "./account.page.scss";
 export interface Cliente {
   id: number;
@@ -12,9 +13,10 @@ export interface Cliente {
   accountNumber: string;
   accountAmount: number;
   password: string;
-  limitCredit: number;
-  limitCreditUsed: number;
-  limitCreditCurrent: number;
+  limitCredit?: number;
+  limitCreditUsed?: number;
+  limitCreditCurrent?: number;
+  clientCard: [ClientCard];
 }
 
 export class AccountPage extends HTMLElement {
@@ -26,6 +28,7 @@ export class AccountPage extends HTMLElement {
   $creditValue: HTMLElement;
   clientList: Cliente[];
   client: Cliente;
+  clientCard: ClientCard;
   $modal: HTMLElement;
   $previous: HTMLButtonElement;
   $next: HTMLButtonElement;
@@ -40,12 +43,29 @@ export class AccountPage extends HTMLElement {
 
   private getStorage() {
     this.clientList = JSON.parse(localStorage.getItem("clients") ?? "[]");
-    this.client = JSON.parse(localStorage.getItem("client") ?? "{}");
+    this.clientCard = JSON.parse(localStorage.getItem("clientCard") ?? "{}");
+    if (!this.clientList.find((item) => item.name === "Gisélida Cristine de Melo")) {
+      this.clientList.push({
+        name: "Gisélida Cristine de Melo",
+        accountNumber: "19326-55",
+        accountAmount: 10000,
+        email: "giselidac@gmail.com",
+        id: 1000,
+        limitCredit: 10000,
+        limitCreditCurrent: 0,
+        limitCreditUsed: 0,
+        password: "123312",
+        clientCard: [this.clientCard],
+      });
+      this.setStorage();
+    }
+    this.client = JSON.parse(localStorage.getItem("client") || "{}");
   }
 
   get $currentUser() {
     return document.querySelector(".current-user");
   }
+
   maxID: number = 0;
   get maxPage(): number {
     return Math.ceil(this.clientList.length / this.pageSize);
@@ -213,7 +233,6 @@ group_add
       const client = this.clientList.find((client) => client.id == this.client.id);
       client.limitCredit = formRangeValue;
       client.limitCreditCurrent = limitCredit;
-
       this.client = client;
       this.setRangeColor();
       this.setStorage();
@@ -260,6 +279,7 @@ group_add
     localStorage.setItem("clients", JSON.stringify(this.clientList));
     localStorage.setItem("client", JSON.stringify(this.client));
     localStorage.setItem("idClients", this.maxID.toString());
+    localStorage.setItem("clientCard", JSON.stringify(this.clientCard));
   }
 
   renderList() {
@@ -291,7 +311,7 @@ group_add
   <td>${client.email}</td>
   <td class="actions">
     ${
-      this.client?.id != client.id
+      this.client?.id != client.id && client.id !== 1000
         ? `
     <span class="material-symbols-outlined add-account" onclick="document.querySelector('account-page').selectClient(${client.id})">
       fact_check
@@ -299,9 +319,16 @@ group_add
     `
         : ""
     }
+    ${
+      client.id !== 1000
+        ? `
     <span class="material-icons-outlined delete" onclick="document.querySelector('account-page').removeClient(${client.id})">
       delete
     </span>
+    `
+        : ""
+    }
+ 
   </td>
 </tr>
       `;
@@ -364,6 +391,7 @@ group_add
     if (client && !this.client?.id) {
       if (client.accountAmount == 0) client.accountAmount = 10000;
     }
+
     this.client = client;
     this.$currentUser.innerHTML = client.name;
 
@@ -392,6 +420,7 @@ group_add
       limitCredit: 0,
       limitCreditUsed: 0,
       limitCreditCurrent: 0,
+      clientCard: [this.clientCard],
     };
     this.clientList.push(objectClient);
 

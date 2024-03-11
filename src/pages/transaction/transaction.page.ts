@@ -596,7 +596,7 @@ content_copy
       .join("");
 
     const emptyHTML =
-      clienteOptions.length <= 1
+      this.clients.length <= 1
         ? `
         <div class="option" value="">
         Crie uma conta <a href="#account" onclick="document.querySelector('transaction-page').goToAccountPage()">aqui</a>
@@ -609,7 +609,7 @@ content_copy
     return /*html*/ `
        <form-select class="form-control is-invalid" required placeholder="Selecione">
          ${emptyHTML}
-         ${clienteOptions}
+         ${this.clients.length <= 1 ? "" : clienteOptions}
         </form-select>
         `;
   }

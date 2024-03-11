@@ -1,5 +1,6 @@
 import { FormSelect } from "./components/form-select/form-select";
 import { RouterOutlet } from "./components/router-outlet/router-outlet";
+import { AccountPayPage } from "./pages/account-pay/account-pay.page";
 import { AccountPage } from "./pages/account/account.page";
 import { ConversionPage } from "./pages/conversion/conversion.page";
 import { Notification } from "./pages/notification/notification.page";
@@ -31,6 +32,10 @@ export const options = [
   {
     selector: "conversion-page",
     class: ConversionPage,
+  },
+  {
+    selector: "account-pay-page",
+    class: AccountPayPage,
   },
 ];
 options.forEach((option) => {

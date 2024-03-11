@@ -1,0 +1,25 @@
+@import "/src/scss/mixins.scss";
+account-pay-page {
+  @include pageStyle(column);
+  .container {
+    position: relative;
+    background-color: var(--color-gray-light);
+    width: 296px;
+    height: 188px;
+    border-radius: 14px;
+    .backdrop {
+      position: absolute;
+      background-color: var(--color-gray-dark);
+      z-index: 1;
+      border-radius: 50%;
+      display: flex;
+      left: 126px;
+      top: 72px;
+      padding: 6px;
+      .add-card-credit {
+        color: white;
+        cursor: pointer;
+      }
+    }
+  }
+}
