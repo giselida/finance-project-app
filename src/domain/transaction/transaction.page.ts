@@ -5,6 +5,7 @@ import ApexCharts from "apexcharts";
 import { Modal } from "bootstrap";
 import IMask from "imask";
 import Swal from "sweetalert2";
+
 import warningImage from "../../assets/release_alert.png";
 import { FormSelect } from "../../components/form-select/form-select";
 import { Toasts } from "../../components/toasts/toast";
@@ -14,7 +15,9 @@ import { SVG_ICONS } from "../../constants/svg-icons";
 import { convertStringDate } from "../../functions/date";
 import { badgeUpdate } from "../../functions/notification";
 import { Cliente } from "../account/account.page";
+
 import "./transaction.page.scss";
+
 export interface Transaction {
   id: number;
   value: number;

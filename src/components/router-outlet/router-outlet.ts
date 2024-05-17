@@ -1,9 +1,10 @@
+import { AccountPayPage } from "../../domain/account-pay/account-pay.page";
+import { AccountPage } from "../../domain/account/account.page";
+import { ConversionPage } from "../../domain/conversion/conversion.page";
+import { Notification } from "../../domain/notification/notification.page";
+import { TransactionPage } from "../../domain/transaction/transaction.page";
 import { badgeUpdate } from "../../functions/notification";
-import { AccountPayPage } from "../../pages/account-pay/account-pay.page";
-import { AccountPage } from "../../pages/account/account.page";
-import { ConversionPage } from "../../pages/conversion/conversion.page";
-import { Notification } from "../../pages/notification/notification.page";
-import { TransactionPage } from "../../pages/transaction/transaction.page";
+
 const createMaterialSymbol = (iconName: string, label: string) => {
   return `
       <span class="material-symbols-outlined">
