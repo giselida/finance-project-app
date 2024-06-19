@@ -24,7 +24,9 @@ body {
 .air-datepicker-global-container {
   z-index: 999999;
 }
-
+.disabled {
+  display: none;
+}
 .line {
   border-bottom: 0.2px solid var(--color-line-gray);
 }
@@ -70,7 +72,6 @@ b {
 }
 
 router-app {
-  display: block;
   .account-info {
     @include display-none(true);
     border: 1px solid var(--color-red-border);
@@ -92,7 +93,9 @@ router-app {
       z-index: 0;
     }
   }
-
+  .form-label {
+    display: flex;
+  }
   @media screen and (max-width: 900px) {
     .item {
       white-space: nowrap;
@@ -138,9 +141,7 @@ router-app {
         }
       }
     }
-    .form-label {
-      display: flex;
-    }
+
     .was-validated :has(.form-control.is-invalid, .form-control:invalid) {
       .required {
         color: var(--color-red);
@@ -254,7 +255,7 @@ router-app {
       color: var(--color-yellow-light) !important;
     }
   }
-  .side-bar {
+  .side-nav {
     background-color: var(--color-pink);
     position: fixed;
     z-index: 1;
@@ -434,12 +435,16 @@ router-app {
       }
     }
   }
-  .side-bar + main {
+  .side-nav + main {
+    &:has(login-page, register-page) {
+      margin-left: 0;
+      padding-top: 0;
+    }
     @media screen and (min-width: 900px) {
       margin-left: 45px;
     }
   }
-  .side-bar.active + main {
+  .side-nav.active + main {
     margin-left: 180px;
   }
   main {
@@ -525,7 +530,7 @@ router-app {
     align-items: center;
     gap: 8px;
   }
-  nav {
+  .container-pagination {
     margin-top: 15px;
     align-self: center;
     .page-item {
@@ -547,6 +552,32 @@ router-app {
           filter: contrast(85%);
         }
       }
+    }
+  }
+
+  login-page,
+  register-page {
+    @include pageStyle(normal);
+    gap: 10px;
+    align-items: center;
+    background: linear-gradient(124deg, rgba(245, 245, 245, 1) 7%, rgba(255, 229, 232, 1) 44%);
+    height: 100vh;
+    justify-content: center;
+    .card {
+      padding: 10px;
+      width: 100%;
+      max-width: 600px;
+    }
+    .card-illustration {
+      align-items: center;
+      gap: 10px;
+      .illustration {
+        width: 300px;
+      }
+    }
+    @media screen and (max-width: 900px) {
+      flex-direction: column !important;
+      height: 100%;
     }
   }
 }

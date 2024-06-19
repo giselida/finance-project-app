@@ -1,5 +1,5 @@
-import { convertStringDate } from "../../functions/date";
-import { badgeUpdate } from "../../functions/notification";
+import { convertStringDate } from "../../functions/date/date";
+import { badgeUpdate } from "../../functions/notification/notification";
 import { Cliente } from "../account/account.page";
 import { Transaction } from "../transaction/transaction.page";
 import "./notification.page.scss";

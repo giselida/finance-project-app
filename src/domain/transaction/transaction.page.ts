@@ -12,8 +12,8 @@ import { Toasts } from "../../components/toasts/toast";
 import { OPTIONS_PAYMENT } from "../../constants/charts";
 import { PT_BR_LOCALE } from "../../constants/date-picker-locale";
 import { SVG_ICONS } from "../../constants/svg-icons";
-import { convertStringDate } from "../../functions/date";
-import { badgeUpdate } from "../../functions/notification";
+import { convertStringDate } from "../../functions/date/date";
+import { badgeUpdate } from "../../functions/notification/notification";
 import { Cliente } from "../account/account.page";
 
 import "./transaction.page.scss";

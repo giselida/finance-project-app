@@ -1,18 +1,17 @@
-import { Modal } from "bootstrap";
 import Swal from "sweetalert2";
 import warningImage from "../../assets/release_alert.png";
 import { RouterOutlet } from "../../components/router-outlet/router-outlet";
 import { Toasts } from "../../components/toasts/toast";
-import { badgeUpdate } from "../../functions/notification";
+import { badgeUpdate } from "../../functions/notification/notification";
 import { ClientCard } from "../account-pay/account-pay.page";
 import "./account.page.scss";
 export interface Cliente {
   id: number;
   name: string;
-  email: string;
+  password: string;
+  email?: string;
   accountNumber: string;
   accountAmount: number;
-  password: string;
   limitCredit?: number;
   limitCreditUsed?: number;
   limitCreditCurrent?: number;
@@ -20,9 +19,6 @@ export interface Cliente {
 }
 
 export class AccountPage extends HTMLElement {
-  $inputName: HTMLInputElement;
-  $inputEmail: HTMLInputElement;
-  $inputPassword: HTMLInputElement;
   $buttonAdd: HTMLButtonElement;
   $inputRange: HTMLInputElement;
   $creditValue: HTMLElement;
@@ -35,6 +31,7 @@ export class AccountPage extends HTMLElement {
   $pageActually: HTMLElement;
   page: number = 1;
   pageSize: number = 5;
+  maxID: number = 0;
   $usedCreditValue: HTMLElement;
   constructor() {
     super();
@@ -44,32 +41,16 @@ export class AccountPage extends HTMLElement {
   private getStorage() {
     this.clientList = JSON.parse(localStorage.getItem("clients") ?? "[]");
     this.clientCard = JSON.parse(localStorage.getItem("clientCard") ?? "{}");
-    if (!this.clientList.find((item) => item.name === "Gisélida Cristine de Melo")) {
-      this.clientList.push({
-        name: "Gisélida Cristine de Melo",
-        accountNumber: "19326-55",
-        accountAmount: 10000,
-        email: "giselidac@gmail.com",
-        id: 1000,
-        limitCredit: 10000,
-        limitCreditCurrent: 0,
-        limitCreditUsed: 0,
-        password: "123312",
-        clientCard: [this.clientCard],
-      });
-      this.setStorage();
-    }
     this.client = JSON.parse(localStorage.getItem("client") || "{}");
   }
-
   get $currentUser() {
     return document.querySelector(".current-user");
   }
 
-  maxID: number = 0;
   get maxPage(): number {
     return Math.ceil(this.clientList.length / this.pageSize);
   }
+
   connectedCallback() {
     this.createInnerHTML();
     this.recoveryElementRef();
@@ -112,50 +93,9 @@ export class AccountPage extends HTMLElement {
 </div>
 <div class="content-row">
   <h1 class="title">Contas cadastradas</h1>
-  <button type="button" class="btn btn-account" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-   <span class="material-symbols-outlined icon">
-group_add
-</span>
-    Criar uma conta
-  </button>
+
 </div>
-<div
-  class="modal fade"
-  id="staticBackdrop"
-  data-bs-backdrop="static"
-  data-bs-keyboard="false"
-  tabindex="-1"
-  aria-labelledby="staticBackdropLabel"
-  aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title" id="staticBackdropLabel">Criar uma nova conta</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form class="was-validated">
-          <div class="mb-3">
-            <label class="form-label">Nome <div class="required">*</div></label>
-            <input type="text" class="form-control form" placeholder="Digite o nome do usuário" required />
-          </div>
-          <div class="mb-3">
-            <label class="form-label">E-mail<div class="required">*</div></label>
-            <input type="text" class="form-control form" placeholder="Digite o email do usuário" required />
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Senha<div class="required">*</div></label>
-            <input type="password" class="form-control form" placeholder="Digite a senha do usuário" autocomplete="off" required />
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-closed" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-add" type="submit">Cadastrar</button>
-      </div>
-    </div>
-  </div>
-</div>
+
 <div class="table-container">
   <table class="table table-hover ">
     <thead>
@@ -163,7 +103,6 @@ group_add
         <th scope="col">#</th>
         <th scope="col">Numero da conta</th>
         <th scope="col">Nome</th>
-        <th scope="col">Email</th>
         <th scope="col">Ações</th>
       </tr>
     </thead>
@@ -195,11 +134,6 @@ group_add
     this.maxID = +localStorage.getItem("idClients");
     this.$buttonAdd = document.querySelector(".btn-add");
 
-    const $formControls = document.querySelectorAll("form .form");
-    const [$inputName, $inputEmail, $inputPassword] = $formControls;
-    this.$inputName = $inputName as HTMLInputElement;
-    this.$inputEmail = $inputEmail as HTMLInputElement;
-    this.$inputPassword = $inputPassword as HTMLInputElement;
     this.$creditValue = document.querySelector(".limit-credit-value");
     this.$usedCreditValue = document.querySelector(".available-credit-value");
     this.$inputRange = document.querySelector("input[type='range']");
@@ -214,7 +148,6 @@ group_add
   private addListeners() {
     this.$next.addEventListener("click", () => this.nextPage());
     this.$previous.addEventListener("click", () => this.previousPage());
-    this.sendListener();
     this.rangeListener();
     this.setRangeColor();
   }
@@ -261,20 +194,6 @@ group_add
     );
   }
 
-  private sendListener() {
-    this.$buttonAdd.addEventListener("click", () => {
-      if (!this.$inputName.value || !this.$inputEmail.value || !this.$inputPassword.value) {
-        Toasts.error("Por favor preencha os campos obrigatórios!");
-        throw new Error("Por favor preencha os campos obrigatórios!");
-      }
-      this.addClient();
-      this.renderList();
-      this.instanceModal().toggle();
-    });
-  }
-  private instanceModal() {
-    return Modal.getOrCreateInstance(this.$modal);
-  }
   private setStorage() {
     localStorage.setItem("clients", JSON.stringify(this.clientList));
     localStorage.setItem("client", JSON.stringify(this.client));
@@ -308,7 +227,6 @@ group_add
   <th scope="row">${client.id}</th>
   <td>${client.accountNumber}</td>
   <td>${client.name}</td>
-  <td>${client.email}</td>
   <td class="actions">
     ${
       this.client?.id != client.id && client.id !== 1000
@@ -397,37 +315,8 @@ group_add
 
     Toasts.success(`Conta ${client.name} número ${client.accountNumber} foi selecionada com sucesso!`);
     this.setStorage();
-    this.getStorage();
+
     this.connectedCallback();
     badgeUpdate();
-  }
-
-  cleanForms() {
-    this.$inputName.value = "";
-    this.$inputEmail.value = "";
-    this.$inputPassword.value = "";
-  }
-
-  private addClient() {
-    const random = (min: number = 1, max: number = 100) => Math.floor(Math.random() * (max - min) + min);
-    const objectClient: Cliente = {
-      id: ++this.maxID,
-      name: this.$inputName.value,
-      email: this.$inputEmail.value,
-      accountNumber: `${random()}${random()}${random()}-${random()}`,
-      accountAmount: 0,
-      password: this.$inputPassword.value,
-      limitCredit: 0,
-      limitCreditUsed: 0,
-      limitCreditCurrent: 0,
-      clientCard: [this.clientCard],
-    };
-    this.clientList.push(objectClient);
-
-    this.setStorage();
-    this.cleanForms();
-    Toasts.success("Conta criada com sucesso!");
-    if (!this.client.id) this.selectClient(objectClient.id);
-    location.reload();
   }
 }

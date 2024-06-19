@@ -69,7 +69,7 @@ export class FormSelect extends HTMLElement {
       setTimeout(() => {
         this.$backdrop = document.querySelector<HTMLElement>(".backdrop");
         const item = event.target as HTMLElement;
-        const isBackdrop = item.className?.includes && item.className.includes("backdrop");
+        const isBackdrop = item.className.includes("backdrop");
         if (item.tagName != "FORM-SELECT" && item.tagName != "INPUT" && !isBackdrop) {
           this.$backdrop?.remove();
         }

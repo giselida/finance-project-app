@@ -1,9 +1,11 @@
 import { AccountPayPage } from "../../domain/account-pay/account-pay.page";
 import { AccountPage } from "../../domain/account/account.page";
+import { LoginComponent } from "../../domain/auth/login/login.page";
+import { RegisterComponent } from "../../domain/auth/register/register.page";
 import { ConversionPage } from "../../domain/conversion/conversion.page";
 import { Notification } from "../../domain/notification/notification.page";
 import { TransactionPage } from "../../domain/transaction/transaction.page";
-import { badgeUpdate } from "../../functions/notification";
+import { badgeUpdate } from "../../functions/notification/notification";
 
 const createMaterialSymbol = (iconName: string, label: string) => {
   return `
@@ -14,56 +16,61 @@ const createMaterialSymbol = (iconName: string, label: string) => {
       ${label}
       </span>`;
 };
+
 const PAGE_TITLES: { [key: string]: string } = {
   "#transaction": createMaterialSymbol("price_change", "Transação"),
   "#account": createMaterialSymbol("account_circle", "Conta"),
   "#notifications": createMaterialSymbol("notifications", "Notificações"),
   "#conversion": createMaterialSymbol("currency_exchange", "Conversor"),
   "#accountPay": createMaterialSymbol("credit_score", "Pagamento"),
+  "#login": createMaterialSymbol("", ""),
+  "#register": createMaterialSymbol("", ""),
 };
-export class RouterOutlet extends HTMLElement {
-  connectedCallback() {
-    this.createInnerHTML();
-    if (!window.location.hash) window.location.replace("#transaction");
-    this.renderContent();
-    this.onInit();
-  }
-  private createInnerHTML() {
-    const client = JSON.parse(localStorage.getItem("client") || "{}");
 
-    this.innerHTML = /*html*/ `
+const client = JSON.parse(localStorage.getItem("client") || "{}");
+
+const template = `
 <header>
   <div class="content">
     <span class="material-symbols-outlined menu"> menu </span>
     <span class="page-title"></span>
   </div>    
+
   <div class="header">
-          <a href="#notifications" title="Notificações">
+      <a href="#notifications" title="Notificações">
           <div class="notification">
-              <span class="position-absolute start-100 translate-middle badge rounded-pill bg-danger">
-              </span>
+            <span class="position-absolute start-100 translate-middle badge rounded-pill bg-danger"></span>
             <span class="material-symbols-outlined"> notifications </span>
           </div>
       </a>
+
   <div class="dropdown">
+
     <div class="user account">
       <span class="material-symbols-outlined"> account_circle </span>
       <span class="current-user" title="${client.name}">${client.name ?? ""}</span>
     </div>
+
     <div class="account-menu dropdown-menu">
-      <a href="#account">
+      <a href="#account" title="Conta">
         <div class="option-menu dropdown-item">
           <span class="material-symbols-outlined"> person </span>
           Conta
         </div>
       </a>
-      
-    
     </div>
+
   </div>
+      <a href="#login" title="sair">
+        <div class="log-out">
+          <span class="material-symbols-outlined">
+          logout
+          </span>
+        </div>
+     </a>
   </div>
 </header>
-    <div class="side-bar">
+    <nav class="side-nav">
       <a href="#transaction" class="anchors" title="Transação">
          ${PAGE_TITLES["#transaction"]}
       </a>
@@ -73,15 +80,61 @@ export class RouterOutlet extends HTMLElement {
       <a href="#accountPay" class="anchors" title="Pagamento">
         ${PAGE_TITLES["#accountPay"]}
       </a>
-    </div>
+     
+    </nav>
     <main id="root"></main>
     <div id="toast-content"></div>
       `;
+
+export class RouterOutlet extends HTMLElement {
+  $root: HTMLElement;
+  $pageTitle: HTMLElement;
+  $header: HTMLElement;
+  $nav: HTMLElement;
+  $menu: HTMLElement;
+  $anchor: NodeListOf<HTMLAnchorElement>;
+  $iconHeader: HTMLElement;
+  $sideNav: HTMLElement;
+  $anchors: NodeListOf<HTMLAnchorElement>;
+  $iconAccount: HTMLElement;
+  $accountMenu: HTMLElement;
+  $optionMenu: NodeListOf<Element>;
+
+  connectedCallback() {
+    this.createInnerHTML();
+    this.recoveryElementRef();
+    if (!window.location.hash) window.location.replace("#login");
+    this.renderContent();
+    this.onInit();
+  }
+  private createInnerHTML() {
+    this.innerHTML = template;
   }
 
   renderContent() {
     window.addEventListener("load", () => this.renderOutlet());
     window.addEventListener("hashchange", () => this.renderOutlet());
+  }
+  recoveryElementRef() {
+    this.$root = document.querySelector("#root");
+    this.$pageTitle = document.querySelector(".page-title");
+    this.$header = document.querySelector("header");
+    this.$nav = document.querySelector("nav");
+    this.$menu = document.querySelector<HTMLElement>(".dropdown-menu");
+    this.$anchor = document.querySelectorAll("a");
+    this.$iconHeader = document.querySelector<HTMLElement>("header .menu");
+    this.$sideNav = document.querySelector<HTMLElement>("router-app .side-nav");
+    this.$anchors = document.querySelectorAll(".anchors");
+    this.$iconAccount = document.querySelector<HTMLElement>("header .account");
+    this.$accountMenu = document.querySelector<HTMLElement>("header .account-menu");
+    this.$optionMenu = document.querySelectorAll(".option-menu");
+    this.sendListener();
+  }
+
+  sendListener() {
+    this.$menu?.addEventListener("mouseleave", () => {
+      this.$menu.classList.remove("active");
+    });
   }
 
   private renderOutlet() {
@@ -94,26 +147,31 @@ export class RouterOutlet extends HTMLElement {
       "#notifications": Notification,
       "#conversion": ConversionPage,
       "#accountPay": AccountPayPage,
+      "#login": LoginComponent,
+      "#register": RegisterComponent,
     };
 
-    const $root = document.querySelector("#root");
-    const $pageTitle = document.querySelector(".page-title");
-    document.querySelectorAll("a").forEach((anchor) => {
+    this.$anchor.forEach((anchor) => {
       anchor.classList.remove("active-router");
     });
-    document.querySelector(`a[href="${hash}"]`).classList.add("active-router");
-    $pageTitle.innerHTML = PAGE_TITLES[hash];
 
-    if ($root) $root.innerHTML = "";
+    document.querySelector(`a[href="${hash}"]`)?.classList.add("active-router");
+    this.$pageTitle.innerHTML = PAGE_TITLES[hash];
+
+    if (hash === "#login" || hash === "#register") {
+      this.$header.classList.add("disabled");
+      this.$nav.classList.add("disabled");
+    } else {
+      this.$header.classList.remove("disabled");
+      this.$nav.classList.remove("disabled");
+    }
+
+    if (this.$root) this.$root.innerHTML = "";
     const Page = ROUTES[hash];
     if (Page) {
       const page = new Page();
-      $root?.append(page);
+      this.$root?.append(page);
     }
-    const $menu = document.querySelector<HTMLElement>(".dropdown-menu");
-    $menu?.addEventListener("mouseleave", () => {
-      $menu.classList.remove("active");
-    });
   }
 
   onInit() {
@@ -122,30 +180,24 @@ export class RouterOutlet extends HTMLElement {
   }
 
   activeSideBar() {
-    const $iconHeader = document.querySelector<HTMLElement>("header .menu");
-    const $sideBar = document.querySelector<HTMLElement>("router-app .side-bar");
-    const $anchors = document.querySelectorAll(".anchors");
-
-    $iconHeader?.addEventListener("click", (event) => {
+    this.$iconHeader?.addEventListener("click", (event) => {
       event.stopPropagation();
-      $sideBar?.classList.toggle("active");
+      this.$sideNav?.classList.toggle("active");
     });
-    $anchors.forEach(($anchor) => {
+    this.$anchors.forEach(($anchor) => {
       $anchor.addEventListener("click", (event) => {
         event.stopPropagation();
-        $sideBar?.classList.remove("active");
+        this.$sideNav?.classList.remove("active");
       });
     });
   }
+
   activeAccount() {
-    const $iconAccount = document.querySelector<HTMLElement>("header .account");
-    const $accountMenu = document.querySelector<HTMLElement>("header .account-menu");
-    const $optionMenu = document.querySelectorAll(".option-menu");
-    $iconAccount.addEventListener("click", () => {
-      $accountMenu.classList.toggle("active");
-      $optionMenu.forEach((element) => {
+    this.$iconAccount.addEventListener("click", () => {
+      this.$accountMenu.classList.toggle("active");
+      this.$optionMenu.forEach((element) => {
         element.addEventListener("click", () => {
-          $accountMenu.classList.remove("active");
+          this.$accountMenu.classList.remove("active");
         });
       });
     });
