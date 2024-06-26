@@ -1,26 +1,5 @@
 @import "/src/scss/mixins.scss";
 login-page {
-  .password:has(input[type="password"]) {
-    .icon-eye-closed {
-      background-image: url("/src/assets/eye-closed.svg") !important;
-    }
-  }
-  .password:has(input[type="text"]) {
-    .icon-eye-open {
-      background-image: url("/src/assets/eye-open.svg") !important;
-    }
-  }
-  .see-password {
-    width: 25px;
-    height: 25px;
-    position: absolute;
-    bottom: 8px;
-    cursor: pointer;
-    right: 6px;
-  }
-  .password {
-    position: relative;
-  }
   .btn-add {
     width: 100%;
     justify-content: center !important;

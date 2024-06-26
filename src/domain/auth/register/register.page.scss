@@ -1,28 +1,5 @@
 @import "/src/scss/mixins.scss";
 register-page {
-  .password:has(input[type="password"]) {
-    .icon-eye-closed {
-      background-image: url("/src/assets/eye-closed.svg") !important;
-    }
-  }
-  .password:has(input[type="text"]) {
-    .icon-eye-open {
-      background-image: url("/src/assets/eye-open.svg") !important;
-    }
-  }
-
-  .see-password,
-  .see-confirm-password {
-    width: 25px;
-    height: 25px;
-    position: absolute;
-    bottom: 6px;
-    cursor: pointer;
-    right: 8px;
-  }
-  .password {
-    position: relative;
-  }
   .btn-add {
     width: 100%;
     justify-content: center !important;

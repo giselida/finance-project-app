@@ -1,38 +1,65 @@
 import illustration from "../../../assets/login-pana.svg";
 import { Toasts } from "../../../components/toasts/toast";
-import { Validation } from "./../validation";
+import { viewPassword } from "../../../functions/password/view-password";
+import { Client } from "../client";
+import { Validators } from "../validation";
 import "./register.page.scss";
 
 const template = `
 <div class="card register">
   <form class="was-validated">
     <div class="mb-3">
-      <label class="form-label">Nome
-        <div class="required">*</div>
+      <label class="form-label"
+        >Nome
       </label>
-      <input type="text" class="form-control form" placeholder="Digite seu nome" minlength="3"   required />
+      <input 
+      type="text" 
+      class="form-control form" name="name" 
+      placeholder="Digite seu nome"
+      minlength="3"
+      required />
+      <div class="error-message"></div>
     </div>
     <div class="mb-3">
-      <label class="form-label">E-mail
-        <div class="required">*</div>
+      <label class="form-label"
+        >E-mail
       </label>
-      <input type="text" class="form-control form" placeholder="Digite seu email" required />
+      <input type="email" class="form-control form" name="email" placeholder="Digite seu email" required />
+      <div class="error-message"></div>
     </div>
     <div class="mb-3 password">
-      <label class="form-label">Senha
-        <div class="required">*</div>
+      <label class="form-label"
+        >Senha
       </label>
-      <input type="password" class="form-control form icon-eye-closed icon-eye-open" placeholder="Digite sua senha" autocomplete="off" minlength="8" required />  
+      <input
+        type="password"
+        class="form-control form icon-eye-closed icon-eye-open"
+        name="password"
+        placeholder="Digite sua senha"
+        autocomplete="off"
+        minlength="8"
+        required
+      />
       <div class="see-password"></div>
+      <div class="error-message"></div>
     </div>
     <div class="mb-3 password">
-      <label class="form-label">Confirme sua senha
-        <div class="required">*</div>
+      <label class="form-label"
+        >Confirme sua senha
       </label>
-      <input type="password" class="form-control form icon-eye-closed icon-eye-open" placeholder="Digite sua senha" autocomplete="off" minlength="8" required />  
+      <input
+        type="password"
+        class="form-control form icon-eye-closed icon-eye-open"
+        placeholder="Digite sua senha"
+        name="confirmPassword"
+        autocomplete="off"
+        minlength="8"
+        required
+      />
       <div class="see-confirm-password"></div>
-    </div>    
-    <button class="btn btn-add" type="submit">Cadastrar</button>
+      <div class="error-message"></div>
+    </div>
+    <button class="btn btn-add" type="button">Cadastrar</button>
   </form>
 </div>
 <div class="card card-illustration">
@@ -40,11 +67,12 @@ const template = `
   <a href="#login">
     <button type="button" class="btn btn-account">
       <span class="material-symbols-outlined icon"> group_add </span>
-      Entrar na conta 
+      Entrar na conta
     </button>
   </a>
   <img src="${illustration}" class="illustration" alt="imagem de login" />
 </div>
+
 `;
 
 export class RegisterComponent extends HTMLElement {
@@ -55,7 +83,10 @@ export class RegisterComponent extends HTMLElement {
   $buttonAdd: HTMLButtonElement;
   $seePassword: HTMLElement;
   $seeConfirmPassword: HTMLElement;
-  validation = new Validation();
+  $errorMessage: HTMLElement;
+
+  validators = new Validators();
+  client = new Client();
 
   connectedCallback() {
     this.innerHTML = template;
@@ -64,36 +95,64 @@ export class RegisterComponent extends HTMLElement {
 
   recoveryElementRef() {
     this.$buttonAdd = document.querySelector(".btn-add");
+
     const $formControls = document.querySelectorAll("form .form");
     const [$inputName, $inputEmail, $inputPassword, $inputConfirmPassword] = $formControls;
+
     this.$inputName = $inputName as HTMLInputElement;
     this.$inputEmail = $inputEmail as HTMLInputElement;
     this.$inputPassword = $inputPassword as HTMLInputElement;
     this.$inputConfirmPassword = $inputConfirmPassword as HTMLInputElement;
-    this.$seePassword = document.querySelector(".see-password");
-    this.$seeConfirmPassword = document.querySelector(".see-confirm-password");
 
     this.sendListener();
   }
 
   private sendListener() {
-    this.$buttonAdd.addEventListener("click", () => {
-      if (!this.$inputName.value || !this.$inputEmail.value || !this.$inputPassword.value || !this.$inputConfirmPassword.value) {
-        Toasts.error("Por favor preencha os campos obrigatórios!");
-        throw new Error("Por favor preencha os campos obrigatórios!");
-      }
-      if (this.$inputPassword.value !== this.$inputConfirmPassword.value) {
-        Toasts.error("As senhas devem ser idênticas!");
-        throw new Error("As senhas devem ser idênticas!");
-      }
-      this.validation.addClient(this.$inputName, this.$inputPassword, this.$inputEmail, this.$inputConfirmPassword);
+    this.$inputName.addValidation([Validators.required, Validators.onlyCharacters, Validators.minLength(3)]);
+    this.$inputEmail.addValidation([Validators.required, Validators.email]);
+    this.$inputPassword.addValidation([Validators.required, Validators.password]);
+    this.$inputConfirmPassword.addValidation([
+      Validators.required,
+      Validators.password,
+      Validators.passwordMatch(this.$inputPassword),
+      Validators.minLength(8),
+    ]);
+
+    this.$inputPassword.addEventListener("input", () => {
+      if (this.$inputConfirmPassword.value) this.$inputConfirmPassword.dispatchEvent(new Event("input"));
     });
 
+    this.$errorMessage = document.querySelector(".error-message");
+
+    this.$seePassword = document.querySelector(".see-password");
+    this.$seeConfirmPassword = document.querySelector(".see-confirm-password");
+
     this.$seePassword.addEventListener("click", () => {
-      this.validation.viewPassword(this.$inputPassword);
+      viewPassword(this.$inputPassword);
     });
     this.$seeConfirmPassword.addEventListener("click", () => {
-      this.validation.viewPassword(this.$inputConfirmPassword);
+      viewPassword(this.$inputConfirmPassword);
+    });
+    this.$buttonAdd.addEventListener("click", () => {
+      const controls = [this.$inputName, this.$inputPassword, this.$inputEmail, this.$inputConfirmPassword];
+
+      controls.forEach((input) => {
+        input.dispatchEvent(new Event("input"));
+      });
+      const isValid = controls.every((input) => {
+        return !input.validationMessage;
+      });
+
+      if (!isValid) return;
+
+      const client = this.client.hasClient(this.$inputName, this.$inputPassword);
+
+      if (client) {
+        return Toasts.error("Você já possui um cadastro!");
+      }
+
+      this.client.addClient(this.$inputName, this.$inputPassword, this.$inputEmail, this.$inputConfirmPassword);
+      window.location.replace("#transaction");
     });
   }
 }

@@ -21,6 +21,57 @@ body {
   background-color: var(--color-gray-light);
   font-family: "Open Sans", sans-serif;
 }
+.error-message {
+  font-size: 14px;
+  margin-top: 5px;
+  color: red;
+}
+.password:has(input[type="password"]) {
+  .see-password,
+  .see-confirm-password {
+    background-image: url("/src/assets/eye-closed.svg") !important;
+  }
+}
+.password:has(input[type="text"]) {
+  .see-password,
+  .see-confirm-password {
+    background-image: url("/src/assets/eye-open.svg") !important;
+  }
+}
+
+.see-password,
+.see-confirm-password {
+  width: 25px;
+  height: 25px;
+  background-size: 25px 25px;
+  position: absolute;
+  bottom: 23px;
+  cursor: pointer;
+  right: 42px;
+}
+.password {
+  position: relative;
+  min-height: 80px;
+}
+
+.was-validated :has(label + input:required) {
+  .form-label {
+    display: inline-flex !important;
+    position: relative;
+    &::before {
+      content: "*";
+      position: absolute;
+      right: -10px;
+      font-weight: bold;
+    }
+  }
+
+  &:has(.form-control.is-invalid, .form-control:invalid) {
+    .form-label::before {
+      color: var(--color-red);
+    }
+  }
+}
 .air-datepicker-global-container {
   z-index: 999999;
 }
@@ -142,11 +193,6 @@ router-app {
       }
     }
 
-    .was-validated :has(.form-control.is-invalid, .form-control:invalid) {
-      .required {
-        color: var(--color-red);
-      }
-    }
     .modal-footer {
       .btn-closed {
         padding: 5px 16px 5px 16px;
@@ -318,10 +364,8 @@ router-app {
   }
 
   .form {
-    @include display-align-content(space-around);
+    @include display-align-content();
     gap: 10px;
-    margin-bottom: 20px;
-
     flex-wrap: nowrap;
   }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createElementWithClass } from "../components/toasts/toast.spec";
+import { createElementWithClass } from "../../components/toasts/toast.spec";
 import { badgeUpdate } from "./notification";
 export function renderToastContent() {
   const $toast = document.querySelector(".badge");

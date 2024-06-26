@@ -1,79 +1,80 @@
-import { Toasts } from "../../components/toasts/toast";
-import { ClientCard } from "../account-pay/account-pay.page";
-import { Cliente } from "../account/account.page";
+const validationErrors: {
+  [key: string]: Function;
+} = {
+  required: () => "Este campo é obrigatório, Insira um valor",
+  minLength: ({ actualLength, requiredLength }: { actualLength: number; requiredLength: number }) =>
+    `Este campo deve conter no mínimo ${requiredLength} caracteres. Você inseriu ${actualLength}.`,
+  maxlength: ({ actualLength, requiredLength }: { actualLength: number; requiredLength: number }) =>
+    `Este campo deve conter no máximo ${requiredLength} caracteres. Você inseriu ${actualLength}.`,
+  email: () => "Por favor, insira um email válido",
+  onlyCharacters: () => "O nome deve conter apenas letras",
+  oneSpecialCharacter: () => "A senha deve conter pelo menos um caractere especial",
+  oneUpperCase: () => "A senha deve conter pelo menos uma letra maiúscula",
+  oneNumber: () => "A senha deve conter pelo menos um número",
+  passwordMatch: () => "As senhas não coincidem",
+};
 
-export class Validation {
-  maxID: number = 0;
-  clientList: Cliente[];
-  client: Cliente;
-  clientCard: ClientCard;
-  constructor() {
-    this.getStorage();
+declare global {
+  interface HTMLInputElement {
+    addValidation(callback: ValidatorsFn | ValidatorsFn[]): void;
   }
+}
 
-  private getStorage() {
-    this.clientList = JSON.parse(localStorage.getItem("clients") ?? "[]");
-    this.clientCard = JSON.parse(localStorage.getItem("clientCard") ?? "{}");
-    this.client = JSON.parse(localStorage.getItem("client") || "{}");
-  }
+HTMLInputElement.prototype.addValidation = function (callback: ValidatorsFn | ValidatorsFn[], errorSelector = ".error-message") {
+  let errorMessage: string;
+  this.addEventListener("input", () => {
+    errorMessage = "";
 
-  viewPassword(input: HTMLInputElement) {
-    input.type = input.type === "password" ? "text" : "password";
-  }
-
-  addClient(
-    $inputName: HTMLInputElement,
-    $inputPassword: HTMLInputElement,
-    $inputEmail?: HTMLInputElement,
-    $inputConfirmPassword?: HTMLInputElement
-  ) {
-    const random = (min: number = 1, max: number = 100) => Math.floor(Math.random() * (max - min) + min);
-    const objectClient: Cliente = {
-      id: ++this.maxID,
-      name: $inputName.value,
-      password: $inputPassword.value,
-      accountNumber: `${random()}${random()}${random()}-${random()}`,
-      accountAmount: 0,
-      email: $inputEmail.value,
-      limitCredit: 0,
-      limitCreditUsed: 0,
-      limitCreditCurrent: 0,
-      clientCard: [this.clientCard],
-    };
-
-    this.clientList.push(objectClient);
-
-    this.setStorage();
-    this.cleanForms($inputName, $inputPassword, $inputEmail, $inputConfirmPassword);
-    Toasts.success("Conta criada com sucesso!");
-    window.location.replace("#transaction");
-    location.reload();
-  }
-
-  private setStorage() {
-    localStorage.setItem("clients", JSON.stringify(this.clientList));
-    localStorage.setItem("client", JSON.stringify(this.client));
-    localStorage.setItem("idClients", this.maxID.toString());
-    localStorage.setItem("clientCard", JSON.stringify(this.clientCard));
-  }
-  hasClient($inputName: HTMLInputElement, $inputPassword: HTMLInputElement) {
-    const client = this.clientList.find((value) => value.name === $inputName.value && value.password === $inputPassword.value);
-    console.log(client, "client");
-    console.log(this.client, "clienteS");
-    if (!client) {
-      return Toasts.error("você não possui um cadastro!");
+    if (callback instanceof Array) {
+      const messages = callback
+        .map((validation) => {
+          return validation(this);
+        })
+        .filter(Boolean);
+      errorMessage = messages[0];
+    } else {
+      errorMessage = callback(this);
     }
-    window.location.replace("#transaction");
-  }
-  cleanForms(
-    $inputName: HTMLInputElement,
-    $inputPassword: HTMLInputElement,
-    $inputEmail: HTMLInputElement,
-    $inputConfirmPassword: HTMLInputElement
-  ) {
-    $inputName.value = "";
-    $inputPassword.value = "";
-    $inputEmail.value = "";
-    $inputConfirmPassword.value = "";
-  }
+
+    this.setCustomValidity(errorMessage || "");
+
+    const errorMessage$ = this.parentElement.querySelector(errorSelector);
+    if (errorMessage$) errorMessage$.innerHTML = errorMessage ?? "";
+  });
+};
+
+export type ValidatorsFn = (param: HTMLInputElement) => string;
+export class Validators {
+  public static readonly passwordMatch: (matchInput: HTMLInputElement) => ValidatorsFn = (matchInput: HTMLInputElement) => {
+    return (input: HTMLInputElement) => {
+      if (input.value != matchInput.value) return validationErrors.passwordMatch();
+    };
+  };
+  public static readonly minLength: (minLength: number) => ValidatorsFn = (minLength: number) => {
+    return (input: HTMLInputElement) => {
+      input.setAttribute("minlength", minLength.toString());
+      if (minLength > input.value.length) {
+        return validationErrors.minLength({
+          actualLength: input.value.length,
+          requiredLength: minLength,
+        });
+      }
+    };
+  };
+  public static readonly onlyCharacters: ValidatorsFn = (input: HTMLInputElement) => {
+    if (!/^[\p{L}\s.'-]+$/u.test(input.value)) return validationErrors.onlyCharacters();
+  };
+  public static readonly email: ValidatorsFn = (input: HTMLInputElement) => {
+    const re = /\S+@\S+\.\S+/;
+    if (!re.test(input.value)) return validationErrors.email();
+  };
+  public static readonly required: ValidatorsFn = (input: HTMLInputElement) => {
+    if (!input.value) return validationErrors.required();
+  };
+
+  public static readonly password: ValidatorsFn = (input: HTMLInputElement) => {
+    if (!/[A-Z]/.test(input.value)) return validationErrors.oneUpperCase();
+    if (!/\d/.test(input.value)) return validationErrors.oneNumber();
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(input.value)) return validationErrors.oneSpecialCharacter();
+  };
 }
