@@ -1,9 +1,9 @@
 import { FormSelect } from "./components/form-select/form-select";
 import { RouterOutlet } from "./components/router-outlet/router-outlet";
-import { AccountPayPage } from "./domain/account-pay/account-pay.page";
 import { AccountPage } from "./domain/account/account.page";
 import { LoginComponent } from "./domain/auth/login/login.page";
 import { RegisterComponent } from "./domain/auth/register/register.page";
+import { CardAccountPage } from "./domain/card-account/card-account.page";
 import { ConversionPage } from "./domain/conversion/conversion.page";
 import { Notification } from "./domain/notification/notification.page";
 import { TransactionPage } from "./domain/transaction/transaction.page";
@@ -35,8 +35,8 @@ export const options = [
     class: ConversionPage,
   },
   {
-    selector: "account-pay-page",
-    class: AccountPayPage,
+    selector: "card-account-page",
+    class: CardAccountPage,
   },
   {
     selector: "login-page",

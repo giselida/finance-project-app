@@ -1,7 +1,7 @@
-import { AccountPayPage } from "../../domain/account-pay/account-pay.page";
 import { AccountPage } from "../../domain/account/account.page";
 import { LoginComponent } from "../../domain/auth/login/login.page";
 import { RegisterComponent } from "../../domain/auth/register/register.page";
+import { CardAccountPage } from "../../domain/card-account/card-account.page";
 import { ConversionPage } from "../../domain/conversion/conversion.page";
 import { Notification } from "../../domain/notification/notification.page";
 import { TransactionPage } from "../../domain/transaction/transaction.page";
@@ -22,7 +22,7 @@ const PAGE_TITLES: { [key: string]: string } = {
   "#account": createMaterialSymbol("account_circle", "Conta"),
   "#notifications": createMaterialSymbol("notifications", "Notificações"),
   "#conversion": createMaterialSymbol("currency_exchange", "Conversor"),
-  "#accountPay": createMaterialSymbol("credit_score", "Pagamento"),
+  "#cardAccount": createMaterialSymbol("credit_score", "Cartão de crédito"),
   "#login": createMaterialSymbol("", ""),
   "#register": createMaterialSymbol("", ""),
 };
@@ -77,8 +77,8 @@ const template = `
       <a href="#conversion" class="anchors" title="Conversor">
         ${PAGE_TITLES["#conversion"]}
       </a>
-      <a href="#accountPay" class="anchors" title="Pagamento">
-        ${PAGE_TITLES["#accountPay"]}
+      <a href="#cardAccount" class="anchors" title="Pagamento">
+        ${PAGE_TITLES["#cardAccount"]}
       </a>
      
     </nav>
@@ -120,13 +120,13 @@ export class RouterOutlet extends HTMLElement {
     this.$pageTitle = document.querySelector(".page-title");
     this.$header = document.querySelector("header");
     this.$nav = document.querySelector("nav");
-    this.$menu = document.querySelector<HTMLElement>(".dropdown-menu");
+    this.$menu = document.querySelector(".dropdown-menu");
     this.$anchor = document.querySelectorAll("a");
-    this.$iconHeader = document.querySelector<HTMLElement>("header .menu");
-    this.$sideNav = document.querySelector<HTMLElement>("router-app .side-nav");
+    this.$iconHeader = document.querySelector("header .menu");
+    this.$sideNav = document.querySelector("router-app .side-nav");
     this.$anchors = document.querySelectorAll(".anchors");
-    this.$iconAccount = document.querySelector<HTMLElement>("header .account");
-    this.$accountMenu = document.querySelector<HTMLElement>("header .account-menu");
+    this.$iconAccount = document.querySelector("header .account");
+    this.$accountMenu = document.querySelector("header .account-menu");
     this.$optionMenu = document.querySelectorAll(".option-menu");
     this.sendListener();
   }
@@ -146,7 +146,7 @@ export class RouterOutlet extends HTMLElement {
       "#transaction": TransactionPage,
       "#notifications": Notification,
       "#conversion": ConversionPage,
-      "#accountPay": AccountPayPage,
+      "#cardAccount": CardAccountPage,
       "#login": LoginComponent,
       "#register": RegisterComponent,
     };

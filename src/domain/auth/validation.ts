@@ -50,6 +50,7 @@ export class Validators {
       if (input.value != matchInput.value) return validationErrors.passwordMatch();
     };
   };
+
   public static readonly minLength: (minLength: number) => ValidatorsFn = (minLength: number) => {
     return (input: HTMLInputElement) => {
       input.setAttribute("minlength", minLength.toString());
@@ -61,13 +62,16 @@ export class Validators {
       }
     };
   };
+
   public static readonly onlyCharacters: ValidatorsFn = (input: HTMLInputElement) => {
     if (!/^[\p{L}\s.'-]+$/u.test(input.value)) return validationErrors.onlyCharacters();
   };
+
   public static readonly email: ValidatorsFn = (input: HTMLInputElement) => {
     const re = /\S+@\S+\.\S+/;
     if (!re.test(input.value)) return validationErrors.email();
   };
+
   public static readonly required: ValidatorsFn = (input: HTMLInputElement) => {
     if (!input.value) return validationErrors.required();
   };

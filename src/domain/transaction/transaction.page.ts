@@ -351,8 +351,10 @@ content_copy
   setEventListeners() {
     const self = this;
     this.mask = Currency.data(this.$inputValue) || new Currency(this.$inputValue);
+
     this.$btnSend.addEventListener("click", () => this.sendListener());
     this.$modal.addEventListener("hidden.bs.modal", () => this.onModalHidden());
+
     this.$search.addEventListener(
       "input",
       this.debounceEvent(() => {
@@ -361,8 +363,10 @@ content_copy
       }, 500)
     );
     this.$tableHeaders.forEach(($th) => $th.addEventListener("click", () => this.sortByColumn($th)));
+
     this.$next.addEventListener("click", () => this.nextPage());
     this.$previous.addEventListener("click", () => this.previousPage());
+
     this.datePicker = new AirDatepicker(this.$inputDate, {
       locale: PT_BR_LOCALE,
 

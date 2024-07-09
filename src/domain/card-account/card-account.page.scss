@@ -1,0 +1,163 @@
+@import "/src/scss/mixins.scss";
+card-account-page {
+  @include pageStyle(column);
+  .rotate {
+    -webkit-transform: rotateY(180deg);
+    transform: rotateY(180deg) !important;
+  }
+  .carousel {
+    display: flex;
+    align-items: center;
+    height: 200px;
+    position: relative;
+    width: 100%;
+  }
+
+  .next,
+  .previous {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 1;
+    transition: background-color 0.5s ease-in-out, 0.5s ease-in-out, transform 0.5s ease-in-out;
+    border-radius: 50%;
+    span {
+      position: relative;
+      top: -2px;
+    }
+    &:hover {
+      color: white;
+      transform: scale(1.2);
+      background-color: #505050;
+    }
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  .next {
+    right: 0;
+  }
+
+  .previous {
+    left: 0;
+  }
+  .signature-name {
+    font-family: "Rock Salt", cursive;
+  }
+
+  .card-container {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    overflow: hidden;
+    transition: transform 0.5s ease-in-out;
+  }
+  .cards {
+    display: flex;
+  }
+  .card-credit {
+    font-family: "Lato";
+
+    height: 170px;
+    background-color: lightgrey;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    min-width: 250px;
+    border: 1px solid #ddd;
+    text-align: center;
+    opacity: 0.5;
+    transform: scale(0.9);
+    cursor: pointer;
+    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out, -webkit-transform 0.6s;
+    position: relative;
+
+    .flip {
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .circle {
+      display: flex;
+      background-color: var(--color-gray-dark);
+      border-radius: 50%;
+      padding: 5px;
+      text-align: center;
+
+      .add-card-credit {
+        color: white;
+        cursor: pointer;
+      }
+    }
+
+    .front {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      padding: 10px;
+      transform: rotateY(0deg);
+
+      .date-valid {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        width: 100%;
+        .text {
+          font-weight: bold;
+        }
+      }
+    }
+
+    .information {
+      display: flex;
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .back {
+      transform: rotateY(-180deg);
+      display: none;
+
+      .information {
+        background-color: #ddd;
+        padding: 5px;
+        display: flex;
+        flex-direction: row;
+        border-radius: 5px;
+        align-items: center;
+        gap: 10px;
+        margin-top: 15px;
+        .cvv-content {
+          .text {
+            border-radius: 5px;
+            background-color: #505050;
+            color: white;
+            padding: 2px;
+          }
+        }
+      }
+    }
+    .chip {
+      img {
+        width: 30px;
+        height: 30px;
+        position: relative;
+        right: 90px;
+        bottom: 10px;
+      }
+    }
+
+    &:hover,
+    &.selected {
+      opacity: 1 !important;
+      transform: scale(1);
+    }
+  }
+}

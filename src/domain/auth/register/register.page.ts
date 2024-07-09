@@ -85,7 +85,6 @@ export class RegisterComponent extends HTMLElement {
   $seeConfirmPassword: HTMLElement;
   $errorMessage: HTMLElement;
 
-  validators = new Validators();
   client = new Client();
 
   connectedCallback() {

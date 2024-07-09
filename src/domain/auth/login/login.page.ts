@@ -58,7 +58,6 @@ export class LoginComponent extends HTMLElement {
   $buttonAdd: HTMLButtonElement;
   $seePassword: HTMLButtonElement;
   $errorMessage: HTMLElement;
-  validation = new Validators();
   client = new Client();
 
   connectedCallback() {

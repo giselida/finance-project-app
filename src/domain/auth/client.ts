@@ -1,12 +1,12 @@
 import { Toasts } from "../../components/toasts/toast";
-import { ClientCard } from "../account-pay/account-pay.page";
 import { Cliente } from "../account/account.page";
+import { CardClient } from "../card-account/card-account.page";
 
 export class Client {
   maxID: number = 0;
   list: Cliente[];
   actual: Cliente;
-  card: ClientCard;
+  card: CardClient;
   constructor() {
     this.getStorage();
   }

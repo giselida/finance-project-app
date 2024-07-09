@@ -3,7 +3,7 @@ import warningImage from "../../assets/release_alert.png";
 import { RouterOutlet } from "../../components/router-outlet/router-outlet";
 import { Toasts } from "../../components/toasts/toast";
 import { badgeUpdate } from "../../functions/notification/notification";
-import { ClientCard } from "../account-pay/account-pay.page";
+import { CardClient } from "../card-account/interface/card-client";
 import "./account.page.scss";
 export interface Cliente {
   id: number;
@@ -15,7 +15,7 @@ export interface Cliente {
   limitCredit?: number;
   limitCreditUsed?: number;
   limitCreditCurrent?: number;
-  clientCard: [ClientCard];
+  clientCard: [CardClient];
 }
 
 export class AccountPage extends HTMLElement {
@@ -24,7 +24,7 @@ export class AccountPage extends HTMLElement {
   $creditValue: HTMLElement;
   clientList: Cliente[];
   client: Cliente;
-  clientCard: ClientCard;
+  clientCard: CardClient;
   $modal: HTMLElement;
   $previous: HTMLButtonElement;
   $next: HTMLButtonElement;
