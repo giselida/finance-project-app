@@ -2,8 +2,9 @@ import Swal from "sweetalert2";
 import warningImage from "../../assets/release_alert.png";
 import { RouterOutlet } from "../../components/router-outlet/router-outlet";
 import { Toasts } from "../../components/toasts/toast";
+import { formatterBRL } from "../../functions/currencyFormatter/formatter.";
 import { badgeUpdate } from "../../functions/notification/notification";
-import { CardClient } from "../card-account/interface/card-client";
+import { CardClient } from "./../card-account/interface/card-client";
 import "./account.page.scss";
 export interface Cliente {
   id: number;
@@ -12,27 +13,21 @@ export interface Cliente {
   email?: string;
   accountNumber: string;
   accountAmount: number;
-  limitCredit?: number;
-  limitCreditUsed?: number;
-  limitCreditCurrent?: number;
+
   clientCard: [CardClient];
 }
 
 export class AccountPage extends HTMLElement {
   $buttonAdd: HTMLButtonElement;
-  $inputRange: HTMLInputElement;
-  $creditValue: HTMLElement;
   clientList: Cliente[];
   client: Cliente;
   clientCard: CardClient;
-  $modal: HTMLElement;
   $previous: HTMLButtonElement;
   $next: HTMLButtonElement;
   $pageActually: HTMLElement;
   page: number = 1;
   pageSize: number = 5;
   maxID: number = 0;
-  $usedCreditValue: HTMLElement;
   constructor() {
     super();
     this.getStorage();
@@ -56,11 +51,8 @@ export class AccountPage extends HTMLElement {
     this.recoveryElementRef();
   }
   private createInnerHTML() {
-    const currencyFormatter = new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-    const { name, accountNumber, accountAmount, limitCredit, limitCreditCurrent } = this.client;
+    const currencyFormatter = formatterBRL();
+    const { name, accountNumber, accountAmount } = this.client;
 
     this.innerHTML = /*html*/ `
 <span class="account-info">
@@ -73,22 +65,8 @@ export class AccountPage extends HTMLElement {
     <div class="card-title"><span class="info">Numero da conta:</span> ${accountNumber ?? ""}</div>
     <div class="card-title"><span class="info">Saldo:</span> ${currencyFormatter.format(accountAmount ?? 0)}</div>
     <div class="line"></div>
-    <div class="limit-credit">
-      <label for="customRange1" class="form-label">Defina seu limite de Crédito</label>
-      <div class="credit-value">
-        <span class="info">Limite de crédito:</span>
-        <span class="limit-credit-value"> 
-         ${currencyFormatter.format(limitCredit ?? 0)}
-        </span>
-        <span class="info">Limite de crédito disponível:</span>
-        <span class="available-credit-value"> 
-         ${currencyFormatter.format(limitCreditCurrent ?? 0)}
-        </span>
-      </div>
-      <div class="range">
-        <input type="range" class="form" min="0" max="10000" value="${limitCredit ?? 0}" step="50" required />
-      </div>
-    </div>
+    
+   
   </div>
 </div>
 <div class="content-row">
@@ -130,13 +108,9 @@ export class AccountPage extends HTMLElement {
   }
 
   recoveryElementRef() {
-    this.$modal = document.querySelector("#staticBackdrop");
     this.maxID = +localStorage.getItem("idClients");
     this.$buttonAdd = document.querySelector(".btn-add");
 
-    this.$creditValue = document.querySelector(".limit-credit-value");
-    this.$usedCreditValue = document.querySelector(".available-credit-value");
-    this.$inputRange = document.querySelector("input[type='range']");
     this.$previous = document.querySelector(".page-previous");
     this.$next = document.querySelector(".page-next");
     this.$pageActually = document.querySelector(".page-actually");
@@ -148,50 +122,6 @@ export class AccountPage extends HTMLElement {
   private addListeners() {
     this.$next.addEventListener("click", () => this.nextPage());
     this.$previous.addEventListener("click", () => this.previousPage());
-    this.rangeListener();
-    this.setRangeColor();
-  }
-  private rangeListener() {
-    this.$inputRange.addEventListener("input", () => {
-      const formRangeValue = +this.$inputRange.value;
-      const limitCredit = +this.$inputRange.value - this.client.limitCreditUsed;
-      this.$creditValue.textContent = `${new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }).format(formRangeValue)}`;
-      this.$usedCreditValue.textContent = `${new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }).format(limitCredit)}`;
-      const client = this.clientList.find((client) => client.id == this.client.id);
-      client.limitCredit = formRangeValue;
-      client.limitCreditCurrent = limitCredit;
-      this.client = client;
-      this.setRangeColor();
-      this.setStorage();
-    });
-  }
-  private setRangeColor() {
-    const { value, max } = this.$inputRange;
-    const $range = document.querySelector<HTMLDivElement>(".range");
-    const progress = (+value / +max) * 100;
-    const barColor = "#FCD3E4";
-    const primaryColor = "#FE5E71";
-    const secondaryColor = "#bd3647";
-    const secondaryBarColor = "#d5374a42";
-    const limitProgress = (+value / +this.client.limitCreditUsed) * 100;
-
-    $range.style.setProperty("--width", `${this.client.limitCreditUsed / 100}%`);
-
-    $range.style.setProperty(
-      "--input-range-color",
-      `linear-gradient(to right, ${primaryColor} ${progress}%, ${primaryColor} ${progress}%, ${barColor} ${progress}%, ${barColor} 100%)`
-    );
-
-    $range.style.setProperty(
-      "--limit-range-color",
-      `linear-gradient(to right, ${secondaryColor} ${limitProgress}%, ${secondaryColor} ${limitProgress}%, ${secondaryBarColor} ${progress}%, ${secondaryBarColor} 100%)`
-    );
   }
 
   private setStorage() {

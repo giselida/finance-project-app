@@ -1,9 +1,29 @@
 import { Toasts } from "../../components/toasts/toast";
+import { formatterBRL } from "../../functions/currencyFormatter/formatter.";
 import { Cliente } from "../account/account.page";
 import "./card-account.page.scss";
 import { CardClient } from "./interface/card-client";
 
-const template = `
+export class CardAccountPage extends HTMLElement {
+  clientCardList: CardClient[];
+  client: Cliente;
+  clientCard: CardClient;
+
+  $buttonAdd: HTMLButtonElement;
+  $carousel: HTMLElement;
+  $container: HTMLElement;
+  $cards: HTMLElement;
+  $previous: HTMLButtonElement;
+  $next: HTMLButtonElement;
+  scrollAmount: number = 250;
+  $usedCreditValue: HTMLElement;
+  $creditValue: HTMLElement;
+  $inputRange: HTMLInputElement;
+
+  private createInnerHTML() {
+    const { limitCredit, limitCreditCurrent } = this.clientCard;
+    const currencyFormatter = formatterBRL();
+    this.innerHTML = `
 <div class="card">
   <div class="card-header">Cartões</div>
   <div class="card-body">
@@ -26,25 +46,35 @@ const template = `
     </div>
   </div>
 </div>
+
+<div class="card">
+ <div class="limit-credit">
+      <label for="customRange1" class="form-label">Defina seu limite de Crédito</label>
+
+      <div class="credit-value">
+        <span class="info">Limite de crédito:</span>
+        <span class="limit-credit-value"> 
+         ${currencyFormatter.format(limitCredit ?? 0)}
+        </span>
+        <span class="info">Limite de crédito disponível:</span>
+        <span class="available-credit-value"> 
+         ${currencyFormatter.format(limitCreditCurrent ?? 0)}
+        </span>
+      </div>
+
+      <div class="range">
+        <input type="range" class="form" min="0" max="10000" value="${limitCredit ?? 0}" step="50" required />
+      </div>
+
+    </div>
+</div>
 `;
-
-export class CardAccountPage extends HTMLElement {
-  clientCardList: CardClient[];
-  client: Cliente;
-  clientCard: CardClient;
-
-  $buttonAdd: HTMLButtonElement;
-  $carousel: HTMLElement;
-  $container: HTMLElement;
-  $cards: HTMLElement;
-  $previous: HTMLButtonElement;
-  $next: HTMLButtonElement;
-  scrollAmount: number = 250;
-
+  }
   connectedCallback() {
     this.client = JSON.parse(localStorage.getItem("client") ?? "{}");
     this.clientCardList = JSON.parse(localStorage.getItem("cardClients") ?? "[]");
-    this.innerHTML = template;
+    this.clientCard = JSON.parse(localStorage.getItem("clientCard") ?? "{}");
+    this.createInnerHTML();
     this.recoveryElementRef();
     this.createCardCredit();
     this.checkBUttonVisible();
@@ -66,7 +96,12 @@ export class CardAccountPage extends HTMLElement {
     this.$previous = document.querySelector(".previous");
     this.$next = document.querySelector(".next");
     this.$buttonAdd = document.querySelector(".circle .add-card-credit");
+    this.$inputRange = document.querySelector("input[type='range']");
+    this.$usedCreditValue = document.querySelector(".available-credit-value");
+    this.$creditValue = document.querySelector(".limit-credit-value");
 
+    this.$usedCreditValue = document.querySelector(".available-credit-value");
+    this.$inputRange = document.querySelector("input[type='range']");
     this.sendListener();
   }
 
@@ -80,6 +115,57 @@ export class CardAccountPage extends HTMLElement {
 
     this.$next.addEventListener("click", () => this.scrollNext());
     this.$previous.addEventListener("click", () => this.scrollPrevious());
+    if (this.clientCardList.length >= 1) {
+      this.rangeListener();
+      this.setRangeColor();
+    }
+  }
+  private rangeListener() {
+    this.$inputRange.addEventListener("input", () => {
+      const formRangeValue = +this.$inputRange.value;
+      const limitCredit = +this.$inputRange.value - this.clientCard.limitCreditUsed;
+      this.$creditValue.textContent = `${new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(formRangeValue)}`;
+      this.$usedCreditValue.textContent = `${new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(limitCredit)}`;
+      const client = this.clientCardList.find((client) => client.id == this.client.id);
+      client.limitCredit = formRangeValue;
+      client.limitCreditCurrent = limitCredit;
+      this.clientCard = client;
+      this.setRangeColor();
+      this.setStorage();
+    });
+  }
+  private setRangeColor() {
+    const { value, max } = this.$inputRange;
+    const $range = document.querySelector<HTMLDivElement>(".range");
+    const progress = (+value / +max) * 100;
+    const barColor = "#FCD3E4";
+    const primaryColor = "#FE5E71";
+    const secondaryColor = "#bd3647";
+    const secondaryBarColor = "#d5374a42";
+    const limitProgress = (+value / +this.clientCard.limitCreditUsed) * 100;
+
+    $range.style.setProperty("--width", `${this.clientCard.limitCreditUsed / 100}%`);
+
+    $range.style.setProperty(
+      "--input-range-color",
+      `linear-gradient(to right, ${primaryColor} ${progress}%, ${primaryColor} ${progress}%, ${barColor} ${progress}%, ${barColor} 100%)`
+    );
+
+    $range.style.setProperty(
+      "--limit-range-color",
+      `linear-gradient(to right, ${secondaryColor} ${limitProgress}%, ${secondaryColor} ${limitProgress}%, ${secondaryBarColor} ${progress}%, ${secondaryBarColor} 100%)`
+    );
+  }
+  private setStorage() {
+    localStorage.setItem("cardClients", JSON.stringify(this.clientCardList));
+    localStorage.setItem("client", JSON.stringify(this.client));
+    localStorage.setItem("clientCard", JSON.stringify(this.clientCard));
   }
 
   private scrollNext() {
@@ -187,13 +273,13 @@ export class CardAccountPage extends HTMLElement {
       cvv: generateCvv(),
       validDate: generateRandomValidDate(),
       cardNumber: `${random()}${random()} ${random()}${random()} ${random()}${random()} ${random()}${random()}`,
-      limitCredit: 0,
+      limitCredit: 1000,
       limitCreditUsed: 0,
       limitCreditCurrent: 0,
       color: this.generateRandomColor(),
     };
 
     this.clientCardList.push(objectClient);
-    localStorage.setItem("cardClients", JSON.stringify(this.clientCardList));
+    this.setStorage();
   }
 }

@@ -1,6 +1,6 @@
 import { Toasts } from "../../components/toasts/toast";
 import { Cliente } from "../account/account.page";
-import { CardClient } from "../card-account/card-account.page";
+import { CardClient } from "../card-account/interface/card-client";
 
 export class Client {
   maxID: number = 0;
@@ -30,9 +30,7 @@ export class Client {
       accountNumber: `${random()}${random()}${random()}-${random()}`,
       accountAmount: 0,
       email: $inputEmail.value,
-      limitCredit: 0,
-      limitCreditUsed: 0,
-      limitCreditCurrent: 0,
+
       clientCard: [this.card],
     };
 
