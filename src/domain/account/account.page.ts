@@ -6,16 +6,7 @@ import { formatterBRL } from "../../functions/currencyFormatter/formatter.";
 import { badgeUpdate } from "../../functions/notification/notification";
 import { CardClient } from "./../card-account/interface/card-client";
 import "./account.page.scss";
-export interface Cliente {
-  id: number;
-  name: string;
-  password: string;
-  email?: string;
-  accountNumber: string;
-  accountAmount: number;
-
-  clientCard: [CardClient];
-}
+import { Cliente } from "./interface/client.interface";
 
 export class AccountPage extends HTMLElement {
   $buttonAdd: HTMLButtonElement;
@@ -27,7 +18,6 @@ export class AccountPage extends HTMLElement {
   $pageActually: HTMLElement;
   page: number = 1;
   pageSize: number = 5;
-  maxID: number = 0;
   constructor() {
     super();
     this.getStorage();
@@ -35,7 +25,7 @@ export class AccountPage extends HTMLElement {
 
   private getStorage() {
     this.clientList = JSON.parse(localStorage.getItem("clients") ?? "[]");
-    this.clientCard = JSON.parse(localStorage.getItem("clientCard") ?? "{}");
+    this.clientCard = JSON.parse(localStorage.getItem("cardClient") ?? "{}");
     this.client = JSON.parse(localStorage.getItem("client") || "{}");
   }
   get $currentUser() {
@@ -64,9 +54,7 @@ export class AccountPage extends HTMLElement {
     <div class="card-title"><span class="info">Nome:</span> ${name ?? ""} </div>
     <div class="card-title"><span class="info">Numero da conta:</span> ${accountNumber ?? ""}</div>
     <div class="card-title"><span class="info">Saldo:</span> ${currencyFormatter.format(accountAmount ?? 0)}</div>
-    <div class="line"></div>
-    
-   
+
   </div>
 </div>
 <div class="content-row">
@@ -108,7 +96,6 @@ export class AccountPage extends HTMLElement {
   }
 
   recoveryElementRef() {
-    this.maxID = +localStorage.getItem("idClients");
     this.$buttonAdd = document.querySelector(".btn-add");
 
     this.$previous = document.querySelector(".page-previous");
@@ -127,8 +114,8 @@ export class AccountPage extends HTMLElement {
   private setStorage() {
     localStorage.setItem("clients", JSON.stringify(this.clientList));
     localStorage.setItem("client", JSON.stringify(this.client));
-    localStorage.setItem("idClients", this.maxID.toString());
-    localStorage.setItem("clientCard", JSON.stringify(this.clientCard));
+
+    localStorage.setItem("cardClient", JSON.stringify(this.clientCard));
   }
 
   renderList() {

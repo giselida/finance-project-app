@@ -1,4 +1,4 @@
-import { Transaction } from "../../domain/transaction/transaction.page";
+import { Transaction } from "../../domain/transaction/interface/transaction.interface";
 
 export function badgeUpdate() {
   const $badge = document.querySelector<HTMLSpanElement>(".badge");

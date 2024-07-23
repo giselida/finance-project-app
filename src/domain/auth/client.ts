@@ -1,19 +1,20 @@
 import { Toasts } from "../../components/toasts/toast";
-import { Cliente } from "../account/account.page";
+import { Cliente } from "../account/interface/client.interface";
 import { CardClient } from "../card-account/interface/card-client";
 
 export class Client {
   maxID: number = 0;
   list: Cliente[];
   actual: Cliente;
-  card: CardClient;
+  cards: CardClient[];
   constructor() {
     this.getStorage();
   }
 
   private getStorage() {
     this.list = JSON.parse(localStorage.getItem("clients") ?? "[]");
-    this.card = JSON.parse(localStorage.getItem("clientCard") ?? "{}");
+    this.cards = JSON.parse(localStorage.getItem("listOfCards") ?? "[]");
+    this.maxID = +localStorage.getItem("idClients");
     this.actual = JSON.parse(localStorage.getItem("client") || "{}");
   }
   addClient(
@@ -30,8 +31,6 @@ export class Client {
       accountNumber: `${random()}${random()}${random()}-${random()}`,
       accountAmount: 0,
       email: $inputEmail.value,
-
-      clientCard: [this.card],
     };
 
     this.list.push(objectClient);
@@ -56,7 +55,8 @@ export class Client {
     localStorage.setItem("clients", JSON.stringify(this.list));
     localStorage.setItem("client", JSON.stringify(this.actual));
     localStorage.setItem("idClients", this.maxID.toString());
-    localStorage.setItem("clientCard", JSON.stringify(this.card));
+    localStorage.setItem("listOfCards", JSON.stringify(this.cards));
+    localStorage.setItem("idClients", this.maxID.toString());
   }
 
   hasClient($inputName: HTMLInputElement, $inputPassword: HTMLInputElement) {

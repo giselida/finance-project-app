@@ -11,33 +11,34 @@ import { FormSelect } from "../../components/form-select/form-select";
 import { Toasts } from "../../components/toasts/toast";
 import { OPTIONS_PAYMENT } from "../../constants/charts";
 import { PT_BR_LOCALE } from "../../constants/date-picker-locale";
-import { SVG_ICONS } from "../../constants/svg-icons";
+import { eFormOfPayment, SVG_ICONS } from "../../constants/svg-icons";
 import { convertStringDate } from "../../functions/date/date";
 import { badgeUpdate } from "../../functions/notification/notification";
-import { Cliente } from "../account/account.page";
 
+import { Cliente } from "../account/interface/client.interface";
+import { CardClient } from "../card-account/interface/card-client";
+import { Transaction } from "./interface/transaction.interface";
 import "./transaction.page.scss";
 
-export interface Transaction {
-  id: number;
-  value: number;
-  formOfPayment: string;
-  clientName: string;
-  clientID: number;
-  userLoggedID: number;
-  creditLimit: number;
-  creditLimitUsed?: number;
-  date: string;
-  view: number[];
-  dateOfPayDay?: string;
-}
+export const formOfPaymentOptions = [
+  {
+    id: eFormOfPayment.CREDITO,
+    name: "Crédito",
+  },
+  {
+    id: eFormOfPayment.DEBITO,
+    name: "Debito",
+  },
+  {
+    id: eFormOfPayment.DINHEIRO,
+    name: "Dinheiro",
+  },
+  {
+    id: eFormOfPayment.PIX,
+    name: "Pix",
+  },
+];
 
-export enum eFormOfPayment {
-  CREDITO = "Credito",
-  DEBITO = "Debito",
-  DINHEIRO = "Dinheiro",
-  PIX = "Pix",
-}
 export class TransactionPage extends HTMLElement {
   mask: typeof Currency;
   $inputFormOfPayment: FormSelect;
@@ -63,6 +64,7 @@ export class TransactionPage extends HTMLElement {
   $tableHeaders: NodeListOf<HTMLTableCellElement>;
   $chart: ApexCharts;
   originalList: Transaction[];
+  cardClient: CardClient;
 
   get numberFormat() {
     const options = {
@@ -77,6 +79,10 @@ export class TransactionPage extends HTMLElement {
   }
   get clientLogged(): Cliente {
     return JSON.parse(localStorage.getItem("client") || "{}");
+  }
+
+  get listOfCards(): CardClient[] {
+    return JSON.parse(localStorage.getItem("listOfCards") || "[]");
   }
   get filteredList() {
     return this.transactionList.filter((item) => {
@@ -256,26 +262,27 @@ export class TransactionPage extends HTMLElement {
     this.$pageActually.textContent = this.page.toString();
     window.history.replaceState({}, "", `?page=${this.page}#transaction`);
     transactions.slice(actuallyPage, nextPage).forEach((transaction) => {
+      const dateOfPayDay = transaction?.dateOfPayDay
+        ? new Date(transaction?.dateOfPayDay).toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            month: "2-digit",
+            year: "2-digit",
+          }) ?? "-"
+        : "-";
+      const formOfPayment = formOfPaymentOptions.find((item) => item.id === transaction.idFormOfPayment).name;
+
       $tbody.innerHTML += /*html*/ ` 
        <tr id="option-of-transaction-${transaction.id}">
          <td scope="row">${transaction.id}</td>
          <td>${this.numberFormat.format(transaction.value)}</td>
          <td>
-           ${SVG_ICONS[transaction.formOfPayment]}  
-           ${transaction.formOfPayment}
+           ${SVG_ICONS[transaction.idFormOfPayment]}  
+           ${formOfPayment}
       </td>
       <td>${transaction.date}</td>
-      <td>${
-        transaction?.dateOfPayDay
-          ? new Date(transaction?.dateOfPayDay).toLocaleDateString("pt-BR", {
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-              month: "2-digit",
-              year: "2-digit",
-            }) ?? "-"
-          : "-"
-      }</td>
+      <td>${dateOfPayDay}</td>
       <td>${transaction.clientName}</td>
       <td>
         
@@ -312,6 +319,7 @@ content_copy
   }
 
   connectedCallback() {
+    this.cardClient = JSON.parse(localStorage.getItem("cardClient") || "{}");
     this.createInnerHTML();
     this.setElementRef();
     this.displayClientAmount();
@@ -405,20 +413,23 @@ content_copy
     const dates = this.transactionList.map((value) => value.date);
     dates.sort((a, b) => convertStringDate(a).getTime() - convertStringDate(b).getTime());
     const listDates = [...new Set(dates)];
-    const series = Object.values(eFormOfPayment).map((value) => {
-      return {
-        name: value,
-        data: listDates.flatMap((date) => {
-          const transactionList = this.transactionList.filter((item) => item.formOfPayment == value && item.date == date);
-          return +transactionList
-            .reduce((acc, item) => {
-              acc += item.value;
-              return acc;
-            }, 0)
-            .toFixed(2);
-        }),
-      };
-    });
+    const series = Object.values(eFormOfPayment)
+      .reverse()
+      .slice(0, 4)
+      .map((value) => {
+        return {
+          name: formOfPaymentOptions.find((item) => item.id === value)?.name,
+          data: listDates.flatMap((date) => {
+            const transactionList = this.transactionList.filter((item) => item.idFormOfPayment == value && item.date == date);
+            return +transactionList
+              .reduce((acc, item) => {
+                acc += item.value;
+                return acc;
+              }, 0)
+              .toFixed(2);
+          }),
+        };
+      });
     OPTIONS_PAYMENT.series = series;
     OPTIONS_PAYMENT.xaxis.categories = listDates.map((value) => `${value.split("/").reverse().join("/")} GMT`);
     if (this.$chart) this.$chart.destroy();
@@ -439,14 +450,25 @@ content_copy
       const $item = document.querySelector(item);
       $item.classList.remove("positive");
       $item.classList.remove("negative");
-      const key = item === ".current-balance" ? "accountAmount" : "limitCreditCurrent";
-      $item.classList.add(this.clientLogged?.[key] > 0 ? "positive" : "negative");
-      $item.textContent = `${new Intl.NumberFormat("pt-BR", {
+      let amountToDisplay = 0;
+      let isPositive = false;
+
+      if (item === ".current-balance" && this.clientLogged.id) {
+        amountToDisplay = this.clientLogged.accountAmount;
+        isPositive = amountToDisplay > 0;
+      }
+      if (item === ".current-limit" && this.cardClient.id) {
+        amountToDisplay = this.cardClient.limitCreditCurrent;
+        isPositive = amountToDisplay > 0;
+      }
+      $item.classList.add(isPositive ? "positive" : "negative");
+      $item.textContent = new Intl.NumberFormat("pt-BR", {
         style: "currency",
         currency: "BRL",
-      }).format(this.clientLogged?.[key] ?? 0)}`;
+      }).format(amountToDisplay);
     });
   }
+
   private removeMask(value: string) {
     return +value.replaceAll(".", "").replace(",", ".");
   }
@@ -511,7 +533,7 @@ content_copy
     this.selectedId = null;
     this.transactionFind = this.transactionList.find((transaction) => transaction.id === id);
     this.$inputValue.value = this.numberFormat.format(this.transactionFind.value);
-    this.$inputFormOfPayment.value = this.transactionFind.formOfPayment;
+    this.$inputFormOfPayment.value = this.transactionFind.idFormOfPayment.toString();
     this.$inputDate.value = !this.validateDateIsFuture(convertStringDate(this.transactionFind.date))
       ? this.transactionFind.date
       : new Date().toLocaleDateString("pt-BR");
@@ -532,7 +554,7 @@ content_copy
 
   updateTransaction() {
     this.transactionFind.value = this.removeMask(this.$inputValue.value);
-    this.transactionFind.formOfPayment = this.$inputFormOfPayment.value;
+    this.transactionFind.idFormOfPayment = +this.$inputFormOfPayment.value;
     this.transactionFind.date = this.$inputDate.value;
     this.transactionFind.clientID = +this.$clientID.value;
     this.transactionFind.view = this.transactionFind.view.filter((value) => value != this.clientLogged.id);
@@ -552,13 +574,13 @@ content_copy
 
     if (!this.transactionFind) return;
 
-    const { value, formOfPayment, date, clientID } = this.transactionFind;
+    const { value, idFormOfPayment, date, clientID } = this.transactionFind;
 
     if (this.transactionFind.dateOfPayDay) {
       this.formDisabled(true);
     }
     this.$inputValue.value = this.numberFormat.format(value);
-    this.$inputFormOfPayment.value = formOfPayment;
+    this.$inputFormOfPayment.value = idFormOfPayment.toString();
     this.$inputDate.value = date;
     this.$clientID.value = clientID.toString();
     this.instanceModal().toggle();
@@ -635,35 +657,41 @@ content_copy
         <div class="option" value="">
           Selecione
         </div>
+        ${this.ngIf(
+          !!this.cardClient.id,
+          `
+          <div class="option" value="${eFormOfPayment.CREDITO}">
+            ${SVG_ICONS[eFormOfPayment.CREDITO]}${formOfPaymentOptions[0].name}
+          </div>
+          `
+        )}
         <div class="option" value="${eFormOfPayment.DEBITO}">
-         ${SVG_ICONS.Debito}
-          ${eFormOfPayment.DEBITO}
-        </div>
-        <div class="option" value="${eFormOfPayment.CREDITO}">
-          ${SVG_ICONS.Credito}
-          ${eFormOfPayment.CREDITO}
+         ${SVG_ICONS[eFormOfPayment.DEBITO]}
+        ${formOfPaymentOptions[1].name}
         </div>
         <div class="option" value="${eFormOfPayment.DINHEIRO}">
-         ${SVG_ICONS.Dinheiro}
-          ${eFormOfPayment.DINHEIRO}
+         ${SVG_ICONS[eFormOfPayment.DINHEIRO]}
+        ${formOfPaymentOptions[2].name}
         </div>
         <div class="option" value="${eFormOfPayment.PIX}">
-         ${SVG_ICONS.Pix}
-          ${eFormOfPayment.PIX}
+         ${SVG_ICONS[eFormOfPayment.PIX]}
+        ${formOfPaymentOptions[3].name}
         </div>
        </form-select> 
       `;
+  }
+
+  ngIf(condition: boolean, html: string) {
+    return (condition && html) || "";
   }
   private sortByDirectionAndKey(direction: string, key: string) {
     const compareCurrency = (currency: number) => currency;
     this.transactionList.sort((a, b) => {
       const firstElement = direction === "asc" ? a : b;
       const secondElement = direction === "asc" ? b : a;
-      if (key === "id") return firstElement[key] - secondElement[key];
+      if (key === "id" || key === "idFormOfPayment") return firstElement[key] - secondElement[key];
 
       if (key === "value") return compareCurrency(firstElement[key]) - compareCurrency(secondElement[key]);
-
-      if (key === "formOfPayment") return firstElement[key].localeCompare(secondElement[key]);
 
       if (key === "clientName") return firstElement[key].localeCompare(secondElement[key]);
 
@@ -703,6 +731,7 @@ content_copy
       if (!transaction.dateOfPayDay && actuallyDate === transactionDate) {
         try {
           this.makePayment(transaction);
+          console.log(transaction.dateOfPayDay);
           transaction.dateOfPayDay = new Date().toISOString();
           this.displayClientAmount();
           this.displayBadgeNotifications();
@@ -722,57 +751,85 @@ content_copy
     const clients = this.clients;
     const clientSelected = clients.find((client) => client.id === transaction.clientID);
     const inputValue = +transaction.value;
-    const isCredito = transaction.formOfPayment === eFormOfPayment.CREDITO;
-    const propertyName = isCredito ? "limitCreditCurrent" : "accountAmount";
+    const isCredito = transaction.idFormOfPayment === eFormOfPayment.CREDITO;
     const clientLogged = clients.find((client) => client.id === this.clientLogged.id);
+    console.log();
 
+    // const propertyName = transaction.formOfPayment === eFormOfPayment.CREDITO ? "limitCreditCurrent" : "accountAmount";
+
+    // if (propertyName === "limitCreditCurrent") {
+    //   if (!cardSelected) {
+    //     Toasts.error("Cartão de crédito não encontrado.");
+    //     throw new Error("Cartão de crédito não encontrado.");
+    //   }
+    //   const limitCreditCurrent = this.cardClient.limitCreditCurrent;
+    //   cardSelected.limitCreditUsed = cardSelected.limitCreditUsed + inputValue;
+    //   cardSelected.limitCreditCurrent = limitCreditCurrent - inputValue;
+    // } else if (propertyName === "accountAmount") {
+    //   const accountAmount = clientLogged.accountAmount;
+    //   clientLogged.accountAmount = accountAmount - inputValue;
+    // }
     this.validTransaction(transaction);
 
-    const valueOfDebit = +clientLogged?.[propertyName].toFixed(2);
-
     if (isCredito) {
-      clientLogged.limitCreditUsed = clientLogged.limitCreditUsed + inputValue;
+      const cardSelected = this.listOfCards.find((card) => card.id === this.cardClient.id);
+      if (!cardSelected) {
+        Toasts.error("Cartão de crédito não encontrado.");
+        throw new Error("Cartão de crédito não encontrado.");
+      }
+      const limitCreditCurrent = this.cardClient.limitCreditCurrent;
+      cardSelected.limitCreditUsed = cardSelected.limitCreditUsed + inputValue;
+      cardSelected.limitCreditCurrent = limitCreditCurrent - inputValue;
+
+      this.cardClient = cardSelected;
+      const listOfCardsUpdated = this.listOfCards.filter((item) => item.cardNumber !== cardSelected.cardNumber);
+      listOfCardsUpdated.push(cardSelected);
+      console.log(listOfCardsUpdated);
+      localStorage.setItem("listOfCards", JSON.stringify(listOfCardsUpdated));
+    } else {
+      const accountAmount = clientLogged.accountAmount;
+      clientLogged.accountAmount = accountAmount - inputValue;
     }
-    clientLogged[propertyName] = valueOfDebit - inputValue;
-    clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
+
+    if (clientSelected) {
+      clientSelected.accountAmount = clientSelected.accountAmount + inputValue;
+    }
 
     this.saveClientes(clients, clientLogged);
-
     return { clientSelected, clients, clientLogged };
+  }
+
+  private saveClientes(clients: Cliente[], clientLogged: Cliente) {
+    localStorage.setItem("clients", JSON.stringify(clients));
+    localStorage.setItem("client", JSON.stringify(clientLogged));
   }
 
   private objectTransaction(clientSelected: Cliente) {
     const newTransaction: Transaction = {
       id: ++this.actuallyId,
       value: this.removeMask(this.$inputValue.value),
-      formOfPayment: this.$inputFormOfPayment.value,
+      idFormOfPayment: +this.$inputFormOfPayment.value,
       date: this.$inputDate.value,
       clientName: `${clientSelected?.name} - ${clientSelected?.accountNumber}`,
       clientID: +this.$clientID.value,
       userLoggedID: this.clientLogged.id,
-      creditLimit: this.clientLogged.limitCredit,
-      creditLimitUsed: this.clientLogged.limitCreditUsed,
+      creditCardID: +this.$inputFormOfPayment.value === eFormOfPayment.CREDITO ? this.cardClient.id : null,
       view: [],
     };
     this.validTransaction(newTransaction);
 
     this.transactionList.push(newTransaction);
   }
-
   private validTransaction(transaction: Transaction) {
     const clientLogged = this.clients.find((client) => client.id === this.clientLogged.id);
-    const propertyName = transaction.formOfPayment === eFormOfPayment.CREDITO ? "limitCreditCurrent" : "accountAmount";
-    const valueOfDebit = +clientLogged?.[propertyName].toFixed(2);
+    const clientAccountAmount = clientLogged.accountAmount;
+    const propertyName = transaction.idFormOfPayment === eFormOfPayment.CREDITO ? "limitCreditCurrent" : "accountAmount";
+    const valueOfDebit = propertyName === "accountAmount" ? clientAccountAmount : this.cardClient.limitCreditCurrent;
 
     if (transaction.value > valueOfDebit) {
       Toasts.error("Saldo insuficiente!");
       throw new Error("Saldo insuficiente!");
     }
-  }
-
-  private saveClientes(clients: Cliente[], clientLogged: Cliente) {
-    localStorage.setItem("clients", JSON.stringify(clients));
-    localStorage.setItem("client", JSON.stringify(clientLogged));
   }
 
   private formDisabled(isDisabled: boolean) {

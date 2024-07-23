@@ -1,7 +1,8 @@
 import { convertStringDate } from "../../functions/date/date";
 import { badgeUpdate } from "../../functions/notification/notification";
-import { Cliente } from "../account/account.page";
-import { Transaction } from "../transaction/transaction.page";
+import { Cliente } from "../account/interface/client.interface";
+import { Transaction } from "../transaction/interface/transaction.interface";
+
 import "./notification.page.scss";
 export class Notification extends HTMLElement {
   transactionList: Transaction[];

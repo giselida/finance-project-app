@@ -1,8 +1,8 @@
 @import "/src/scss/mixins.scss";
 card-account-page {
   @include pageStyle(column);
+  gap: 10px;
   .rotate {
-    -webkit-transform: rotateY(180deg);
     transform: rotateY(180deg) !important;
   }
   .carousel {
@@ -75,7 +75,7 @@ card-account-page {
     opacity: 0.5;
     transform: scale(0.9);
     cursor: pointer;
-    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out, -webkit-transform 0.6s;
+    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
     position: relative;
 
     .flip {
@@ -131,9 +131,11 @@ card-account-page {
         display: flex;
         flex-direction: row;
         border-radius: 5px;
+        justify-content: space-between;
         align-items: center;
         gap: 10px;
-        margin-top: 15px;
+        min-width: 200px;
+        width: 100%;
         .cvv-content {
           .text {
             border-radius: 5px;
@@ -169,7 +171,6 @@ card-account-page {
     gap: 16px;
   }
   .limit-credit {
-    margin-top: 20px;
     .form-label {
       font-size: 18px;
       margin-bottom: 15px;

@@ -1,6 +1,6 @@
 import { Toasts } from "../../components/toasts/toast";
 import { formatterBRL } from "../../functions/currencyFormatter/formatter.";
-import { Cliente } from "../account/account.page";
+import { Cliente } from "../account/interface/client.interface";
 import "./card-account.page.scss";
 import { CardClient } from "./interface/card-client";
 
@@ -10,15 +10,29 @@ export class CardAccountPage extends HTMLElement {
   clientCard: CardClient;
 
   $buttonAdd: HTMLButtonElement;
+  $previous: HTMLButtonElement;
+  $next: HTMLButtonElement;
+
   $carousel: HTMLElement;
   $container: HTMLElement;
   $cards: HTMLElement;
-  $previous: HTMLButtonElement;
-  $next: HTMLButtonElement;
-  scrollAmount: number = 250;
   $usedCreditValue: HTMLElement;
   $creditValue: HTMLElement;
+
   $inputRange: HTMLInputElement;
+  scrollAmount: number = 250;
+
+  connectedCallback() {
+    this.client = JSON.parse(localStorage.getItem("client") ?? "{}");
+    this.clientCardList = JSON.parse(localStorage.getItem("listOfCards") ?? "[]");
+    this.clientCard = JSON.parse(localStorage.getItem("cardClient") ?? "{}");
+
+    this.createInnerHTML();
+    this.recoveryElementRef();
+    this.createCardCredit();
+    this.updateCreditLimit();
+    this.checkBUttonVisible();
+  }
 
   private createInnerHTML() {
     const { limitCredit, limitCreditCurrent } = this.clientCard;
@@ -29,16 +43,16 @@ export class CardAccountPage extends HTMLElement {
   <div class="card-body">
     <h5 class="card-title">Meus Cartões</h5>
     <div class="carousel">
-      <button class="previous" hidden  >
+      <button class="previous" hidden>
         <span class="icon-previous">&laquo;</span>
       </button>
-      <div class="card-container">  
-      <div class="card-credit first">
-        <div class="circle">
-          <span class="material-symbols-outlined add-card-credit">add</span>
+      <div class="card-container">
+        <div class="card-credit first">
+          <div class="circle">
+            <span class="material-symbols-outlined add-card-credit">add</span>
+          </div>
         </div>
-      </div>
-      <div class="cards"></div>
+        <div class="cards"></div>
       </div>
       <button class="next" hidden>
         <span class="icon-next">&raquo;</span>
@@ -47,62 +61,52 @@ export class CardAccountPage extends HTMLElement {
   </div>
 </div>
 
-<div class="card">
- <div class="limit-credit">
+<div class="card limit">
+  <div class="card-header">Limite de crédito</div>
+  <div class="card-body">
+    <div class="limit-credit">
       <label for="customRange1" class="form-label">Defina seu limite de Crédito</label>
 
       <div class="credit-value">
         <span class="info">Limite de crédito:</span>
-        <span class="limit-credit-value"> 
-         ${currencyFormatter.format(limitCredit ?? 0)}
-        </span>
+        <span class="limit-credit-value"> ${currencyFormatter.format(limitCredit ?? 0)} </span>
         <span class="info">Limite de crédito disponível:</span>
-        <span class="available-credit-value"> 
-         ${currencyFormatter.format(limitCreditCurrent ?? 0)}
-        </span>
+        <span class="available-credit-value"> ${currencyFormatter.format(limitCreditCurrent ?? 0)} </span>
       </div>
 
       <div class="range">
         <input type="range" class="form" min="0" max="10000" value="${limitCredit ?? 0}" step="50" required />
       </div>
-
     </div>
+  </div>
 </div>
-`;
-  }
-  connectedCallback() {
-    this.client = JSON.parse(localStorage.getItem("client") ?? "{}");
-    this.clientCardList = JSON.parse(localStorage.getItem("cardClients") ?? "[]");
-    this.clientCard = JSON.parse(localStorage.getItem("clientCard") ?? "{}");
-    this.createInnerHTML();
-    this.recoveryElementRef();
-    this.createCardCredit();
-    this.checkBUttonVisible();
-  }
 
-  private checkBUttonVisible() {
-    if (!this.$cards?.children || !this.$cards.children[0]) return;
-    const $creditCard = this.$cards.children[0];
-    const width = $creditCard.clientWidth * this.$cards.children.length;
-    const isGreater = width <= this.$container.clientWidth - 225;
-    this.$previous.hidden = isGreater;
-    this.$next.hidden = isGreater;
+`;
   }
 
   recoveryElementRef() {
     this.$carousel = document.querySelector(".carousel");
     this.$container = document.querySelector(".card-container");
+    this.$buttonAdd = document.querySelector(".circle .add-card-credit");
     this.$cards = document.querySelector(".card-container .cards");
+
     this.$previous = document.querySelector(".previous");
     this.$next = document.querySelector(".next");
-    this.$buttonAdd = document.querySelector(".circle .add-card-credit");
-    this.$inputRange = document.querySelector("input[type='range']");
-    this.$usedCreditValue = document.querySelector(".available-credit-value");
-    this.$creditValue = document.querySelector(".limit-credit-value");
 
+    this.$creditValue = document.querySelector(".limit-credit-value");
     this.$usedCreditValue = document.querySelector(".available-credit-value");
     this.$inputRange = document.querySelector("input[type='range']");
+
     this.sendListener();
+  }
+
+  private checkBUttonVisible() {
+    if (!this.$cards?.children?.[0]) return;
+    const $creditCard = this.$cards.children[0];
+    const width = $creditCard.clientWidth * this.$cards.children.length;
+    const isGreater = width <= this.$container.clientWidth - 225;
+    this.$previous.hidden = isGreater;
+    this.$next.hidden = isGreater;
   }
 
   private sendListener() {
@@ -115,31 +119,32 @@ export class CardAccountPage extends HTMLElement {
 
     this.$next.addEventListener("click", () => this.scrollNext());
     this.$previous.addEventListener("click", () => this.scrollPrevious());
-    if (this.clientCardList.length >= 1) {
-      this.rangeListener();
-      this.setRangeColor();
-    }
+    this.rangeListener();
+    this.setRangeColor();
   }
+
   private rangeListener() {
     this.$inputRange.addEventListener("input", () => {
+      if (!this.clientCard?.id) {
+        Toasts.error("Nenhum cartão selecionado. Por favor, selecione um cartão primeiro.");
+        return;
+      }
       const formRangeValue = +this.$inputRange.value;
       const limitCredit = +this.$inputRange.value - this.clientCard.limitCreditUsed;
-      this.$creditValue.textContent = `${new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }).format(formRangeValue)}`;
-      this.$usedCreditValue.textContent = `${new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }).format(limitCredit)}`;
-      const client = this.clientCardList.find((client) => client.id == this.client.id);
+
+      const currencyFormatter = formatterBRL();
+      this.$creditValue.textContent = `${currencyFormatter.format(formRangeValue)}`;
+      this.$usedCreditValue.textContent = `${currencyFormatter.format(limitCredit)}`;
+
+      const client = this.clientCardList.find((card) => card.id == this.clientCard.id);
       client.limitCredit = formRangeValue;
       client.limitCreditCurrent = limitCredit;
-      this.clientCard = client;
+
       this.setRangeColor();
       this.setStorage();
     });
   }
+
   private setRangeColor() {
     const { value, max } = this.$inputRange;
     const $range = document.querySelector<HTMLDivElement>(".range");
@@ -161,11 +166,6 @@ export class CardAccountPage extends HTMLElement {
       "--limit-range-color",
       `linear-gradient(to right, ${secondaryColor} ${limitProgress}%, ${secondaryColor} ${limitProgress}%, ${secondaryBarColor} ${progress}%, ${secondaryBarColor} 100%)`
     );
-  }
-  private setStorage() {
-    localStorage.setItem("cardClients", JSON.stringify(this.clientCardList));
-    localStorage.setItem("client", JSON.stringify(this.client));
-    localStorage.setItem("clientCard", JSON.stringify(this.clientCard));
   }
 
   private scrollNext() {
@@ -211,24 +211,15 @@ export class CardAccountPage extends HTMLElement {
        
       `;
     });
+
     const $creditCards = document.querySelectorAll<Element>(".card-credit:not(.first)") as NodeListOf<HTMLElement>;
-    console.log($creditCards);
     $creditCards.forEach(($creditCard) => {
       const [flip, front, back] = $creditCard.children;
       const htmlFront = front as HTMLElement;
       const htmlBack = back as HTMLElement;
 
       flip.addEventListener("click", () => {
-        $creditCard.classList.toggle("rotate");
-        setTimeout(() => {
-          if ($creditCard.className.includes("rotate")) {
-            htmlBack.style.display = "flex";
-            htmlFront.style.display = "none";
-          } else {
-            htmlBack.style.display = "none";
-            htmlFront.style.display = "flex";
-          }
-        }, 200);
+        this.onFlipCard($creditCard, htmlBack, htmlFront);
       });
 
       $creditCard.addEventListener("click", () => {
@@ -236,6 +227,20 @@ export class CardAccountPage extends HTMLElement {
       });
     });
   }
+
+  private onFlipCard($creditCard: HTMLElement, htmlBack: HTMLElement, htmlFront: HTMLElement) {
+    $creditCard.classList.toggle("rotate");
+    setTimeout(() => {
+      if ($creditCard.className.includes("rotate")) {
+        htmlBack.style.display = "flex";
+        htmlFront.style.display = "none";
+      } else {
+        htmlBack.style.display = "none";
+        htmlFront.style.display = "flex";
+      }
+    }, 200);
+  }
+
   private onCardClick($creditCard: Element) {
     const cards = [...this.$cards.children];
 
@@ -246,15 +251,9 @@ export class CardAccountPage extends HTMLElement {
       left: $creditCard.clientWidth * index,
       behavior: "smooth",
     });
-  }
-
-  private generateRandomColor(): string {
-    const letters = "0123456789ABCDEF";
-    let color = "#";
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
+    this.clientCard = this.clientCardList[index];
+    this.updateCreditLimit();
+    this.setStorage();
   }
 
   private addCardClient() {
@@ -273,13 +272,42 @@ export class CardAccountPage extends HTMLElement {
       cvv: generateCvv(),
       validDate: generateRandomValidDate(),
       cardNumber: `${random()}${random()} ${random()}${random()} ${random()}${random()} ${random()}${random()}`,
-      limitCredit: 1000,
+      limitCredit: 0,
       limitCreditUsed: 0,
       limitCreditCurrent: 0,
       color: this.generateRandomColor(),
+      clientID: this.client.id,
     };
 
     this.clientCardList.push(objectClient);
     this.setStorage();
+  }
+
+  private generateRandomColor(): string {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
+
+  private setStorage() {
+    localStorage.setItem("listOfCards", JSON.stringify(this.clientCardList));
+    localStorage.setItem("cardClient", JSON.stringify(this.clientCard));
+  }
+
+  private updateCreditLimit() {
+    if (!this.clientCard.id) return;
+
+    const { limitCredit, limitCreditCurrent } = this.clientCard;
+
+    const currencyFormatter = formatterBRL();
+
+    this.$creditValue.textContent = `${currencyFormatter.format(limitCredit)}`;
+    this.$usedCreditValue.textContent = `${currencyFormatter.format(limitCreditCurrent)}`;
+    this.$inputRange.value = limitCredit.toString();
+
+    this.setRangeColor();
   }
 }

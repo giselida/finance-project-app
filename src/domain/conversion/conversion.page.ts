@@ -5,8 +5,8 @@ import { FormSelect } from "../../components/form-select/form-select";
 import { Toasts } from "../../components/toasts/toast";
 import { OPTIONS_CURRENCY } from "../../constants/charts";
 import { COUNTRY_LIST } from "../../constants/countrys";
-import { ExchangeRateApiResponse } from "../../interface/rates";
 import "./conversion.page.scss";
+import { ExchangeRateApiResponse } from "./interface/rates";
 export class ConversionPage extends HTMLElement {
   $input: HTMLInputElement;
   $buttonSearch: HTMLButtonElement;
