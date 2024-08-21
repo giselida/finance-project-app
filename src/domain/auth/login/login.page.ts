@@ -84,6 +84,9 @@ export class LoginComponent extends HTMLElement {
       if (!client) {
         return Toasts.error("Você não possui um cadastro!");
       }
+      document.querySelector(".current-user").innerHTML = client.name;
+      localStorage.setItem("client", JSON.stringify(client));
+
       const controls = [this.$inputName, this.$inputPassword];
 
       controls.forEach((input) => {
@@ -95,7 +98,7 @@ export class LoginComponent extends HTMLElement {
 
       if (!isValid) return;
 
-      window.location.replace("#transaction");
+      window.location.replace("#account");
     });
 
     this.$seePassword.addEventListener("click", () => {

@@ -4,14 +4,14 @@ import { RouterOutlet } from "../../components/router-outlet/router-outlet";
 import { Toasts } from "../../components/toasts/toast";
 import { formatterBRL } from "../../functions/currencyFormatter/formatter.";
 import { badgeUpdate } from "../../functions/notification/notification";
+import { Cliente } from "../auth/interface/client.interface";
 import { CardClient } from "./../card-account/interface/card-client";
 import "./account.page.scss";
-import { Cliente } from "./interface/client.interface";
 
 export class AccountPage extends HTMLElement {
   $buttonAdd: HTMLButtonElement;
   clientList: Cliente[];
-  client: Cliente;
+  clientSelected: Cliente;
   clientCard: CardClient;
   $previous: HTMLButtonElement;
   $next: HTMLButtonElement;
@@ -26,7 +26,7 @@ export class AccountPage extends HTMLElement {
   private getStorage() {
     this.clientList = JSON.parse(localStorage.getItem("clients") ?? "[]");
     this.clientCard = JSON.parse(localStorage.getItem("cardClient") ?? "{}");
-    this.client = JSON.parse(localStorage.getItem("client") || "{}");
+    this.clientSelected = JSON.parse(localStorage.getItem("client") ?? "{}");
   }
   get $currentUser() {
     return document.querySelector(".current-user");
@@ -39,10 +39,11 @@ export class AccountPage extends HTMLElement {
   connectedCallback() {
     this.createInnerHTML();
     this.recoveryElementRef();
+    if (this.clientList.length < 1) window.location.replace("#register");
   }
   private createInnerHTML() {
     const currencyFormatter = formatterBRL();
-    const { name, accountNumber, accountAmount } = this.client;
+    const { name, accountNumber, accountAmount } = this.clientSelected;
 
     this.innerHTML = /*html*/ `
 <span class="account-info">
@@ -113,9 +114,7 @@ export class AccountPage extends HTMLElement {
 
   private setStorage() {
     localStorage.setItem("clients", JSON.stringify(this.clientList));
-    localStorage.setItem("client", JSON.stringify(this.client));
-
-    localStorage.setItem("cardClient", JSON.stringify(this.clientCard));
+    localStorage.setItem("client", JSON.stringify(this.clientSelected));
   }
 
   renderList() {
@@ -123,6 +122,7 @@ export class AccountPage extends HTMLElement {
     const $table = document.querySelector("table");
     const clientLength = this.clientList.length < 1;
     const $card = document.querySelector<HTMLElement>(".card");
+    const $title = document.querySelector<HTMLElement>(".content-row");
     const $accountInfo = document.querySelector<HTMLElement>(".account-info");
     this.$previous.disabled = this.page == 1;
     this.$next.disabled = this.maxPage <= this.page;
@@ -132,21 +132,22 @@ export class AccountPage extends HTMLElement {
 
     const actuallyPage = (this.page - 1) * this.pageSize;
     const nextPage = actuallyPage + this.pageSize;
-
-    $card.style.display = !this.client.id ? "none" : "block";
-    $accountInfo.style.display = !this.client.id ? "block" : "none";
+    $card.style.display = !this.clientSelected.id ? "none" : "block";
+    $title.style.display = !this.clientSelected.id ? "none" : "block";
+    $accountInfo.style.display = !this.clientSelected.id ? "block" : "none";
     $table.hidden = clientLength;
     $tbody.innerHTML = "";
     this.$pageActually.textContent = this.page.toString();
     this.clientList.slice(actuallyPage, nextPage).forEach((client) => {
       $tbody.innerHTML += `
+     
        <tr>
   <th scope="row">${client.id}</th>
   <td>${client.accountNumber}</td>
   <td>${client.name}</td>
   <td class="actions">
     ${
-      this.client?.id != client.id && client.id !== 1000
+      this.clientSelected?.id != client.id && client.id !== 1000
         ? `
     <span class="material-symbols-outlined add-account" onclick="document.querySelector('account-page').selectClient(${client.id})">
       fact_check
@@ -201,14 +202,14 @@ export class AccountPage extends HTMLElement {
     }).then((result) => {
       const client = this.clientList.find((client) => client.id == id);
       if (result.isConfirmed) {
-        if (this.client.id === client.id) {
+        if (this.clientSelected.id === client.id) {
           this.$currentUser.innerHTML = "";
         }
         this.clientList = this.clientList.filter((client) => client.id !== id);
-        this.client = this.client.id == id ? ({} as Cliente) : this.client;
+        this.clientSelected = this.clientSelected.id == id ? ({} as Cliente) : this.clientSelected;
         this.setStorage();
         Toasts.success("Conta removida com sucesso!");
-        if (this.client.id == id) {
+        if (this.clientSelected.id == id) {
           const router = document.querySelector<RouterOutlet>("router-app");
           if (!router) return;
           router["createInnerHTML"]();
@@ -223,12 +224,16 @@ export class AccountPage extends HTMLElement {
   selectClient(id: number) {
     const client = this.clientList.find((client) => client.id == id);
 
-    if (client && !this.client?.id) {
+    this.clientSelected = client;
+    this.$currentUser.innerHTML = client.name;
+    client.selected = true;
+    if (this.clientList.length <= 1) {
       if (client.accountAmount == 0) client.accountAmount = 10000;
     }
-
-    this.client = client;
-    this.$currentUser.innerHTML = client.name;
+    const list = this.clientList.filter((item) => item !== client);
+    list.forEach((value) => {
+      value.selected = false;
+    });
 
     Toasts.success(`Conta ${client.name} número ${client.accountNumber} foi selecionada com sucesso!`);
     this.setStorage();

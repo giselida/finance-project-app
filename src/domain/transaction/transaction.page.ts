@@ -15,7 +15,7 @@ import { eFormOfPayment, SVG_ICONS } from "../../constants/svg-icons";
 import { convertStringDate } from "../../functions/date/date";
 import { badgeUpdate } from "../../functions/notification/notification";
 
-import { Cliente } from "../account/interface/client.interface";
+import { Cliente } from "../auth/interface/client.interface";
 import { CardClient } from "../card-account/interface/card-client";
 import { Transaction } from "./interface/transaction.interface";
 import "./transaction.page.scss";
@@ -458,8 +458,10 @@ content_copy
         isPositive = amountToDisplay > 0;
       }
       if (item === ".current-limit" && this.cardClient.id) {
-        amountToDisplay = this.cardClient.limitCreditCurrent;
-        isPositive = amountToDisplay > 0;
+        if (this.cardClient.clientID === this.clientLogged.id) {
+          amountToDisplay = this.cardClient.limitCreditCurrent;
+          isPositive = amountToDisplay > 0;
+        }
       }
       $item.classList.add(isPositive ? "positive" : "negative");
       $item.textContent = new Intl.NumberFormat("pt-BR", {
@@ -731,7 +733,6 @@ content_copy
       if (!transaction.dateOfPayDay && actuallyDate === transactionDate) {
         try {
           this.makePayment(transaction);
-          console.log(transaction.dateOfPayDay);
           transaction.dateOfPayDay = new Date().toISOString();
           this.displayClientAmount();
           this.displayBadgeNotifications();
@@ -753,22 +754,7 @@ content_copy
     const inputValue = +transaction.value;
     const isCredito = transaction.idFormOfPayment === eFormOfPayment.CREDITO;
     const clientLogged = clients.find((client) => client.id === this.clientLogged.id);
-    console.log();
 
-    // const propertyName = transaction.formOfPayment === eFormOfPayment.CREDITO ? "limitCreditCurrent" : "accountAmount";
-
-    // if (propertyName === "limitCreditCurrent") {
-    //   if (!cardSelected) {
-    //     Toasts.error("Cartão de crédito não encontrado.");
-    //     throw new Error("Cartão de crédito não encontrado.");
-    //   }
-    //   const limitCreditCurrent = this.cardClient.limitCreditCurrent;
-    //   cardSelected.limitCreditUsed = cardSelected.limitCreditUsed + inputValue;
-    //   cardSelected.limitCreditCurrent = limitCreditCurrent - inputValue;
-    // } else if (propertyName === "accountAmount") {
-    //   const accountAmount = clientLogged.accountAmount;
-    //   clientLogged.accountAmount = accountAmount - inputValue;
-    // }
     this.validTransaction(transaction);
 
     if (isCredito) {
@@ -784,7 +770,6 @@ content_copy
       this.cardClient = cardSelected;
       const listOfCardsUpdated = this.listOfCards.filter((item) => item.cardNumber !== cardSelected.cardNumber);
       listOfCardsUpdated.push(cardSelected);
-      console.log(listOfCardsUpdated);
       localStorage.setItem("listOfCards", JSON.stringify(listOfCardsUpdated));
     } else {
       const accountAmount = clientLogged.accountAmount;

@@ -21,8 +21,8 @@ const template = `
       <div class="error-message"></div>
     </div>
     <div class="mb-3">
-      <label class="form-label"
-        >E-mail
+      <label class="form-label">
+      E-mail
       </label>
       <input type="email" class="form-control form" name="email" placeholder="Digite seu email" required />
       <div class="error-message"></div>
@@ -151,7 +151,7 @@ export class RegisterComponent extends HTMLElement {
       }
 
       this.client.addClient(this.$inputName, this.$inputPassword, this.$inputEmail, this.$inputConfirmPassword);
-      window.location.replace("#transaction");
+      window.location.replace("#account");
     });
   }
 }

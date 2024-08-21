@@ -1,6 +1,6 @@
 import { Toasts } from "../../components/toasts/toast";
 import { formatterBRL } from "../../functions/currencyFormatter/formatter.";
-import { Cliente } from "../account/interface/client.interface";
+import { Cliente } from "../auth/interface/client.interface";
 import "./card-account.page.scss";
 import { CardClient } from "./interface/card-client";
 
@@ -32,6 +32,11 @@ export class CardAccountPage extends HTMLElement {
     this.createCardCredit();
     this.updateCreditLimit();
     this.checkBUttonVisible();
+    if (this.clientCard.clientID !== this.client.id) {
+      localStorage.removeItem("cardClient");
+      this.clientCard = {} as CardClient;
+      this.resetCreditValues();
+    }
   }
 
   private createInnerHTML() {
@@ -178,7 +183,9 @@ export class CardAccountPage extends HTMLElement {
 
   createCardCredit() {
     this.$cards.innerHTML = "";
-    this.clientCardList.forEach((card) => {
+    const cardCredit = this.clientCardList.filter((card) => card.clientID == this.client.id);
+
+    cardCredit.forEach((card) => {
       this.$cards.innerHTML += `
 
    <div class="card-credit" style="background-color: ${card.color}">
@@ -251,7 +258,8 @@ export class CardAccountPage extends HTMLElement {
       left: $creditCard.clientWidth * index,
       behavior: "smooth",
     });
-    this.clientCard = this.clientCardList[index];
+    const cardCredit = this.clientCardList.filter((card) => card.clientID == this.client.id);
+    this.clientCard = cardCredit[index];
     this.updateCreditLimit();
     this.setStorage();
   }
@@ -291,17 +299,23 @@ export class CardAccountPage extends HTMLElement {
     }
     return color;
   }
+  private resetCreditValues() {
+    const currencyFormatter = formatterBRL();
 
-  private setStorage() {
-    localStorage.setItem("listOfCards", JSON.stringify(this.clientCardList));
-    localStorage.setItem("cardClient", JSON.stringify(this.clientCard));
+    this.$creditValue.textContent = `${currencyFormatter.format(0)}`;
+    this.$usedCreditValue.textContent = `${currencyFormatter.format(0)}`;
+    this.$inputRange.value = "0";
+
+    this.setRangeColor();
   }
 
   private updateCreditLimit() {
-    if (!this.clientCard.id) return;
+    if (!this.clientCard.id) {
+      this.resetCreditValues();
+      return;
+    }
 
     const { limitCredit, limitCreditCurrent } = this.clientCard;
-
     const currencyFormatter = formatterBRL();
 
     this.$creditValue.textContent = `${currencyFormatter.format(limitCredit)}`;
@@ -309,5 +323,10 @@ export class CardAccountPage extends HTMLElement {
     this.$inputRange.value = limitCredit.toString();
 
     this.setRangeColor();
+  }
+
+  private setStorage() {
+    localStorage.setItem("listOfCards", JSON.stringify(this.clientCardList));
+    localStorage.setItem("cardClient", JSON.stringify(this.clientCard));
   }
 }

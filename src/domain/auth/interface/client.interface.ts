@@ -5,4 +5,5 @@ export interface Cliente {
   email?: string;
   accountNumber: string;
   accountAmount: number;
+  selected: boolean;
 }

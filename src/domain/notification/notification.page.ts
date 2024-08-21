@@ -1,6 +1,6 @@
 import { convertStringDate } from "../../functions/date/date";
 import { badgeUpdate } from "../../functions/notification/notification";
-import { Cliente } from "../account/interface/client.interface";
+import { Cliente } from "../auth/interface/client.interface";
 import { Transaction } from "../transaction/interface/transaction.interface";
 
 import "./notification.page.scss";

@@ -1,21 +1,20 @@
 import { Toasts } from "../../components/toasts/toast";
-import { Cliente } from "../account/interface/client.interface";
 import { CardClient } from "../card-account/interface/card-client";
+import { Cliente } from "./interface/client.interface";
 
 export class Client {
   maxID: number = 0;
-  list: Cliente[];
-  actual: Cliente;
+  clientList: Cliente[];
+  client: Cliente;
   cards: CardClient[];
   constructor() {
     this.getStorage();
   }
 
   private getStorage() {
-    this.list = JSON.parse(localStorage.getItem("clients") ?? "[]");
-    this.cards = JSON.parse(localStorage.getItem("listOfCards") ?? "[]");
+    this.clientList = JSON.parse(localStorage.getItem("clients") ?? "[]");
     this.maxID = +localStorage.getItem("idClients");
-    this.actual = JSON.parse(localStorage.getItem("client") || "{}");
+    this.client = JSON.parse(localStorage.getItem("client") ?? "{}");
   }
   addClient(
     $inputName: HTMLInputElement,
@@ -26,18 +25,34 @@ export class Client {
     const random = (min: number = 1, max: number = 100) => Math.floor(Math.random() * (max - min) + min);
     const objectClient: Cliente = {
       id: ++this.maxID,
-      name: $inputName.value,
-      password: $inputPassword.value,
+      name: $inputName.value.trim(),
+      password: $inputPassword.value.trim(),
       accountNumber: `${random()}${random()}${random()}-${random()}`,
       accountAmount: 0,
-      email: $inputEmail.value,
+      email: $inputEmail.value.trim(),
+      selected: true,
     };
 
-    this.list.push(objectClient);
-
+    this.clientList.push(objectClient);
+    this.firstClient();
     this.setStorage();
     this.cleanForms($inputName, $inputPassword, $inputEmail, $inputConfirmPassword);
     Toasts.success("Conta criada com sucesso!");
+  }
+
+  firstClient() {
+    const client = this.clientList.find((client) => client.id === this.maxID);
+    this.client = client;
+    if (this.clientList.length <= 1) {
+      if (this.client.accountAmount == 0) this.client.accountAmount = 10000;
+    }
+    const list = this.clientList.filter((item) => item !== client);
+    list.forEach((value) => {
+      value.selected = false;
+    });
+
+    document.querySelector(".current-user").innerHTML = client.name;
+    localStorage.setItem("client", JSON.stringify(client));
   }
   cleanForms(
     $inputName: HTMLInputElement,
@@ -52,15 +67,14 @@ export class Client {
   }
 
   private setStorage() {
-    localStorage.setItem("clients", JSON.stringify(this.list));
-    localStorage.setItem("client", JSON.stringify(this.actual));
+    localStorage.setItem("clients", JSON.stringify(this.clientList));
+    localStorage.setItem("client", JSON.stringify(this.client));
     localStorage.setItem("idClients", this.maxID.toString());
-    localStorage.setItem("listOfCards", JSON.stringify(this.cards));
     localStorage.setItem("idClients", this.maxID.toString());
   }
 
   hasClient($inputName: HTMLInputElement, $inputPassword: HTMLInputElement) {
-    const client = this.list.find((value) => value.name === $inputName.value && value.password === $inputPassword.value);
+    const client = this.clientList.find((value) => value.name === $inputName.value && value.password === $inputPassword.value);
     return client;
   }
 }
