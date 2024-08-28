@@ -1,0 +1,190 @@
+<div class="container-current-balance">
+  <div class="item">Saldo: <span class="{{eTransactionClassName.SALDO_ATUAL}}">0,00</span></div>
+  <div class="item">Limite de Crédito: <span class="{{eTransactionClassName.SALDO_LIMITE}}">0,00</span></div>
+</div>
+<div id="chart-payment"></div>
+<div class="content-row mb-3">
+  <button type="button" class="btn btn-transaction" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+    <span class="material-symbols-outlined icon"> sync_alt</span>
+    Fazer uma transação
+  </button>
+  <div class="group-input">
+    <div class="input-group-text">
+      <span class="material-symbols-outlined"> search </span>
+    </div>
+    <input type="text" class="form-search" placeholder="Pesquisar" />
+  </div>
+</div>
+
+
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+  aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-2" id="staticBackdropLabel">Transação</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form class="was-validated">
+          <div class="form-input">
+            <label class="form-label">Valor </label>
+            <input type="text" class="form-control" autocomplete="transaction-currency"
+              pattern="[0-9]+,[0-9]{2}||[0-9]+(.[0-9]{3})*,[0-9]{2}" required />
+          </div>
+          <div class="form-input form-of-payment">
+            <label class="form-label required">Forma de pagamento </label>
+            <form-select class="form-control is-invalid" required placeholder="Selecione">
+              <div class="option" value="">
+                Selecione
+              </div>
+              {{
+              ngIf(self.cardClient?.id,
+              `<div class="option" value="{{eFormOfPayment.CREDITO}}">
+                {{ SVG_ICONS[this.eFormOfPayment.CREDITO]}}
+                {{formOfPaymentOptions[0].name}}
+              </div>`
+              )
+              }}
+              <div class="option" value="{{eFormOfPayment.DEBITO}}">
+                {{SVG_ICONS[this.eFormOfPayment.DEBITO]}}
+                {{formOfPaymentOptions[1].name}}
+              </div>
+              <div class="option" value="{{eFormOfPayment.DINHEIRO}}">
+                {{SVG_ICONS[this.eFormOfPayment.DINHEIRO]}}
+                {{formOfPaymentOptions[2].name}}
+              </div>
+              <div class="option" value="{{eFormOfPayment.PIX}}">
+                {{SVG_ICONS[this.eFormOfPayment.PIX]}}
+                {{formOfPaymentOptions[3].name}}
+              </div>
+            </form-select>
+          </div>
+          <div class="form-input">
+            <label class="form-label">Data </label>
+            <input type="text" pattern="^(3[01]|[12][0-9]|0[1-9])/(1[0-2]|0[1-9])/[0-9]{4}$"
+              class="form-control icon-calendar" required />
+          </div>
+          <div class="form-input client">
+            <label class="form-label required">Cliente </label>
+            <form-select class="form-control is-invalid" required placeholder="Selecione">
+              <span>
+                {{
+                clients.length <= 1 ? `<div class="option" value="">
+                  Crie uma conta
+                  <a href="#account" onclick="document.querySelector('transaction-page').goToAccountPage()">aqui</a>
+                </div>
+                 `
+          :
+                 `
+          <div class="option" value="">
+            Selecione
+          </div>
+          `
+          }}
+          </span>
+          {{
+          clients.length <= 1 ? "" : this.clients.filter((client)=> client.id != this.clientLogged?.id)
+            .map((client) => this.createFormOption(client))
+            .join("")
+            }}
+
+            </form-select>
+      </div>
+      <div class="form-input description">
+        <label class="form-label required">Descrição</label>
+        <form-select class="form-control is-invalid" required placeholder="Selecione">
+          <div class="option" value="">
+            Selecione
+          </div>
+
+          <div class="option" value="comida">
+            <span class="material-icons">restaurant</span> Comida
+          </div>
+          <div class="option" value="transporte">
+            <span class="material-icons">directions_bus</span> Transporte
+          </div>
+
+          <div class="option" value="lazer">
+            <span class="material-icons">sports_soccer</span> Lazer
+          </div>
+          <div class="option" value="outros">
+            <span class="material-icons">category</span> Outros
+          </div>
+        </form-select>
+        </form-select>
+      </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-closed" data-bs-dismiss="modal">Cancelar</button>
+      <button type="button" class="btn btn-add">Cadastrar</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="table-container">
+  <table class="table table-hover">
+    <thead>
+      <tr style="position: sticky; top: 0">
+        <th scope="col" key="id">
+          <div class="row-header">
+            <span>#</span>
+            <div class="sort"></div>
+          </div>
+        </th>
+        <th scope="col" key="value">
+          <div class="row-header">
+            <span>Valor</span>
+            <div class="sort"></div>
+          </div>
+        </th>
+        <th scope="col" key="formOfPayment">
+          <div class="row-header">
+            <span>Forma de pagamento</span>
+            <div class="sort"></div>
+          </div>
+        </th>
+        <th scope="col" key="date">
+          <div class="row-header">
+            <span>Data</span>
+            <div class="sort"></div>
+          </div>
+        </th>
+        <th scope="col" key="dateOfPayDay">
+          <div class="row-header">
+            <span>Data do pagamento</span>
+            <div class="sort"></div>
+          </div>
+        </th>
+        <th scope="col" key="name">
+          <div class="row-header">
+            <span>Nome</span>
+            <div class="sort"></div>
+          </div>
+        </th>
+        <th scope="col">Ações</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<nav class="container-pagination" aria-label="Page navigation">
+  <ul class="pagination">
+    <li class="page-item">
+      <button class="page-link page-previous" aria-label="Previous" disabled>
+        <span class="previous">&laquo;</span>
+      </button>
+    </li>
+    <li class="page-item">
+      <div class="page-link page-actually">1</div>
+    </li>
+    <li class="page-item">
+      <button class="page-link page-next" aria-label="Next" disabled>
+        <span class="next">&raquo;</span>
+      </button>
+    </li>
+  </ul>
+</nav>

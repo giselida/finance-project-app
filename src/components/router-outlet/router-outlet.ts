@@ -4,9 +4,11 @@ import { RegisterComponent } from "../../domain/auth/register/register.page";
 import { CardAccountPage } from "../../domain/card-account/card-account.page";
 import { ConversionPage } from "../../domain/conversion/conversion.page";
 import { Notification } from "../../domain/notification/notification.page";
+import { PaymentOfCardPage } from "../../domain/payment-of-card/payment-of-card.page";
 import { TransactionPage } from "../../domain/transaction/transaction.page";
 import { badgeUpdate } from "../../functions/notification/notification";
-
+import { generatePropertyBind } from "../../functions/property-bind";
+import html from "./router-outlet.html?raw";
 const createMaterialSymbol = (iconName: string, label: string) => {
   return `
       <span class="material-symbols-outlined">
@@ -25,66 +27,10 @@ const PAGE_TITLES: { [key: string]: string } = {
   "#cardAccount": createMaterialSymbol("credit_score", "Cartão de crédito"),
   "#login": createMaterialSymbol("", ""),
   "#register": createMaterialSymbol("", ""),
+  "#paymentOfCard": createMaterialSymbol("payments", "Pagamento da fatura"),
 };
 
 const client = JSON.parse(localStorage.getItem("client") || "{}");
-
-const template = `
-<header>
-  <div class="content">
-    <span class="material-symbols-outlined menu"> menu </span>
-    <span class="page-title"></span>
-  </div>    
-
-  <div class="header">
-      <a href="#notifications" title="Notificações">
-          <div class="notification">
-            <span class="position-absolute start-100 translate-middle badge rounded-pill bg-danger"></span>
-            <span class="material-symbols-outlined"> notifications </span>
-          </div>
-      </a>
-
-  <div class="dropdown">
-
-    <div class="user account">
-      <span class="material-symbols-outlined"> account_circle </span>
-      <span class="current-user" title="${client.name}">${client.name ?? ""}</span>
-    </div>
-
-    <div class="account-menu dropdown-menu">
-      <a href="#account" title="Conta">
-        <div class="option-menu dropdown-item">
-          <span class="material-symbols-outlined"> person </span>
-          Conta
-        </div>
-      </a>
-    </div>
-
-  </div>
-      <a href="#login" title="sair">
-        <div class="log-out">
-          <span class="material-symbols-outlined">
-          logout
-          </span>
-        </div>
-     </a>
-  </div>
-</header>
-    <nav class="side-nav">
-      <a href="#transaction" class="anchors" title="Transação">
-         ${PAGE_TITLES["#transaction"]}
-      </a>
-      <a href="#conversion" class="anchors" title="Conversor">
-        ${PAGE_TITLES["#conversion"]}
-      </a>
-      <a href="#cardAccount" class="anchors" title="Pagamento">
-        ${PAGE_TITLES["#cardAccount"]}
-      </a>
-     
-    </nav>
-    <main id="root"></main>
-    <div id="toast-content"></div>
-      `;
 
 export class RouterOutlet extends HTMLElement {
   $root: HTMLElement;
@@ -99,7 +45,8 @@ export class RouterOutlet extends HTMLElement {
   $iconAccount: HTMLElement;
   $accountMenu: HTMLElement;
   $optionMenu: NodeListOf<Element>;
-
+  public PAGE_TITLES = PAGE_TITLES;
+  public client = client;
   connectedCallback() {
     this.createInnerHTML();
     this.recoveryElementRef();
@@ -108,7 +55,7 @@ export class RouterOutlet extends HTMLElement {
     this.onInit();
   }
   private createInnerHTML() {
-    this.innerHTML = template;
+    generatePropertyBind.bind(this, html)();
   }
 
   renderContent() {
@@ -142,13 +89,14 @@ export class RouterOutlet extends HTMLElement {
 
     const hash = window.location.hash;
     const ROUTES: { [key: string]: typeof HTMLElement } = {
+      "#login": LoginComponent,
+      "#register": RegisterComponent,
       "#account": AccountPage,
       "#transaction": TransactionPage,
       "#notifications": Notification,
       "#conversion": ConversionPage,
       "#cardAccount": CardAccountPage,
-      "#login": LoginComponent,
-      "#register": RegisterComponent,
+      "#paymentOfCard": PaymentOfCardPage,
     };
 
     this.$anchor.forEach((anchor) => {
@@ -159,11 +107,11 @@ export class RouterOutlet extends HTMLElement {
     this.$pageTitle.innerHTML = PAGE_TITLES[hash];
 
     if (hash === "#login" || hash === "#register") {
-      this.$header.classList.add("disabled");
-      this.$nav.classList.add("disabled");
+      this.$header.classList.add("invisible");
+      this.$nav.classList.add("invisible");
     } else {
-      this.$header.classList.remove("disabled");
-      this.$nav.classList.remove("disabled");
+      this.$header.classList.remove("invisible");
+      this.$nav.classList.remove("invisible");
     }
 
     if (this.$root) this.$root.innerHTML = "";

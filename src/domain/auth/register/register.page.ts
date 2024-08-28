@@ -1,79 +1,10 @@
-import illustration from "../../../assets/login-pana.svg";
+import illustration from "../../../assets/register-pana.svg";
 import { Toasts } from "../../../components/toasts/toast";
 import { viewPassword } from "../../../functions/password/view-password";
+import { generatePropertyBind } from "../../../functions/property-bind";
 import { Client } from "../client";
 import { Validators } from "../validation";
-import "./register.page.scss";
-
-const template = `
-<div class="card register">
-  <form class="was-validated">
-    <div class="mb-3">
-      <label class="form-label"
-        >Nome
-      </label>
-      <input 
-      type="text" 
-      class="form-control form" name="name" 
-      placeholder="Digite seu nome"
-      minlength="3"
-      required />
-      <div class="error-message"></div>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">
-      E-mail
-      </label>
-      <input type="email" class="form-control form" name="email" placeholder="Digite seu email" required />
-      <div class="error-message"></div>
-    </div>
-    <div class="mb-3 password">
-      <label class="form-label"
-        >Senha
-      </label>
-      <input
-        type="password"
-        class="form-control form icon-eye-closed icon-eye-open"
-        name="password"
-        placeholder="Digite sua senha"
-        autocomplete="off"
-        minlength="8"
-        required
-      />
-      <div class="see-password"></div>
-      <div class="error-message"></div>
-    </div>
-    <div class="mb-3 password">
-      <label class="form-label"
-        >Confirme sua senha
-      </label>
-      <input
-        type="password"
-        class="form-control form icon-eye-closed icon-eye-open"
-        placeholder="Digite sua senha"
-        name="confirmPassword"
-        autocomplete="off"
-        minlength="8"
-        required
-      />
-      <div class="see-confirm-password"></div>
-      <div class="error-message"></div>
-    </div>
-    <button class="btn btn-add" type="button">Cadastrar</button>
-  </form>
-</div>
-<div class="card card-illustration">
-  <span class="anchor">Você ja é cadastrado, logue sua conta aqui!</span>
-  <a href="#login">
-    <button type="button" class="btn btn-account">
-      <span class="material-symbols-outlined icon"> group_add </span>
-      Entrar na conta
-    </button>
-  </a>
-  <img src="${illustration}" class="illustration" alt="imagem de login" />
-</div>
-
-`;
+import html from "./register.page.html?raw";
 
 export class RegisterComponent extends HTMLElement {
   $inputName: HTMLInputElement;
@@ -84,11 +15,10 @@ export class RegisterComponent extends HTMLElement {
   $seePassword: HTMLElement;
   $seeConfirmPassword: HTMLElement;
   $errorMessage: HTMLElement;
-
+  public illustration = illustration;
   client = new Client();
-
   connectedCallback() {
-    this.innerHTML = template;
+    generatePropertyBind.bind(this, html)();
     this.recoveryElementRef();
   }
 

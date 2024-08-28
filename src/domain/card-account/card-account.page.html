@@ -1,0 +1,44 @@
+<div class="card">
+  <div class="card-header">Cartões</div>
+  <div class="card-body">
+    <h5 class="card-title">Meus Cartões</h5>
+    <div class="carousel">
+      <button class="previous" hidden>
+        <span class="icon-previous">&laquo;</span>
+      </button>
+      <div class="card-container">
+        <div class="card-credit first">
+          <div class="add-card">
+            Solicitar cartão
+            <div class="circle">
+              <span class="material-symbols-outlined add-card-credit">add_card</span>
+            </div>
+          </div>
+        </div>
+        <div class="cards"></div>
+      </div>
+      <button class="next" hidden>
+        <span class="icon-next">&raquo;</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="card limit">
+  <div class="card-header">Limite de crédito</div>
+  <div class="card-body">
+    <div class="limit-credit">
+      <label for="customRange1" class="form-label">Defina seu limite de Crédito</label>
+      <div class="credit-value">
+        <span class="info">Limite de crédito:</span>
+        <span class="limit-credit-value"> {{clientCard.limitCredit?.formatToBRL() || (0).formatToBRL()}} </span>
+        <span class="info">Limite de crédito disponível:</span>
+        <span class="available-credit-value"> {{clientCard.limitCreditCurrent?.formatToBRL() || (0).formatToBRL()}} </span>
+      </div>
+
+      <div class="range">
+        <input type="range" class="form" min="0" max="10000" value="{{clientCard.limitCredit ?? 0}}" step="50" required />
+      </div>
+    </div>
+  </div>
+</div>

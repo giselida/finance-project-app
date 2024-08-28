@@ -1,0 +1,44 @@
+<header>
+  <div class="content">
+    <span class="material-symbols-outlined menu"> menu </span>
+    <span class="page-title"></span>
+  </div>
+
+  <div class="header">
+    <a href="#notifications" target="_self" title="Notificações">
+      <div class="notification">
+        <span class="position-absolute start-100 translate-middle badge rounded-pill bg-danger"></span>
+        <span class="material-symbols-outlined"> notifications </span>
+      </div>
+    </a>
+
+    <div class="dropdown">
+      <div class="user account">
+        <span class="material-symbols-outlined"> account_circle </span>
+        <span class="current-user" title="{{client.name}}">{{client.name ?? ""}}</span>
+      </div>
+
+      <div class="account-menu dropdown-menu">
+        <a href="#account" target="_self" title="Conta">
+          <div class="option-menu dropdown-item">
+            <span class="material-symbols-outlined"> person </span>
+            Conta
+          </div>
+        </a>
+      </div>
+    </div>
+    <a href="#login" target="_self" title="sair">
+      <div class="log-out">
+        <span class="material-symbols-outlined"> logout </span>
+      </div>
+    </a>
+  </div>
+</header>
+<nav class="side-nav">
+  <a href="#transaction" target="_self" class="anchors" title="Transação"> {{ PAGE_TITLES["#transaction"] }} </a>
+  <a href="#conversion" target="_self" class="anchors" title="Conversor"> {{ PAGE_TITLES["#conversion"] }} </a>
+  <a href="#cardAccount" target="_self" class="anchors" title="Pagamento"> {{ PAGE_TITLES["#cardAccount"] }} </a>
+  <a href="#paymentOfCard" target="_self" class="anchors" title="Pagamento"> {{ PAGE_TITLES["#paymentOfCard"] }} </a>
+</nav>
+<main id="root"></main>
+<div id="toast-content"></div>

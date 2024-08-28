@@ -1,5 +1,4 @@
-@import "/src/scss/mixins.scss";
-@import "bootstrap/dist/css/bootstrap.min.css";
+@import "mixins";
 
 transaction-page {
   @include pageStyle(column);
@@ -59,7 +58,7 @@ transaction-page {
     color: var(--color-pink);
     &:hover {
       color: var(--color-pink);
-      background-color: var(--color-violet-light);
+      background-color: var(--color-pink-light);
     }
   }
 

@@ -6,4 +6,5 @@ export interface Cliente {
   accountNumber: string;
   accountAmount: number;
   selected: boolean;
+  active: boolean;
 }

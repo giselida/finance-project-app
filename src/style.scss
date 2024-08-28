@@ -1,10 +1,11 @@
-@import "./scss/reset.scss";
-@import "./scss/mixins.scss";
+@import "reset";
+@import "mixins";
+
 :root {
   --color-pink: #fe5e71;
   --color-violet-light: #ebe5fc;
   --color-black: #000;
-  --color-pink-light: #fcd3e47a;
+  --color-pink-light: #fccfd5;
   --color-pink-medium: #ffbfbf;
   --color-orange: #ff8f16;
   --color-yellow-light: #fffb93;
@@ -21,40 +22,8 @@ body {
   background-color: var(--color-gray-light);
   font-family: "Open Sans", sans-serif;
 }
-.error-message {
-  font-size: 14px;
-  margin-top: 5px;
-  color: red;
-}
-.password:has(input[type="password"]) {
-  .see-password,
-  .see-confirm-password {
-    background-image: url("/src/assets/eye-closed.svg") !important;
-  }
-}
-.password:has(input[type="text"]) {
-  .see-password,
-  .see-confirm-password {
-    background-image: url("/src/assets/eye-open.svg") !important;
-  }
-}
 
-.see-password,
-.see-confirm-password {
-  width: 25px;
-  height: 25px;
-  background-size: 25px 25px;
-  position: absolute;
-  bottom: 23px;
-  cursor: pointer;
-  right: 42px;
-}
-.password {
-  position: relative;
-  min-height: 80px;
-}
-
-.was-validated :has(label + input:required) {
+.was-validated :has(label + input:required, .required) {
   .form-label {
     display: inline-flex !important;
     position: relative;
@@ -75,12 +44,26 @@ body {
 .air-datepicker-global-container {
   z-index: 999999;
 }
-.disabled {
-  display: none;
-}
+
 .line {
   border-bottom: 0.2px solid var(--color-line-gray);
 }
+
+.card {
+  margin-bottom: 15px;
+  .card-header {
+    background-color: var(--color-gray-medium);
+    font-weight: 700;
+    border-bottom: 1px solid var(--color-gray-dark);
+    font-size: 18px;
+    padding: 12px;
+  }
+
+  .card-title {
+    margin-bottom: 15px;
+  }
+}
+
 .header {
   display: flex;
   padding: 10px;
@@ -123,6 +106,12 @@ b {
 }
 
 router-app {
+  .invisible {
+    display: none;
+  }
+  .material-icons {
+    font-size: 16px;
+  }
   .account-info {
     @include display-none(true);
     border: 1px solid var(--color-red-border);
@@ -140,6 +129,10 @@ router-app {
   }
   .selected-value {
     z-index: 0;
+    align-items: center;
+    display: inline-flex;
+    gap: 8px;
+
     [abbrev] {
       z-index: 0;
     }
@@ -186,7 +179,7 @@ router-app {
         width: 30px;
         height: 5px;
         --bs-btn-close-color: var(--color-red);
-        --bs-btn-close-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ff0202'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e");
+        background-image: url("assets/close-icon.svg");
         &:focus {
           box-shadow: none;
         }
@@ -206,9 +199,6 @@ router-app {
         background-color: var(--color-pink);
         padding: 5px 16px 5px 16px;
         font-weight: 600;
-        &:hover {
-          filter: brightness(80%);
-        }
       }
     }
   }
@@ -373,11 +363,12 @@ router-app {
     &:active {
       border: 1px solid var(--color-pink) !important;
     }
-    @include display-align-content();
+    @include display-align-content(center);
     border: 1px solid var(--color-pink);
-    transition: background-color ease-out 0.5s;
+    transition: background-color ease-in-out 0.5s;
     &:hover {
       border: 1px solid var(--color-pink);
+      filter: brightness(90%);
     }
     .icon {
       margin-right: 5px;
@@ -408,11 +399,31 @@ router-app {
     display: none;
   }
 
+  .form-control,
+  .form-select {
+    min-height: 40px;
+  }
   .form-select {
     gap: 10px;
+    line-height: 26px;
     position: relative;
     cursor: pointer;
-    --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23979595' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+
+    &.is-invalid::before,
+    &.is-valid::before {
+      right: 42px;
+    }
+
+    &::before {
+      position: absolute;
+      content: "";
+      background: url("assets/arrow-select.svg");
+      width: 16px;
+      height: 16px;
+      z-index: 2;
+      top: 0;
+      transform: translateY(75%);
+    }
     border: 1px solid var(--color-gray-light);
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -534,10 +545,6 @@ router-app {
   .add-account {
     transition: transform 0.2s ease-in-out;
     cursor: pointer;
-    &:hover {
-      transform: scale(1.05);
-      filter: brightness(80%);
-    }
   }
   .delete {
     color: var(--color-red);
@@ -635,14 +642,18 @@ router-app {
 }
 
 .air-datepicker-cell {
-  color: var(--color-orange);
+  &:not(.-disabled-) {
+    color: var(--color-pink);
+  }
+
   border-radius: 50%;
   &.-disabled- {
     cursor: not-allowed;
-    color: var(--color-pink);
-    background: var(--color-pink-medium);
+    color: #655c5d !important;
+    background: #bfbfbff2;
     filter: opacity(0.6);
   }
+
   &.-current- {
     color: var(--color-pink);
     background: var(--color-pink-light);
@@ -651,6 +662,7 @@ router-app {
   &:hover {
     border-radius: 50%;
   }
+
   &.-selected- {
     border-radius: 50%;
     color: #fff;
@@ -659,7 +671,9 @@ router-app {
   }
 }
 
-.air-datepicker-cell.-day-.-other-month- {
-  color: #eb7373;
+.air-datepicker-cell.-day-.-other-month-:not(.-disabled-) {
+  color: var(--color-pink);
+  background: var(--color-pink-medium);
+  filter: opacity(0.3);
   font-weight: bold;
 }

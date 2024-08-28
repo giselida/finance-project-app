@@ -1,0 +1,46 @@
+@import "reset";
+@import "mixins";
+login-page,
+register-page {
+  button.btn-add {
+    width: 100%;
+    justify-content: center;
+    color: white;
+    background-color: var(--color-pink);
+  }
+}
+
+a {
+  text-decoration: none;
+}
+
+.error-message {
+  font-size: 14px;
+  margin-top: 5px;
+  color: var(--color-red);
+}
+
+.password {
+  position: relative;
+  min-height: 80px;
+
+  .see-password,
+  .see-confirm-password {
+    width: 25px;
+    height: 25px;
+    background-size: 25px 25px;
+    position: absolute;
+    bottom: 23px;
+    cursor: pointer;
+    right: 42px;
+    background-image: var(--img-background);
+  }
+
+  &:has(input[type="password"]) {
+    --img-background: url("/src/assets/eye-closed.svg");
+  }
+
+  &:has(input[type="text"]) {
+    --img-background: url("/src/assets/eye-open.svg");
+  }
+}

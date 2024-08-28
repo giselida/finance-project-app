@@ -5,6 +5,8 @@ import { FormSelect } from "../../components/form-select/form-select";
 import { Toasts } from "../../components/toasts/toast";
 import { OPTIONS_CURRENCY } from "../../constants/charts";
 import { COUNTRY_LIST } from "../../constants/countrys";
+import { generatePropertyBind } from "../../functions/property-bind";
+import html from "./conversion.page.html?raw";
 import "./conversion.page.scss";
 import { ExchangeRateApiResponse } from "./interface/rates";
 export class ConversionPage extends HTMLElement {
@@ -230,66 +232,7 @@ export class ConversionPage extends HTMLElement {
   }
 
   private createInnerHTML() {
-    this.innerHTML = /*html*/ `
-<div class="row-content">
-    <div class="card w-25">
-      <div class="input-group mb-3">
-        <span class="input-group-text">$</span>
-        <input
-          type="text"
-          class="form-control"
-          autocomplete="transaction-currency"
-          value="0,00"
-          pattern="[0-9]+,[0-9]{2}||[0-9]+(.[0-9]{3})*,[0-9]{2}"
-          required
-        />
-      </div>
-      <div class="form">
-        <div class="form-group">
-        </div>
-        <button type="button" class="btn btn-alt">
-          <span class="material-symbols-outlined">sync_alt</span>
-        </button>
-        <div class="form-group-2">
-        </div>
-      </div>  <div class="button-group">
-        <button type="button" class="btn btn-search">
-          <span class="material-symbols-outlined icon"> search </span>
-          Pesquisar
-        </button>
-        <button type="button" class="btn btn-clean">
-          <span class="material-symbols-outlined icon"> close </span>
-          Limpar
-        </button>
-      </div>
-<div class="line"></div>
-
-      <div class="result">
-        <div class="card ">
-          <div class="card-header">Resultado da conversão</div>
-          <div class="card-body">
-            <div class="from"><b>Conversão de:</b><span></span></div>
-            <div class="content">
-              <b>Valor a converter:</b>
-              <div class="card-text"></div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="to"><b>Conversão para:</b><span></span></div>
-            <div class="content "> 
-              <b> Resultado da conversão:</b>
-              <div class="card-text"></div>
-           </div>
-          </div>
-        </div>
-      </div>
-      
-    </div>
-    <div class="card w-75">
-      <div id="chart-currency"></div>
-    </div>
-</div>
-      `;
+    generatePropertyBind.bind(this, html)();
   }
   private createFormSelect() {
     const options = [...COUNTRY_LIST]

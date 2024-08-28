@@ -1,0 +1,10 @@
+@import "mixins";
+@import "reset";
+payment-of-card-page {
+  @include pageStyle(column);
+
+  .row-content {
+    display: flex;
+    gap: 10px;
+  }
+}

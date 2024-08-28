@@ -1,5 +1,6 @@
 import { Toasts } from "../../components/toasts/toast";
 import { CardClient } from "../card-account/interface/card-client";
+import "./auth.scss";
 import { Cliente } from "./interface/client.interface";
 
 export class Client {
@@ -31,6 +32,7 @@ export class Client {
       accountAmount: 0,
       email: $inputEmail.value.trim(),
       selected: true,
+      active: true,
     };
 
     this.clientList.push(objectClient);

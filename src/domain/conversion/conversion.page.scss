@@ -1,5 +1,5 @@
-@import "/src/scss/reset.scss";
-@import "/src/scss/mixins.scss";
+@import "reset";
+@import "mixins";
 conversion-page {
   @include pageStyle(column);
   .option,
@@ -14,15 +14,11 @@ conversion-page {
       &:hover {
         background-color: var(--color-pink-medium);
         border: 1px solid var(--color-red-border);
-        filter: brightness(80%);
       }
     }
     .btn-clean {
       color: var(--color-white);
       background-color: var(--color-red-border);
-      &:hover {
-        filter: brightness(80%);
-      }
     }
   }
 
@@ -53,11 +49,7 @@ conversion-page {
     @include display-align-content();
     .card {
       width: 100%;
-      border: 1px solid var(--color-gray-dark);
-      .card-header {
-        background-color: var(--color-gray-medium);
-        font-weight: 700;
-      }
+
       .content {
         margin-top: 5px;
       }

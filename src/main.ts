@@ -6,8 +6,22 @@ import { RegisterComponent } from "./domain/auth/register/register.page";
 import { CardAccountPage } from "./domain/card-account/card-account.page";
 import { ConversionPage } from "./domain/conversion/conversion.page";
 import { Notification } from "./domain/notification/notification.page";
+import { PaymentOfCardPage } from "./domain/payment-of-card/payment-of-card.page";
 import { TransactionPage } from "./domain/transaction/transaction.page";
 import "./style.scss";
+Number.prototype.formatToBRL = function (): string {
+  const formatter = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+  return formatter.format(this as number);
+};
+String.prototype.convertStringDate = function (): Date | null {
+  if (!this) return null;
+  const dateString = this.replace(/(\d{2})\/(\d{2})\/(\d{4})/g, "$2-$1-$3");
+  const date = new Date(dateString);
+  return isNaN(date.getTime()) ? null : date;
+};
 
 export const options = [
   {
@@ -37,6 +51,10 @@ export const options = [
   {
     selector: "card-account-page",
     class: CardAccountPage,
+  },
+  {
+    selector: "payment-of-card-page",
+    class: PaymentOfCardPage,
   },
   {
     selector: "login-page",

@@ -1,4 +1,4 @@
-@import "/src/scss/mixins.scss";
+@import "mixins";
 notification-page {
   @include pageStyle(column);
   .list-group-item {

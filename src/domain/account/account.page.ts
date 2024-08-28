@@ -2,12 +2,12 @@ import Swal from "sweetalert2";
 import warningImage from "../../assets/release_alert.png";
 import { RouterOutlet } from "../../components/router-outlet/router-outlet";
 import { Toasts } from "../../components/toasts/toast";
-import { formatterBRL } from "../../functions/currencyFormatter/formatter.";
 import { badgeUpdate } from "../../functions/notification/notification";
+import { generatePropertyBind } from "../../functions/property-bind";
 import { Cliente } from "../auth/interface/client.interface";
 import { CardClient } from "./../card-account/interface/card-client";
+import html from "./account.page.html?raw";
 import "./account.page.scss";
-
 export class AccountPage extends HTMLElement {
   $buttonAdd: HTMLButtonElement;
   clientList: Cliente[];
@@ -28,6 +28,7 @@ export class AccountPage extends HTMLElement {
     this.clientCard = JSON.parse(localStorage.getItem("cardClient") ?? "{}");
     this.clientSelected = JSON.parse(localStorage.getItem("client") ?? "{}");
   }
+
   get $currentUser() {
     return document.querySelector(".current-user");
   }
@@ -42,58 +43,7 @@ export class AccountPage extends HTMLElement {
     if (this.clientList.length < 1) window.location.replace("#register");
   }
   private createInnerHTML() {
-    const currencyFormatter = formatterBRL();
-    const { name, accountNumber, accountAmount } = this.clientSelected;
-
-    this.innerHTML = /*html*/ `
-<span class="account-info">
-  Você não possui uma conta selecionada!
-</span>
-<div class="card">
-  <div class="card-header">Conta selecionada</div>
-  <div class="card-body">
-    <div class="card-title"><span class="info">Nome:</span> ${name ?? ""} </div>
-    <div class="card-title"><span class="info">Numero da conta:</span> ${accountNumber ?? ""}</div>
-    <div class="card-title"><span class="info">Saldo:</span> ${currencyFormatter.format(accountAmount ?? 0)}</div>
-
-  </div>
-</div>
-<div class="content-row">
-  <h1 class="title">Contas cadastradas</h1>
-
-</div>
-
-<div class="table-container">
-  <table class="table table-hover ">
-    <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">Numero da conta</th>
-        <th scope="col">Nome</th>
-        <th scope="col">Ações</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-<nav class="container-pagination" aria-label="Page navigation">
-      <ul class="pagination">
-        <li class="page-item">
-          <button class="page-link page-previous" aria-label="Previous" disabled>
-            <span class="previous">&laquo;</span>
-          </button>
-        </li>
-        <li class="page-item">
-          <div class="page-link page-actually">1</div>
-        </li>
-        <li class="page-item">
-          <button class="page-link page-next" aria-label="Next" disabled>
-            <span class="next">&raquo;</span>
-          </button>
-        </li>
-      </ul>
-    </nav>
-`;
+    generatePropertyBind.bind(this, html)();
   }
 
   recoveryElementRef() {
@@ -196,6 +146,7 @@ export class AccountPage extends HTMLElement {
       showCancelButton: true,
       confirmButtonColor: "#ffff",
       cancelButtonColor: "#fe5e71",
+
       confirmButtonText: "Confirmar",
       cancelButtonText: "Cancelar",
       focusConfirm: false,
@@ -206,6 +157,7 @@ export class AccountPage extends HTMLElement {
           this.$currentUser.innerHTML = "";
         }
         this.clientList = this.clientList.filter((client) => client.id !== id);
+
         this.clientSelected = this.clientSelected.id == id ? ({} as Cliente) : this.clientSelected;
         this.setStorage();
         Toasts.success("Conta removida com sucesso!");

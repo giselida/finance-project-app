@@ -1,9 +1,9 @@
 import { Toasts } from "../../components/toasts/toast";
-import { formatterBRL } from "../../functions/currencyFormatter/formatter.";
+import { generatePropertyBind } from "../../functions/property-bind";
 import { Cliente } from "../auth/interface/client.interface";
+import html from "./card-account.page.html?raw";
 import "./card-account.page.scss";
 import { CardClient } from "./interface/card-client";
-
 export class CardAccountPage extends HTMLElement {
   clientCardList: CardClient[];
   client: Cliente;
@@ -32,6 +32,7 @@ export class CardAccountPage extends HTMLElement {
     this.createCardCredit();
     this.updateCreditLimit();
     this.checkBUttonVisible();
+
     if (this.clientCard.clientID !== this.client.id) {
       localStorage.removeItem("cardClient");
       this.clientCard = {} as CardClient;
@@ -40,53 +41,7 @@ export class CardAccountPage extends HTMLElement {
   }
 
   private createInnerHTML() {
-    const { limitCredit, limitCreditCurrent } = this.clientCard;
-    const currencyFormatter = formatterBRL();
-    this.innerHTML = `
-<div class="card">
-  <div class="card-header">Cartões</div>
-  <div class="card-body">
-    <h5 class="card-title">Meus Cartões</h5>
-    <div class="carousel">
-      <button class="previous" hidden>
-        <span class="icon-previous">&laquo;</span>
-      </button>
-      <div class="card-container">
-        <div class="card-credit first">
-          <div class="circle">
-            <span class="material-symbols-outlined add-card-credit">add</span>
-          </div>
-        </div>
-        <div class="cards"></div>
-      </div>
-      <button class="next" hidden>
-        <span class="icon-next">&raquo;</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<div class="card limit">
-  <div class="card-header">Limite de crédito</div>
-  <div class="card-body">
-    <div class="limit-credit">
-      <label for="customRange1" class="form-label">Defina seu limite de Crédito</label>
-
-      <div class="credit-value">
-        <span class="info">Limite de crédito:</span>
-        <span class="limit-credit-value"> ${currencyFormatter.format(limitCredit ?? 0)} </span>
-        <span class="info">Limite de crédito disponível:</span>
-        <span class="available-credit-value"> ${currencyFormatter.format(limitCreditCurrent ?? 0)} </span>
-      </div>
-
-      <div class="range">
-        <input type="range" class="form" min="0" max="10000" value="${limitCredit ?? 0}" step="50" required />
-      </div>
-    </div>
-  </div>
-</div>
-
-`;
+    generatePropertyBind.bind(this, html)();
   }
 
   recoveryElementRef() {
@@ -130,18 +85,18 @@ export class CardAccountPage extends HTMLElement {
 
   private rangeListener() {
     this.$inputRange.addEventListener("input", () => {
-      if (!this.clientCard?.id) {
+      if (!this.clientCard.id) {
         Toasts.error("Nenhum cartão selecionado. Por favor, selecione um cartão primeiro.");
         return;
       }
       const formRangeValue = +this.$inputRange.value;
       const limitCredit = +this.$inputRange.value - this.clientCard.limitCreditUsed;
 
-      const currencyFormatter = formatterBRL();
-      this.$creditValue.textContent = `${currencyFormatter.format(formRangeValue)}`;
-      this.$usedCreditValue.textContent = `${currencyFormatter.format(limitCredit)}`;
+      this.$creditValue.textContent = formRangeValue.formatToBRL();
+      this.$usedCreditValue.textContent = limitCredit.formatToBRL();
 
-      const client = this.clientCardList.find((card) => card.id == this.clientCard.id);
+      const client = this.clientCardList.find((card) => card.id === this.clientCard.id);
+      this.clientCard = client;
       client.limitCredit = formRangeValue;
       client.limitCreditCurrent = limitCredit;
 
@@ -187,36 +142,34 @@ export class CardAccountPage extends HTMLElement {
 
     cardCredit.forEach((card) => {
       this.$cards.innerHTML += `
-
-   <div class="card-credit" style="background-color: ${card.color}">
-          <div class="flip">
-            <span class="material-symbols-outlined">forward</span>
-          </div>
-          <div class="card-content front">
-            <div class="chip">
-              <img src="https://raw.githubusercontent.com/dasShounak/freeUseImages/main/chip.png" alt="chip" />
-            </div>
-            <div class="number">${card.cardNumber}</div>
-            <div class="information">
-              <div class="name">${this.client.name ?? "N/A"}</div>
-              <div class="date-valid">
-                <div class="text">Valid</div>
-                <div class="date">${card.validDate}</div>
-              </div>
-            </div>
-          </div>
-          <div class="card-content back">
-            <div class="information">
-              <div class="signature-name">${this.client.name ?? "N/A"}</div>
-              <div class="cvv-content">
-                <div class="text">Cvv</div>
-                <div class="cvv">${card.cvv}</div>
-              </div>
-            </div>
+    <div class="card-credit" style="background: ${card.color}">
+      <div class="flip">
+        <span class="material-symbols-outlined">forward</span>
+      </div>
+      <div class="card-content front">
+        <div class="chip">
+          <img src="https://raw.githubusercontent.com/dasShounak/freeUseImages/main/chip.png" alt="chip" />
+        </div>
+        <div class="number">${card.cardNumber}</div>
+        <div class="information">
+          <div class="name">${this.client.name ?? "N/A"}</div>
+          <div class="date-valid">
+            <div class="text">Valid</div>
+            <div class="date">${card.validDate}</div>
           </div>
         </div>
-       
-      `;
+      </div>
+      <div class="card-content back">
+        <div class="information">
+          <div class="signature-name">${this.client.name ?? "N/A"}</div>
+          <div class="cvv-content">
+            <div class="text">Cvv</div>
+            <div class="cvv">${card.cvv}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    `;
     });
 
     const $creditCards = document.querySelectorAll<Element>(".card-credit:not(.first)") as NodeListOf<HTMLElement>;
@@ -283,7 +236,7 @@ export class CardAccountPage extends HTMLElement {
       limitCredit: 0,
       limitCreditUsed: 0,
       limitCreditCurrent: 0,
-      color: this.generateRandomColor(),
+      color: this.generateRandomGradient(),
       clientID: this.client.id,
     };
 
@@ -291,19 +244,25 @@ export class CardAccountPage extends HTMLElement {
     this.setStorage();
   }
 
-  private generateRandomColor(): string {
-    const letters = "0123456789ABCDEF";
-    let color = "#";
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-  }
-  private resetCreditValues() {
-    const currencyFormatter = formatterBRL();
+  private generateRandomGradient(): string {
+    const generateColor = () => {
+      const letters = "0123456789ABCDEF";
+      let color = "#";
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    };
 
-    this.$creditValue.textContent = `${currencyFormatter.format(0)}`;
-    this.$usedCreditValue.textContent = `${currencyFormatter.format(0)}`;
+    const color1 = generateColor();
+    const color2 = generateColor();
+
+    return `linear-gradient(135deg, ${color1}, ${color2})`;
+  }
+
+  private resetCreditValues() {
+    this.$creditValue.textContent = (0).formatToBRL();
+    this.$usedCreditValue.textContent = (0).formatToBRL();
     this.$inputRange.value = "0";
 
     this.setRangeColor();
@@ -316,10 +275,9 @@ export class CardAccountPage extends HTMLElement {
     }
 
     const { limitCredit, limitCreditCurrent } = this.clientCard;
-    const currencyFormatter = formatterBRL();
 
-    this.$creditValue.textContent = `${currencyFormatter.format(limitCredit)}`;
-    this.$usedCreditValue.textContent = `${currencyFormatter.format(limitCreditCurrent)}`;
+    this.$creditValue.textContent = limitCredit.formatToBRL();
+    this.$usedCreditValue.textContent = limitCreditCurrent.formatToBRL();
     this.$inputRange.value = limitCredit.toString();
 
     this.setRangeColor();

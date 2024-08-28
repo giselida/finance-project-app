@@ -5,19 +5,18 @@ import ApexCharts from "apexcharts";
 import { Modal } from "bootstrap";
 import IMask from "imask";
 import Swal from "sweetalert2";
-
 import warningImage from "../../assets/release_alert.png";
 import { FormSelect } from "../../components/form-select/form-select";
 import { Toasts } from "../../components/toasts/toast";
 import { OPTIONS_PAYMENT } from "../../constants/charts";
 import { PT_BR_LOCALE } from "../../constants/date-picker-locale";
 import { eFormOfPayment, SVG_ICONS } from "../../constants/svg-icons";
-import { convertStringDate } from "../../functions/date/date";
 import { badgeUpdate } from "../../functions/notification/notification";
-
+import { generatePropertyBind, ngIf } from "../../functions/property-bind";
 import { Cliente } from "../auth/interface/client.interface";
 import { CardClient } from "../card-account/interface/card-client";
 import { Transaction } from "./interface/transaction.interface";
+import html from "./transaction.page.html?raw";
 import "./transaction.page.scss";
 
 export const formOfPaymentOptions = [
@@ -38,6 +37,11 @@ export const formOfPaymentOptions = [
     name: "Pix",
   },
 ];
+
+export enum eTransactionClassName {
+  SALDO_ATUAL = "current-balance",
+  SALDO_LIMITE = "current-limit",
+}
 
 export class TransactionPage extends HTMLElement {
   mask: typeof Currency;
@@ -65,6 +69,10 @@ export class TransactionPage extends HTMLElement {
   $chart: ApexCharts;
   originalList: Transaction[];
   cardClient: CardClient;
+  public eTransactionClassName = eTransactionClassName;
+  public SVG_ICONS = SVG_ICONS;
+  public eFormOfPayment = eFormOfPayment;
+  public formOfPaymentOptions = formOfPaymentOptions;
 
   get numberFormat() {
     const options = {
@@ -101,154 +109,14 @@ export class TransactionPage extends HTMLElement {
     return Math.ceil(this.filteredList.length / this.pageSize);
   }
   createInnerHTML() {
-    this.innerHTML = /*html*/ `
-
-    <div class="container-current-balance">
-      <div class="item">
-        Saldo: <span class="current-balance">0,00</span>
-      </div>
-      <div class="item">
-        Limite de Crédito: <span class="current-limit">0,00</span>
-      </div>
-    </div>
-    <div id="chart-payment"></div>
-    <div class="content-row mb-3">
-      <button type="button" class="btn btn-transaction" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-        <span class="material-symbols-outlined icon"> sync_alt</span>
-        Fazer uma transação
-      </button>
-      <div class="group-input">
-        <div class="input-group-text">
-          <span class="material-symbols-outlined"> search </span>
-        </div>
-        <input type="text" class="form-search" placeholder="Pesquisar" />
-      </div>
-    </div>
-
-    <div
-      class="modal fade "
-      id="staticBackdrop"
-      data-bs-backdrop="static"
-      data-bs-keyboard="false"
-      tabindex="-1"
-      aria-labelledby="staticBackdropLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog  modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-2" id="staticBackdropLabel">Transação</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form class="was-validated">
-              <div class="form-input">
-                <label class="form-label">Valor<div class="required">*</div></label>
-                <input
-                  type="text"
-                  class="form-control"
-                  autocomplete="transaction-currency"
-                  pattern="[0-9]+,[0-9]{2}||[0-9]+(.[0-9]{3})*,[0-9]{2}"
-                  required
-                />  
-              </div>
-              <div class="form-input description">
-                <label class="form-label">Forma de pagamento<div class="required">*</div></label>
-              </div>
-              <div class="form-input">
-                <label class="form-label">Data<div class="required">*</div></label>
-                <input type="text" pattern="^(3[01]|[12][0-9]|0[1-9])/(1[0-2]|0[1-9])/[0-9]{4}$" class="form-control icon-calendar" required />
-              </div>
-              <div class="form-input client">
-                <label class="form-label">Cliente<div class="required">*</div></label>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-closed" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-add">Cadastrar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="table-container">
-      <table class="table table-hover ">
-        <thead>
-          <tr style="position: sticky; top: 0">
-            <th scope="col" key="id">
-              <div class="row-header">
-                <span>#</span>
-                <div class="sort"></div>
-              </div>
-            </th>
-            <th scope="col" key="value">
-              <div class="row-header">
-                <span>Valor</span>
-                <div class="sort"></div>
-              </div>
-            </th>
-            <th scope="col" key="formOfPayment">
-              <div class="row-header">
-                <span>Forma de pagamento</span>
-                <div class="sort"></div>
-              </div>
-            </th>
-            <th scope="col" key="date">
-              <div class="row-header">
-                <span>Data</span>
-                <div class="sort"></div>
-              </div>
-            </th>
-            <th scope="col" key="dateOfPayDay">
-              <div class="row-header">
-                <span>Data do pagamento</span>
-                <div class="sort"></div>
-              </div>
-            </th>
-            <th scope="col" key="name">
-              <div class="row-header">
-                <span>Nome</span>
-                <div class="sort"></div>
-              </div>
-            </th>
-            <th scope="col">Ações</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <nav class="container-pagination" aria-label="Page navigation">
-      <ul class="pagination">
-        <li class="page-item">
-          <button class="page-link page-previous" aria-label="Previous" disabled>
-            <span class="previous">&laquo;</span>
-          </button>
-        </li>
-        <li class="page-item">
-          <div class="page-link page-actually">1</div>
-        </li>
-        <li class="page-item">
-          <button class="page-link page-next" aria-label="Next" disabled>
-            <span class="next">&raquo;</span>
-          </button>
-        </li>
-      </ul>
-    </nav>
-    `;
-    const $description = this.querySelector(".description");
-    $description.innerHTML += this.createFormSelect();
-
-    const $client = this.querySelector(".client");
-    $client.innerHTML += this.createFormSelectCliente();
+    generatePropertyBind.bind(this, html)();
   }
+
   renderTransactions(transactions: Transaction[] = this.filteredList) {
     this.validPayment();
 
     this.$previous.disabled = this.page == 1;
     this.$next.disabled = this.maxPage <= this.page;
-
     const $tbody = document.querySelector("tbody");
     const $table = document.querySelector("table");
     $table.hidden = this.filteredList.length < 1;
@@ -389,7 +257,7 @@ content_copy
       mask: "00/00/0000",
       validate(value, masked) {
         if (value.length === 10) {
-          const isDisabled = self.validateDateIsFuture(convertStringDate(value));
+          const isDisabled = self.validateDateIsFuture(value.convertStringDate());
           if (isDisabled) masked.reset();
           return !isDisabled;
         }
@@ -411,7 +279,7 @@ content_copy
 
   renderChart() {
     const dates = this.transactionList.map((value) => value.date);
-    dates.sort((a, b) => convertStringDate(a).getTime() - convertStringDate(b).getTime());
+    dates.sort((a, b) => a.convertStringDate().getTime() - b.convertStringDate().getTime());
     const listDates = [...new Set(dates)];
     const series = Object.values(eFormOfPayment)
       .reverse()
@@ -446,23 +314,22 @@ content_copy
   private displayBadgeNotifications = badgeUpdate;
 
   private displayClientAmount() {
-    [".current-balance", ".current-limit"].forEach((item) => {
-      const $item = document.querySelector(item);
+    [eTransactionClassName.SALDO_ATUAL, eTransactionClassName.SALDO_LIMITE].forEach((item) => {
+      const $item = document.querySelector(`.${item}`);
       $item.classList.remove("positive");
       $item.classList.remove("negative");
       let amountToDisplay = 0;
       let isPositive = false;
 
-      if (item === ".current-balance" && this.clientLogged.id) {
+      if (item === eTransactionClassName.SALDO_ATUAL && this.clientLogged.id) {
         amountToDisplay = this.clientLogged.accountAmount;
-        isPositive = amountToDisplay > 0;
       }
-      if (item === ".current-limit" && this.cardClient.id) {
-        if (this.cardClient.clientID === this.clientLogged.id) {
-          amountToDisplay = this.cardClient.limitCreditCurrent;
-          isPositive = amountToDisplay > 0;
-        }
+      if (item === eTransactionClassName.SALDO_LIMITE && this.cardClient.id && this.cardClient.clientID === this.clientLogged.id) {
+        amountToDisplay = this.cardClient.limitCreditCurrent;
       }
+
+      isPositive = amountToDisplay > 0;
+
       $item.classList.add(isPositive ? "positive" : "negative");
       $item.textContent = new Intl.NumberFormat("pt-BR", {
         style: "currency",
@@ -536,7 +403,7 @@ content_copy
     this.transactionFind = this.transactionList.find((transaction) => transaction.id === id);
     this.$inputValue.value = this.numberFormat.format(this.transactionFind.value);
     this.$inputFormOfPayment.value = this.transactionFind.idFormOfPayment.toString();
-    this.$inputDate.value = !this.validateDateIsFuture(convertStringDate(this.transactionFind.date))
+    this.$inputDate.value = !this.validateDateIsFuture(this.transactionFind.date.convertStringDate())
       ? this.transactionFind.date
       : new Date().toLocaleDateString("pt-BR");
     this.$clientID.value = this.transactionFind.clientID.toString();
@@ -620,30 +487,6 @@ content_copy
     }, 500);
   }
 
-  createFormSelectCliente() {
-    const clienteOptions = this.clients
-      .filter((client) => client.id != this.clientLogged?.id)
-      .map((client) => this.createFormOption(client))
-      .join("");
-
-    const emptyHTML =
-      this.clients.length <= 1
-        ? `
-        <div class="option" value="">
-        Crie uma conta <a href="#account" onclick="document.querySelector('transaction-page').goToAccountPage()">aqui</a>
-        </div>`
-        : `
-        <div class="option" value="">
-        Selecione
-        </div>`;
-
-    return /*html*/ `
-       <form-select class="form-control is-invalid" required placeholder="Selecione">
-         ${emptyHTML}
-         ${this.clients.length <= 1 ? "" : clienteOptions}
-        </form-select>
-        `;
-  }
   createFormOption(client: Cliente) {
     return `
            <div class="option" value="${client.id}" title="${client?.name} - ${client?.accountNumber}">
@@ -653,39 +496,9 @@ content_copy
             </div>
           `;
   }
-  createFormSelect() {
-    return /*html*/ `
-       <form-select class="form-control is-invalid" required placeholder="Selecione">
-        <div class="option" value="">
-          Selecione
-        </div>
-        ${this.ngIf(
-          !!this.cardClient.id,
-          `
-          <div class="option" value="${eFormOfPayment.CREDITO}">
-            ${SVG_ICONS[eFormOfPayment.CREDITO]}${formOfPaymentOptions[0].name}
-          </div>
-          `
-        )}
-        <div class="option" value="${eFormOfPayment.DEBITO}">
-         ${SVG_ICONS[eFormOfPayment.DEBITO]}
-        ${formOfPaymentOptions[1].name}
-        </div>
-        <div class="option" value="${eFormOfPayment.DINHEIRO}">
-         ${SVG_ICONS[eFormOfPayment.DINHEIRO]}
-        ${formOfPaymentOptions[2].name}
-        </div>
-        <div class="option" value="${eFormOfPayment.PIX}">
-         ${SVG_ICONS[eFormOfPayment.PIX]}
-        ${formOfPaymentOptions[3].name}
-        </div>
-       </form-select> 
-      `;
-  }
 
-  ngIf(condition: boolean, html: string) {
-    return (condition && html) || "";
-  }
+  ngIf = ngIf;
+
   private sortByDirectionAndKey(direction: string, key: string) {
     const compareCurrency = (currency: number) => currency;
     this.transactionList.sort((a, b) => {
@@ -698,13 +511,13 @@ content_copy
       if (key === "clientName") return firstElement[key].localeCompare(secondElement[key]);
 
       if (key === "dateOfPayDay")
-        return convertStringDate(firstElement?.[key])?.getTime() - convertStringDate(secondElement?.[key])?.getTime();
+        return firstElement?.[key].convertStringDate()?.getTime() - secondElement?.[key].convertStringDate()?.getTime();
 
       if (key === "date") return this.compareDate(firstElement?.[key]) - this.compareDate(secondElement?.[key]);
     });
   }
   compareDate(date: string) {
-    return convertStringDate(date)?.getTime() ?? 0;
+    return date.convertStringDate().getTime() ?? 0;
   }
 
   private previousPage() {
@@ -729,7 +542,7 @@ content_copy
   private validPayment() {
     this.transactionList.forEach((transaction) => {
       const actuallyDate = new Date().toLocaleDateString("pt-BR");
-      const transactionDate = convertStringDate(transaction.date)?.toLocaleDateString("pt-BR");
+      const transactionDate = transaction.date.convertStringDate().toLocaleDateString("pt-BR");
       if (!transaction.dateOfPayDay && actuallyDate === transactionDate) {
         try {
           this.makePayment(transaction);
@@ -741,7 +554,7 @@ content_copy
           const nonPayDayList = this.filteredList.filter((value) => !value.dateOfPayDay);
           nonPayDayList.forEach((value) => {
             const text = `A  transação do ID:${value.id} não foi enviada`;
-            if (convertStringDate(value.date).toLocaleDateString("pt-BR") === new Date().toLocaleDateString("pt-BR")) Toasts.error(text);
+            if (value.date.convertStringDate().toLocaleDateString("pt-BR") === new Date().toLocaleDateString("pt-BR")) Toasts.error(text);
           });
         }
       }
