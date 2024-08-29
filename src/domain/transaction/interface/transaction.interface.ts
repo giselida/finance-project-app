@@ -8,5 +8,6 @@ export interface Transaction {
   creditCardID: number;
   date: string;
   view: number[];
+  active: boolean;
   dateOfPayDay?: string;
 }

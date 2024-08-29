@@ -1,4 +1,5 @@
 import { AccountPage } from "../../domain/account/account.page";
+import { Cliente } from "../../domain/auth/interface/client.interface";
 import { LoginComponent } from "../../domain/auth/login/login.page";
 import { RegisterComponent } from "../../domain/auth/register/register.page";
 import { CardAccountPage } from "../../domain/card-account/card-account.page";
@@ -8,6 +9,7 @@ import { PaymentOfCardPage } from "../../domain/payment-of-card/payment-of-card.
 import { TransactionPage } from "../../domain/transaction/transaction.page";
 import { badgeUpdate } from "../../functions/notification/notification";
 import { generatePropertyBind } from "../../functions/property-bind";
+import { StorageService } from "../storage/storage";
 import html from "./router-outlet.html?raw";
 const createMaterialSymbol = (iconName: string, label: string) => {
   return `
@@ -30,7 +32,7 @@ const PAGE_TITLES: { [key: string]: string } = {
   "#paymentOfCard": createMaterialSymbol("payments", "Pagamento da fatura"),
 };
 
-const client = JSON.parse(localStorage.getItem("client") || "{}");
+const client = StorageService.getItem<Cliente>("client", {} as Cliente);
 
 export class RouterOutlet extends HTMLElement {
   $root: HTMLElement;

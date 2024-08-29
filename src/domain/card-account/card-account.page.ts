@@ -1,3 +1,4 @@
+import { StorageService } from "../../components/storage/storage";
 import { Toasts } from "../../components/toasts/toast";
 import { generatePropertyBind } from "../../functions/property-bind";
 import { Cliente } from "../auth/interface/client.interface";
@@ -23,9 +24,9 @@ export class CardAccountPage extends HTMLElement {
   scrollAmount: number = 250;
 
   connectedCallback() {
-    this.client = JSON.parse(localStorage.getItem("client") ?? "{}");
-    this.clientCardList = JSON.parse(localStorage.getItem("listOfCards") ?? "[]");
-    this.clientCard = JSON.parse(localStorage.getItem("cardClient") ?? "{}");
+    this.client = StorageService.getItem<Cliente>("client", {} as Cliente);
+    this.clientCardList = StorageService.getItem<CardClient[]>("listOfCards", []);
+    this.clientCard = StorageService.getItem<CardClient>("cardClient", {} as CardClient);
 
     this.createInnerHTML();
     this.recoveryElementRef();
@@ -34,7 +35,7 @@ export class CardAccountPage extends HTMLElement {
     this.checkBUttonVisible();
 
     if (this.clientCard.clientID !== this.client.id) {
-      localStorage.removeItem("cardClient");
+      StorageService.removeItem("cardClient");
       this.clientCard = {} as CardClient;
       this.resetCreditValues();
     }
@@ -284,7 +285,7 @@ export class CardAccountPage extends HTMLElement {
   }
 
   private setStorage() {
-    localStorage.setItem("listOfCards", JSON.stringify(this.clientCardList));
-    localStorage.setItem("cardClient", JSON.stringify(this.clientCard));
+    StorageService.setItem("listOfCards", this.clientCardList);
+    StorageService.setItem("cardClient", this.clientCard);
   }
 }

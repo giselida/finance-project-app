@@ -1,4 +1,5 @@
 import illustration from "../../../assets/login-pana.svg";
+import { StorageService } from "../../../components/storage/storage";
 import { Toasts } from "../../../components/toasts/toast";
 import { viewPassword } from "../../../functions/password/view-password";
 import { generatePropertyBind } from "../../../functions/property-bind";
@@ -40,8 +41,7 @@ export class LoginComponent extends HTMLElement {
         return Toasts.error("Você não possui um cadastro!");
       }
       document.querySelector(".current-user").innerHTML = client.name;
-      localStorage.setItem("client", JSON.stringify(client));
-
+      StorageService.setItem("client", client);
       const controls = [this.$inputName, this.$inputPassword];
 
       controls.forEach((input) => {

@@ -118,6 +118,13 @@ card-account-page {
         cursor: pointer;
       }
     }
+    .number {
+      color: var(--color-very-light-gray);
+      font-weight: bold;
+    }
+    .name {
+      color: var(--color-gray-light);
+    }
 
     .front {
       display: flex;
@@ -132,7 +139,11 @@ card-account-page {
         align-items: flex-end;
         width: 100%;
         .text {
+          color: var(--color-smoke-gray);
           font-weight: bold;
+        }
+        .date {
+          color: var(--color-silver-gray);
         }
       }
     }

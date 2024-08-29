@@ -7,6 +7,7 @@ import IMask from "imask";
 import Swal from "sweetalert2";
 import warningImage from "../../assets/release_alert.png";
 import { FormSelect } from "../../components/form-select/form-select";
+import { StorageService } from "../../components/storage/storage";
 import { Toasts } from "../../components/toasts/toast";
 import { OPTIONS_PAYMENT } from "../../constants/charts";
 import { PT_BR_LOCALE } from "../../constants/date-picker-locale";
@@ -56,7 +57,7 @@ export class TransactionPage extends HTMLElement {
   $modal: HTMLElement;
   $order: HTMLElement;
   selectedId: number;
-  actuallyId: number = +localStorage.getItem("actuallyId");
+  actuallyId: number = +StorageService.getItem("actuallyId", 0);
   $previous: HTMLButtonElement;
   $next: HTMLButtonElement;
   $pageActually: HTMLElement;
@@ -83,15 +84,17 @@ export class TransactionPage extends HTMLElement {
   }
 
   get clients(): Cliente[] {
-    return JSON.parse(localStorage.getItem("clients") ?? "[]");
+    return StorageService.getItem<Cliente[]>("clients", []);
   }
+
   get clientLogged(): Cliente {
-    return JSON.parse(localStorage.getItem("client") || "{}");
+    return StorageService.getItem<Cliente>("client", {} as Cliente);
   }
 
   get listOfCards(): CardClient[] {
-    return JSON.parse(localStorage.getItem("listOfCards") || "[]");
+    return StorageService.getItem<CardClient[]>("listOfCards", []);
   }
+
   get filteredList() {
     return this.transactionList.filter((item) => {
       const isSameID = +item.userLoggedID === +this.clientLogged.id;
@@ -129,19 +132,23 @@ export class TransactionPage extends HTMLElement {
     $tbody.innerHTML = "";
     this.$pageActually.textContent = this.page.toString();
     window.history.replaceState({}, "", `?page=${this.page}#transaction`);
-    transactions.slice(actuallyPage, nextPage).forEach((transaction) => {
-      const dateOfPayDay = transaction?.dateOfPayDay
-        ? new Date(transaction?.dateOfPayDay).toLocaleDateString("pt-BR", {
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            month: "2-digit",
-            year: "2-digit",
-          }) ?? "-"
-        : "-";
-      const formOfPayment = formOfPaymentOptions.find((item) => item.id === transaction.idFormOfPayment).name;
 
-      $tbody.innerHTML += /*html*/ ` 
+    transactions
+      .filter((transaction) => transaction.active)
+      .slice(actuallyPage, nextPage)
+      .forEach((transaction) => {
+        const dateOfPayDay = transaction?.dateOfPayDay
+          ? new Date(transaction?.dateOfPayDay).toLocaleDateString("pt-BR", {
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              month: "2-digit",
+              year: "2-digit",
+            }) ?? "-"
+          : "-";
+        const formOfPayment = formOfPaymentOptions.find((item) => item.id === transaction.idFormOfPayment).name;
+
+        $tbody.innerHTML += /*html*/ ` 
        <tr id="option-of-transaction-${transaction.id}">
          <td scope="row">${transaction.id}</td>
          <td>${this.numberFormat.format(transaction.value)}</td>
@@ -153,29 +160,26 @@ export class TransactionPage extends HTMLElement {
       <td>${dateOfPayDay}</td>
       <td>${transaction.clientName}</td>
       <td>
-        
-       
         <span class="material-icons-outlined edit ${this.hiddenElement(
           !!transaction.dateOfPayDay
-        )}"onclick="document.querySelector('transaction-page').editTransaction(${transaction.id})">
-edit
-</span>
-<span class="material-icons-outlined duplicate" onclick="document.querySelector('transaction-page').duplicateTransaction(${
-        transaction.id
-      })">
-content_copy
-</span>
-         <span class="material-icons-outlined delete ${this.hiddenElement(
-           !!transaction.dateOfPayDay
-         )}" onclick="document.querySelector('transaction-page').removeTransaction(${transaction.id})">
+        )}" onclick="document.querySelector('transaction-page').editTransaction(${transaction.id})">
+          edit
+        </span>
+        <span class="material-icons-outlined duplicate" onclick="document.querySelector('transaction-page').duplicateTransaction(${
+          transaction.id
+        })">
+          content_copy
+        </span>
+        <span class="material-icons-outlined delete ${this.hiddenElement(
+          !!transaction.dateOfPayDay
+        )}" onclick="document.querySelector('transaction-page').removeTransaction(${transaction.id})">
           delete
-         </span>
-       
-        
+        </span>
       </td>
     </tr>`;
-    });
+      });
   }
+
   private applySort() {
     const $sorts = document.querySelectorAll(".sort");
     $sorts.forEach((element) => {
@@ -187,7 +191,7 @@ content_copy
   }
 
   connectedCallback() {
-    this.cardClient = JSON.parse(localStorage.getItem("cardClient") || "{}");
+    this.cardClient = StorageService.getItem<CardClient>("cardClient", {} as CardClient);
     this.createInnerHTML();
     this.setElementRef();
     this.displayClientAmount();
@@ -202,10 +206,10 @@ content_copy
 
   setElementRef() {
     if (!this.clientLogged?.id) {
-      localStorage.removeItem("transactionList");
+      StorageService.removeItem("transactionList");
     }
 
-    this.originalList = JSON.parse(localStorage.getItem("transactionList")) ?? [];
+    this.originalList = StorageService.getItem<Transaction[]>("transactionList", []);
     this.transactionList = this.originalList.filter((item: Transaction) => item.userLoggedID === this.clientLogged?.id);
     this.page = +(location.search?.replace("?page=", "") || 1);
 
@@ -278,9 +282,12 @@ content_copy
   }
 
   renderChart() {
-    const dates = this.transactionList.map((value) => value.date);
+    const activeTransactions = this.transactionList.filter((value) => value.active);
+
+    const dates = activeTransactions.map((value) => value.date);
     dates.sort((a, b) => a.convertStringDate().getTime() - b.convertStringDate().getTime());
     const listDates = [...new Set(dates)];
+
     const series = Object.values(eFormOfPayment)
       .reverse()
       .slice(0, 4)
@@ -288,7 +295,7 @@ content_copy
         return {
           name: formOfPaymentOptions.find((item) => item.id === value)?.name,
           data: listDates.flatMap((date) => {
-            const transactionList = this.transactionList.filter((item) => item.idFormOfPayment == value && item.date == date);
+            const transactionList = activeTransactions.filter((item) => item.idFormOfPayment === value && item.date === date);
             return +transactionList
               .reduce((acc, item) => {
                 acc += item.value;
@@ -298,8 +305,10 @@ content_copy
           }),
         };
       });
+
     OPTIONS_PAYMENT.series = series;
     OPTIONS_PAYMENT.xaxis.categories = listDates.map((value) => `${value.split("/").reverse().join("/")} GMT`);
+
     if (this.$chart) this.$chart.destroy();
     this.$chart = ApexCharts.getChartByID("#chart-payment") || new ApexCharts(document.querySelector("#chart-payment"), OPTIONS_PAYMENT);
     this.$chart.render();
@@ -459,9 +468,9 @@ content_copy
   removeTransaction(id: number) {
     Swal.fire({
       title: `
-      <img src="${warningImage}" />
-      Você tem certeza?
-      `,
+    <img src="${warningImage}" />
+    Você tem certeza?
+    `,
       html: "Esta é uma <b>ação irreversível</b> <br>será aplicada imediatamente",
       showCancelButton: true,
       confirmButtonColor: "#ffff",
@@ -471,7 +480,10 @@ content_copy
       focusConfirm: false,
     }).then((result) => {
       if (result.isConfirmed) {
-        this.transactionList = this.transactionList.filter((transaction) => transaction.id !== id);
+        const transaction = this.transactionList.find((transaction) => transaction.id === id);
+        if (transaction) {
+          transaction.active = false;
+        }
         this.renderTransactions();
         Toasts.success("Transação removida com sucesso!");
       }
@@ -583,7 +595,7 @@ content_copy
       this.cardClient = cardSelected;
       const listOfCardsUpdated = this.listOfCards.filter((item) => item.cardNumber !== cardSelected.cardNumber);
       listOfCardsUpdated.push(cardSelected);
-      localStorage.setItem("listOfCards", JSON.stringify(listOfCardsUpdated));
+      StorageService.setItem("listOfCards", listOfCardsUpdated);
     } else {
       const accountAmount = clientLogged.accountAmount;
       clientLogged.accountAmount = accountAmount - inputValue;
@@ -598,8 +610,8 @@ content_copy
   }
 
   private saveClientes(clients: Cliente[], clientLogged: Cliente) {
-    localStorage.setItem("clients", JSON.stringify(clients));
-    localStorage.setItem("client", JSON.stringify(clientLogged));
+    StorageService.setItem("clients", clients);
+    StorageService.setItem("client", clientLogged);
   }
 
   private objectTransaction(clientSelected: Cliente) {
@@ -613,6 +625,7 @@ content_copy
       userLoggedID: this.clientLogged.id,
       creditCardID: +this.$inputFormOfPayment.value === eFormOfPayment.CREDITO ? this.cardClient.id : null,
       view: [],
+      active: true,
     };
     this.validTransaction(newTransaction);
 
@@ -644,8 +657,8 @@ content_copy
       ...this.transactionList,
     ];
     transactionList.sort((a, b) => a.id - b.id);
-    localStorage.setItem("transactionList", JSON.stringify(transactionList));
-    localStorage.setItem("actuallyId", this.actuallyId.toString());
+    StorageService.setItem("transactionList", transactionList);
+    StorageService.setItem("actuallyId", this.actuallyId);
   }
   private clearForm() {
     const $titleModal = document.querySelector(".modal-title");
