@@ -14,6 +14,7 @@ export class AccountPage extends HTMLElement {
   clientList: Cliente[];
   clientSelected: Cliente;
   clientCard: CardClient;
+  clientCardList: CardClient[];
   $previous: HTMLButtonElement;
   $next: HTMLButtonElement;
   $pageActually: HTMLElement;
@@ -29,6 +30,7 @@ export class AccountPage extends HTMLElement {
     this.clientSelected = StorageService.getItem<Cliente>("client", {} as Cliente);
     this.clientCard = StorageService.getItem<CardClient>("cardClient", {} as CardClient);
     this.clientList = StorageService.getItem<Cliente[]>("clients", []);
+    this.clientCardList = StorageService.getItem<CardClient[]>("listOfCards", []);
   }
 
   get $currentUser() {
@@ -41,6 +43,10 @@ export class AccountPage extends HTMLElement {
   }
 
   connectedCallback() {
+    const clientCards = this.clientCardList.filter((value) => value.clientID === this.clientSelected.id);
+    this.clientCard = clientCards.find((card) => card.isActive) || ({} as CardClient);
+    StorageService.setItem("cardClient", this.clientCard);
+
     this.createInnerHTML();
     this.recoveryElementRef();
     if (this.clientList.filter((client) => client.active).length < 1) {
@@ -69,7 +75,7 @@ export class AccountPage extends HTMLElement {
 
   private setStorage() {
     StorageService.setItem<Cliente>("client", this.clientSelected);
-    StorageService.setItem<Array<Cliente>>("clients", this.clientList);
+    StorageService.setItem<Cliente[]>("clients", this.clientList);
   }
 
   renderList() {
@@ -88,9 +94,9 @@ export class AccountPage extends HTMLElement {
 
     const actuallyPage = (this.page - 1) * this.pageSize;
     const nextPage = actuallyPage + this.pageSize;
-    $card.style.display = !this.clientSelected.id ? "none" : "block";
-    $title.style.display = !this.clientSelected.id ? "none" : "block";
-    $accountInfo.style.display = !this.clientSelected.id ? "block" : "none";
+    $card.style.display = !this.clientSelected.id ? "none" : "flex";
+    $title.style.display = !this.clientSelected.id ? "none" : "flex";
+    $accountInfo.style.display = !this.clientSelected.id ? "flex" : "none";
     $table.hidden = clientLength;
     $tbody.innerHTML = "";
     this.$pageActually.textContent = this.page.toString();
@@ -153,7 +159,7 @@ export class AccountPage extends HTMLElement {
       if (result.isConfirmed) {
         const client = this.clientList.find((client) => client.id == id);
         if (client) {
-          client.active = false; // Exclusão lógica
+          client.active = false;
           if (this.clientSelected.id === client.id) {
             this.$currentUser.innerHTML = "";
             this.clientSelected = {} as Cliente;

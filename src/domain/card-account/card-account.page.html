@@ -29,15 +29,28 @@
   <div class="card-body">
     <div class="limit-credit">
       <label for="customRange1" class="form-label">Defina seu limite de Crédito</label>
+      <span class="limit-credit-value"> {{clientCard.limitCredit?.formatToBRL() || (0).formatToBRL()}} </span>
       <div class="credit-value">
-        <span class="info">Limite de crédito:</span>
-        <span class="limit-credit-value"> {{clientCard.limitCredit?.formatToBRL() || (0).formatToBRL()}} </span>
-        <span class="info">Limite de crédito disponível:</span>
-        <span class="available-credit-value"> {{clientCard.limitCreditCurrent?.formatToBRL() || (0).formatToBRL()}} </span>
+        <div class="content">
+          <div class="block used"></div>
+          <span class="info">Limite utilizado:</span>
+          <span class="limit-credit-used"> {{clientCard.limitCreditUsed?.formatToBRL() || (0).formatToBRL()}} </span>
+        </div>
+        <div class="content">
+          <div class="block available"></div>
+          <span class="info">Limite disponível:</span>
+          <span class="available-credit-value"> {{clientCard.limitCreditCurrent?.formatToBRL() || (0).formatToBRL()}} </span>
+        </div>
       </div>
 
-      <div class="range">
-        <input type="range" class="form" min="0" max="10000" value="{{clientCard.limitCredit ?? 0}}" step="50" required />
+      <div class="content-range">
+        <div class="content-row">
+          <div class="current-limit negative">R$ 0,00</div>
+          <div class="current-limit positive">R$ 10.000,00</div>
+        </div>
+        <div class="range">
+          <input type="range" class="form" min="0" max="10000" value="{{clientCard.limitCredit ?? 0}}" step="50" required />
+        </div>
       </div>
     </div>
   </div>

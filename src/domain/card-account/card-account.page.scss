@@ -201,10 +201,57 @@ card-account-page {
   }
   .credit-value {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     gap: 16px;
+    .content {
+      .block {
+        width: 16px;
+        height: 16px;
+        border-radius: 5px;
+      }
+      .available {
+        background-color: #fe5e71;
+      }
+      .used {
+        background-color: #bd3647;
+      }
+    }
+  }
+
+  .content-range {
+    margin-top: 25px;
+    .content-row {
+      .current-limit {
+        position: relative;
+        padding-bottom: 20px;
+        &::before {
+          position: absolute;
+          top: 15px;
+          content: "\25bc";
+        }
+        font-weight: bold;
+        &.positive {
+          color: green;
+          &::before {
+            right: 0;
+          }
+        }
+        &.negative {
+          color: red;
+        }
+      }
+    }
+  }
+  .limit-credit-value {
+    align-self: center;
+    font-size: 30px;
+    font-weight: bolder;
+    margin-bottom: 15px;
+    color: var(--color-pink);
   }
   .limit-credit {
+    display: flex;
+    flex-direction: column;
     .form-label {
       font-size: 18px;
       margin-bottom: 15px;
@@ -216,7 +263,6 @@ card-account-page {
       width: 100%;
       outline: none;
       appearance: none;
-      margin-top: 25px;
       box-shadow: 0px 0px 0px 1px #958f8f75;
       &:active::-webkit-slider-thumb,
       &:hover::-webkit-slider-thumb {

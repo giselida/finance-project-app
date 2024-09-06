@@ -29,7 +29,6 @@ account-page {
   @include pageStyle(column);
 
   .content-row {
-    display: flex;
     margin-bottom: 30px;
     .title {
       font-weight: 700;

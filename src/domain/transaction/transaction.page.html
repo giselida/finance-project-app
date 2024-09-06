@@ -39,9 +39,9 @@
                 Selecione
               </div>
               {{
-              ngIf(self.cardClient?.id,
+              ngIf(this.clientCard?.id,
               `<div class="option" value="{{eFormOfPayment.CREDITO}}">
-                {{ SVG_ICONS[this.eFormOfPayment.CREDITO]}}
+                {{SVG_ICONS[this.eFormOfPayment.CREDITO]}}
                 {{formOfPaymentOptions[0].name}}
               </div>`
               )
@@ -58,6 +58,7 @@
                 {{SVG_ICONS[this.eFormOfPayment.PIX]}}
                 {{formOfPaymentOptions[3].name}}
               </div>
+                 
             </form-select>
           </div>
           <div class="form-input">
@@ -97,20 +98,23 @@
           <div class="option" value="">
             Selecione
           </div>
-
-          <div class="option" value="comida">
-            <span class="material-icons">restaurant</span> Comida
-          </div>
-          <div class="option" value="transporte">
-            <span class="material-icons">directions_bus</span> Transporte
-          </div>
-
-          <div class="option" value="lazer">
-            <span class="material-icons">sports_soccer</span> Lazer
-          </div>
-          <div class="option" value="outros">
-            <span class="material-icons">category</span> Outros
-          </div>
+  <div class="option" value="{{eDescription.FOOD}}">
+                {{SVG_ICONS_DESCRIPTION[this.eDescription.FOOD]}}
+                {{descriptionOptions[0].name}}
+              </div>
+  <div class="option" value="{{eDescription.CAR}}">
+                {{SVG_ICONS_DESCRIPTION[this.eDescription.CAR]}}
+                {{descriptionOptions[1].name}}
+              </div>
+  <div class="option" value="{{eDescription.DRINK}}">
+                {{SVG_ICONS_DESCRIPTION[this.eDescription.DRINK]}}
+                {{descriptionOptions[2].name}}
+              </div>
+  <div class="option" value="{{eDescription.OTHERS}}">
+                {{SVG_ICONS_DESCRIPTION[this.eDescription.OTHERS]}}
+                {{descriptionOptions[3].name}}
+              </div>
+         
         </form-select>
         </form-select>
       </div>
@@ -161,6 +165,12 @@
         <th scope="col" key="name">
           <div class="row-header">
             <span>Nome</span>
+            <div class="sort"></div>
+          </div>
+        </th>  
+        <th scope="col" key="name">
+          <div class="row-header">
+            <span>Descrição</span>
             <div class="sort"></div>
           </div>
         </th>

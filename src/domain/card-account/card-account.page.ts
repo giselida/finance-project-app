@@ -17,9 +17,9 @@ export class CardAccountPage extends HTMLElement {
   $carousel: HTMLElement;
   $container: HTMLElement;
   $cards: HTMLElement;
+  $availableCreditValue: HTMLElement;
   $usedCreditValue: HTMLElement;
   $creditValue: HTMLElement;
-
   $inputRange: HTMLInputElement;
   scrollAmount: number = 250;
 
@@ -53,9 +53,9 @@ export class CardAccountPage extends HTMLElement {
 
     this.$previous = document.querySelector(".previous");
     this.$next = document.querySelector(".next");
-
     this.$creditValue = document.querySelector(".limit-credit-value");
-    this.$usedCreditValue = document.querySelector(".available-credit-value");
+    this.$usedCreditValue = document.querySelector(".limit-credit-used");
+    this.$availableCreditValue = document.querySelector(".available-credit-value");
     this.$inputRange = document.querySelector("input[type='range']");
 
     this.sendListener();
@@ -92,15 +92,18 @@ export class CardAccountPage extends HTMLElement {
       }
       const formRangeValue = +this.$inputRange.value;
       const limitCredit = +this.$inputRange.value - this.clientCard.limitCreditUsed;
+      const usedCreditValue = this.clientCard.limitCreditUsed;
+
+      this.$usedCreditValue.textContent = usedCreditValue.formatToBRL();
+      this.$availableCreditValue.textContent = limitCredit.formatToBRL();
 
       this.$creditValue.textContent = formRangeValue.formatToBRL();
-      this.$usedCreditValue.textContent = limitCredit.formatToBRL();
 
       const client = this.clientCardList.find((card) => card.id === this.clientCard.id);
+      console.log(client);
       this.clientCard = client;
       client.limitCredit = formRangeValue;
       client.limitCreditCurrent = limitCredit;
-
       this.setRangeColor();
       this.setStorage();
     });
@@ -109,6 +112,7 @@ export class CardAccountPage extends HTMLElement {
   private setRangeColor() {
     const { value, max } = this.$inputRange;
     const $range = document.querySelector<HTMLDivElement>(".range");
+
     const progress = (+value / +max) * 100;
     const barColor = "#FCD3E4";
     const primaryColor = "#FE5E71";
@@ -122,7 +126,6 @@ export class CardAccountPage extends HTMLElement {
       "--input-range-color",
       `linear-gradient(to right, ${primaryColor} ${progress}%, ${primaryColor} ${progress}%, ${barColor} ${progress}%, ${barColor} 100%)`
     );
-
     $range.style.setProperty(
       "--limit-range-color",
       `linear-gradient(to right, ${secondaryColor} ${limitProgress}%, ${secondaryColor} ${limitProgress}%, ${secondaryBarColor} ${progress}%, ${secondaryBarColor} 100%)`
@@ -142,8 +145,9 @@ export class CardAccountPage extends HTMLElement {
     const cardCredit = this.clientCardList.filter((card) => card.clientID == this.client.id);
 
     cardCredit.forEach((card) => {
+      const isActiveClass = card.isActive ? "selected" : "";
       this.$cards.innerHTML += `
-    <div class="card-credit" style="background: ${card.color}">
+      <div class="card-credit ${isActiveClass}" style="background: ${card.color}">
       <div class="flip">
         <span class="material-symbols-outlined">forward</span>
       </div>
@@ -213,11 +217,14 @@ export class CardAccountPage extends HTMLElement {
       behavior: "smooth",
     });
     const cardCredit = this.clientCardList.filter((card) => card.clientID == this.client.id);
+    cardCredit.forEach((card) => (card.isActive = false));
+    cardCredit[index].isActive = true;
+
     this.clientCard = cardCredit[index];
+
     this.updateCreditLimit();
     this.setStorage();
   }
-
   private addCardClient() {
     const random = (min: number = 10, max: number = 100) => Math.floor(Math.random() * (max - min) + min);
     const generateCvv = () => random(100, 999);
@@ -228,7 +235,6 @@ export class CardAccountPage extends HTMLElement {
       const month = ("0" + random(1, 13)).slice(-2);
       return `${month}/${year}`;
     };
-
     const objectClient: CardClient = {
       id: this.clientCardList.length + 1,
       cvv: generateCvv(),
@@ -239,6 +245,7 @@ export class CardAccountPage extends HTMLElement {
       limitCreditCurrent: 0,
       color: this.generateRandomGradient(),
       clientID: this.client.id,
+      isActive: false,
     };
 
     this.clientCardList.push(objectClient);
@@ -264,6 +271,7 @@ export class CardAccountPage extends HTMLElement {
   private resetCreditValues() {
     this.$creditValue.textContent = (0).formatToBRL();
     this.$usedCreditValue.textContent = (0).formatToBRL();
+    this.$availableCreditValue.textContent = (0).formatToBRL();
     this.$inputRange.value = "0";
 
     this.setRangeColor();
@@ -275,10 +283,10 @@ export class CardAccountPage extends HTMLElement {
       return;
     }
 
-    const { limitCredit, limitCreditCurrent } = this.clientCard;
-
+    const { limitCredit, limitCreditCurrent, limitCreditUsed } = this.clientCard;
     this.$creditValue.textContent = limitCredit.formatToBRL();
-    this.$usedCreditValue.textContent = limitCreditCurrent.formatToBRL();
+    this.$availableCreditValue.textContent = limitCreditCurrent.formatToBRL();
+    this.$usedCreditValue.textContent = limitCreditUsed.formatToBRL();
     this.$inputRange.value = limitCredit.toString();
 
     this.setRangeColor();

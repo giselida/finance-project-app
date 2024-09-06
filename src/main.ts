@@ -9,6 +9,7 @@ import { Notification } from "./domain/notification/notification.page";
 import { PaymentOfCardPage } from "./domain/payment-of-card/payment-of-card.page";
 import { TransactionPage } from "./domain/transaction/transaction.page";
 import "./style.scss";
+
 Number.prototype.formatToBRL = function (): string {
   const formatter = new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -16,6 +17,7 @@ Number.prototype.formatToBRL = function (): string {
   });
   return formatter.format(this as number);
 };
+
 String.prototype.convertStringDate = function (): Date | null {
   if (!this) return null;
   const dateString = this.replace(/(\d{2})\/(\d{2})\/(\d{4})/g, "$2-$1-$3");

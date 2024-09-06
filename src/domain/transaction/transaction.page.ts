@@ -11,7 +11,9 @@ import { StorageService } from "../../components/storage/storage";
 import { Toasts } from "../../components/toasts/toast";
 import { OPTIONS_PAYMENT } from "../../constants/charts";
 import { PT_BR_LOCALE } from "../../constants/date-picker-locale";
-import { eFormOfPayment, SVG_ICONS } from "../../constants/svg-icons";
+import { eDescription, SVG_ICONS_DESCRIPTION } from "../../constants/svg-icons-description";
+import { eFormOfPayment, SVG_ICONS } from "../../constants/svg-icons-form-payment";
+import { getNameById } from "../../functions/name-by-id/name-by-id";
 import { badgeUpdate } from "../../functions/notification/notification";
 import { generatePropertyBind, ngIf } from "../../functions/property-bind";
 import { Cliente } from "../auth/interface/client.interface";
@@ -38,6 +40,24 @@ export const formOfPaymentOptions = [
     name: "Pix",
   },
 ];
+export const descriptionOptions = [
+  {
+    id: eDescription.FOOD,
+    name: "Comida",
+  },
+  {
+    id: eDescription.CAR,
+    name: "Transporte",
+  },
+  {
+    id: eDescription.DRINK,
+    name: "Lazer",
+  },
+  {
+    id: eDescription.OTHERS,
+    name: "Outros",
+  },
+];
 
 export enum eTransactionClassName {
   SALDO_ATUAL = "current-balance",
@@ -51,6 +71,7 @@ export class TransactionPage extends HTMLElement {
   $inputValue: HTMLInputElement;
   $inputDate: HTMLInputElement;
   $clientID: HTMLInputElement;
+  $inputDescription: HTMLInputElement;
   $search: HTMLInputElement;
   $edit: HTMLSpanElement;
   $delete: HTMLSpanElement;
@@ -69,11 +90,14 @@ export class TransactionPage extends HTMLElement {
   $tableHeaders: NodeListOf<HTMLTableCellElement>;
   $chart: ApexCharts;
   originalList: Transaction[];
-  cardClient: CardClient;
+  clientCard: CardClient;
   public eTransactionClassName = eTransactionClassName;
   public SVG_ICONS = SVG_ICONS;
+  public SVG_ICONS_DESCRIPTION = SVG_ICONS_DESCRIPTION;
+  public eDescription = eDescription;
   public eFormOfPayment = eFormOfPayment;
   public formOfPaymentOptions = formOfPaymentOptions;
+  public descriptionOptions = descriptionOptions;
 
   get numberFormat() {
     const options = {
@@ -91,7 +115,7 @@ export class TransactionPage extends HTMLElement {
     return StorageService.getItem<Cliente>("client", {} as Cliente);
   }
 
-  get listOfCards(): CardClient[] {
+  get clientCardList(): CardClient[] {
     return StorageService.getItem<CardClient[]>("listOfCards", []);
   }
 
@@ -118,17 +142,19 @@ export class TransactionPage extends HTMLElement {
   renderTransactions(transactions: Transaction[] = this.filteredList) {
     this.validPayment();
 
-    this.$previous.disabled = this.page == 1;
+    this.$previous.disabled = this.page === 1;
     this.$next.disabled = this.maxPage <= this.page;
     const $tbody = document.querySelector("tbody");
     const $table = document.querySelector("table");
-    $table.hidden = this.filteredList.length < 1;
     const $pagination = document.querySelector<HTMLElement>(".container-pagination");
 
-    $pagination.hidden = this.filteredList.length < 1;
+    const hasTransactions = this.filteredList.length > 0;
+    $table.hidden = !hasTransactions;
+    $pagination.hidden = !hasTransactions;
 
     const actuallyPage = (this.page - 1) * this.pageSize;
     const nextPage = actuallyPage + this.pageSize;
+
     $tbody.innerHTML = "";
     this.$pageActually.textContent = this.page.toString();
     window.history.replaceState({}, "", `?page=${this.page}#transaction`);
@@ -138,7 +164,7 @@ export class TransactionPage extends HTMLElement {
       .slice(actuallyPage, nextPage)
       .forEach((transaction) => {
         const dateOfPayDay = transaction?.dateOfPayDay
-          ? new Date(transaction?.dateOfPayDay).toLocaleDateString("pt-BR", {
+          ? transaction?.dateOfPayDay.convertStringDate().toLocaleDateString("pt-BR", {
               day: "2-digit",
               hour: "2-digit",
               minute: "2-digit",
@@ -146,37 +172,43 @@ export class TransactionPage extends HTMLElement {
               year: "2-digit",
             }) ?? "-"
           : "-";
-        const formOfPayment = formOfPaymentOptions.find((item) => item.id === transaction.idFormOfPayment).name;
 
-        $tbody.innerHTML += /*html*/ ` 
+        const formOfPayment = getNameById(formOfPaymentOptions, transaction.idFormOfPayment);
+        const description = getNameById(descriptionOptions, transaction.idDescription);
+
+        $tbody.innerHTML += /*html*/ `
        <tr id="option-of-transaction-${transaction.id}">
          <td scope="row">${transaction.id}</td>
          <td>${this.numberFormat.format(transaction.value)}</td>
          <td>
            ${SVG_ICONS[transaction.idFormOfPayment]}  
            ${formOfPayment}
-      </td>
-      <td>${transaction.date}</td>
-      <td>${dateOfPayDay}</td>
-      <td>${transaction.clientName}</td>
-      <td>
-        <span class="material-icons-outlined edit ${this.hiddenElement(
-          !!transaction.dateOfPayDay
-        )}" onclick="document.querySelector('transaction-page').editTransaction(${transaction.id})">
-          edit
-        </span>
-        <span class="material-icons-outlined duplicate" onclick="document.querySelector('transaction-page').duplicateTransaction(${
-          transaction.id
-        })">
-          content_copy
-        </span>
-        <span class="material-icons-outlined delete ${this.hiddenElement(
-          !!transaction.dateOfPayDay
-        )}" onclick="document.querySelector('transaction-page').removeTransaction(${transaction.id})">
-          delete
-        </span>
-      </td>
-    </tr>`;
+         </td>
+         <td>${transaction.date}</td>
+         <td>${dateOfPayDay}</td>
+         <td>${transaction.clientName}</td>
+         <td>
+           ${SVG_ICONS_DESCRIPTION[transaction.idDescription]}  
+           ${description}
+         </td>
+         <td>
+           <span class="material-icons-outlined edit ${this.hiddenElement(
+             !!transaction.dateOfPayDay
+           )}" onclick="document.querySelector('transaction-page').editTransaction(${transaction.id})">
+             edit
+           </span>
+           <span class="material-icons-outlined duplicate" onclick="document.querySelector('transaction-page').duplicateTransaction(${
+             transaction.id
+           })">
+             content_copy
+           </span>
+           <span class="material-icons-outlined delete ${this.hiddenElement(
+             !!transaction.dateOfPayDay
+           )}" onclick="document.querySelector('transaction-page').removeTransaction(${transaction.id})">
+             delete
+           </span>
+         </td>
+       </tr>`;
       });
   }
 
@@ -191,7 +223,8 @@ export class TransactionPage extends HTMLElement {
   }
 
   connectedCallback() {
-    this.cardClient = StorageService.getItem<CardClient>("cardClient", {} as CardClient);
+    this.clientCard = StorageService.getItem<CardClient>("cardClient", {} as CardClient);
+
     this.createInnerHTML();
     this.setElementRef();
     this.displayClientAmount();
@@ -213,11 +246,13 @@ export class TransactionPage extends HTMLElement {
     this.transactionList = this.originalList.filter((item: Transaction) => item.userLoggedID === this.clientLogged?.id);
     this.page = +(location.search?.replace("?page=", "") || 1);
 
-    const [$formInputValue, $formInputFormOfPayment, $formInputDate, $formInputName] = document.querySelectorAll(".form-control");
+    const [$formInputValue, $formInputFormOfPayment, $formInputDate, $formInputName, $formInputDescription] =
+      document.querySelectorAll(".form-control");
     this.$inputValue = $formInputValue as HTMLInputElement;
     this.$inputFormOfPayment = $formInputFormOfPayment as FormSelect;
     this.$inputDate = $formInputDate as HTMLInputElement;
     this.$clientID = $formInputName as HTMLInputElement;
+    this.$inputDescription = $formInputDescription as HTMLInputElement;
     this.$modal = document.querySelector("#staticBackdrop");
     this.$tableHeaders = document.querySelectorAll("th");
     this.$btnSend = document.querySelector(".btn-add");
@@ -333,8 +368,8 @@ export class TransactionPage extends HTMLElement {
       if (item === eTransactionClassName.SALDO_ATUAL && this.clientLogged.id) {
         amountToDisplay = this.clientLogged.accountAmount;
       }
-      if (item === eTransactionClassName.SALDO_LIMITE && this.cardClient.id && this.cardClient.clientID === this.clientLogged.id) {
-        amountToDisplay = this.cardClient.limitCreditCurrent;
+      if (item === eTransactionClassName.SALDO_LIMITE && this.clientCard.id) {
+        amountToDisplay = this.clientCard.limitCreditCurrent;
       }
 
       isPositive = amountToDisplay > 0;
@@ -583,18 +618,19 @@ export class TransactionPage extends HTMLElement {
     this.validTransaction(transaction);
 
     if (isCredito) {
-      const cardSelected = this.listOfCards.find((card) => card.id === this.cardClient.id);
+      const cardSelected = this.clientCardList.find((card) => card.id === this.clientCard.id);
       if (!cardSelected) {
         Toasts.error("Cartão de crédito não encontrado.");
         throw new Error("Cartão de crédito não encontrado.");
       }
-      const limitCreditCurrent = this.cardClient.limitCreditCurrent;
+      const limitCreditCurrent = this.clientCard.limitCreditCurrent;
       cardSelected.limitCreditUsed = cardSelected.limitCreditUsed + inputValue;
       cardSelected.limitCreditCurrent = limitCreditCurrent - inputValue;
 
-      this.cardClient = cardSelected;
-      const listOfCardsUpdated = this.listOfCards.filter((item) => item.cardNumber !== cardSelected.cardNumber);
+      const listOfCardsUpdated = this.clientCardList.filter((item) => item.cardNumber !== cardSelected.cardNumber);
+      this.clientCard = cardSelected;
       listOfCardsUpdated.push(cardSelected);
+      StorageService.setItem("cardClient", this.clientCard);
       StorageService.setItem("listOfCards", listOfCardsUpdated);
     } else {
       const accountAmount = clientLogged.accountAmount;
@@ -623,9 +659,10 @@ export class TransactionPage extends HTMLElement {
       clientName: `${clientSelected?.name} - ${clientSelected?.accountNumber}`,
       clientID: +this.$clientID.value,
       userLoggedID: this.clientLogged.id,
-      creditCardID: +this.$inputFormOfPayment.value === eFormOfPayment.CREDITO ? this.cardClient.id : null,
+      creditCardID: +this.$inputFormOfPayment.value === eFormOfPayment.CREDITO ? this.clientCard.id : null,
       view: [],
       active: true,
+      idDescription: +this.$inputDescription.value,
     };
     this.validTransaction(newTransaction);
 
@@ -635,7 +672,7 @@ export class TransactionPage extends HTMLElement {
     const clientLogged = this.clients.find((client) => client.id === this.clientLogged.id);
     const clientAccountAmount = clientLogged.accountAmount;
     const propertyName = transaction.idFormOfPayment === eFormOfPayment.CREDITO ? "limitCreditCurrent" : "accountAmount";
-    const valueOfDebit = propertyName === "accountAmount" ? clientAccountAmount : this.cardClient.limitCreditCurrent;
+    const valueOfDebit = propertyName === "accountAmount" ? clientAccountAmount : this.clientCard.limitCreditCurrent;
 
     if (transaction.value > valueOfDebit) {
       Toasts.error("Saldo insuficiente!");
@@ -667,6 +704,7 @@ export class TransactionPage extends HTMLElement {
     this.$inputFormOfPayment.value = "";
     this.$inputDate.value = "";
     this.$clientID.value = "";
+    this.$inputDescription.value = "";
   }
   private instanceModal() {
     return Modal.getOrCreateInstance(this.$modal);
