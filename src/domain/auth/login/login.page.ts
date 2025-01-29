@@ -32,8 +32,8 @@ export class LoginComponent extends HTMLElement {
     this.sendListener();
   }
   private sendListener() {
-    this.$inputName.addValidation([Validators.required, Validators.minLength(3), Validators.onlyCharacters]);
-    this.$inputPassword.addValidation([Validators.required, Validators.password, Validators.minLength(8)]);
+    this.$inputName.addValidation([Validators.required, Validators.lengthValidator("min", 3), Validators.onlyCharacters]);
+    this.$inputPassword.addValidation([Validators.required, Validators.password, Validators.lengthValidator("min", 8)]);
 
     this.$buttonAdd.addEventListener("click", () => {
       const client = this.client.hasClient(this.$inputName, this.$inputPassword);
