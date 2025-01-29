@@ -4,7 +4,7 @@ const validationErrors: {
   required: () => "Este campo é obrigatório, Insira um valor",
   minLength: ({ actualLength, requiredLength }: { actualLength: number; requiredLength: number }) =>
     `Este campo deve conter no mínimo ${requiredLength} caracteres. Você inseriu ${actualLength}.`,
-  maxlength: ({ actualLength, requiredLength }: { actualLength: number; requiredLength: number }) =>
+  maxLength: ({ actualLength, requiredLength }: { actualLength: number; requiredLength: number }) =>
     `Este campo deve conter no máximo ${requiredLength} caracteres. Você inseriu ${actualLength}.`,
   email: () => "Por favor, insira um email válido",
   onlyCharacters: () => "O nome deve conter apenas letras",
@@ -51,13 +51,15 @@ export class Validators {
     };
   };
 
-  public static readonly minLength: (minLength: number) => ValidatorsFn = (minLength: number) => {
+  public static readonly lengthValidator: (type: "min" | "max", length: number) => ValidatorsFn = (type, length) => {
     return (input: HTMLInputElement) => {
-      input.setAttribute("minlength", minLength.toString());
-      if (minLength > input.value.length) {
-        return validationErrors.minLength({
-          actualLength: input.value.length,
-          requiredLength: minLength,
+      input.setAttribute(type === "min" ? "minlength" : "maxlength", length.toString());
+
+      const actualLength = input.value.length;
+      if ((type === "min" && actualLength < length) || (type === "max" && actualLength > length)) {
+        return validationErrors[type === "min" ? "minLength" : "maxLength"]({
+          actualLength,
+          requiredLength: length,
         });
       }
     };

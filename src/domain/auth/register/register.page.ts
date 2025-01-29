@@ -37,14 +37,20 @@ export class RegisterComponent extends HTMLElement {
   }
 
   private sendListener() {
-    this.$inputName.addValidation([Validators.required, Validators.onlyCharacters, Validators.minLength(3)]);
+    this.$inputName.addValidation([Validators.required, Validators.onlyCharacters, Validators.lengthValidator("min", 3)]);
     this.$inputEmail.addValidation([Validators.required, Validators.email]);
-    this.$inputPassword.addValidation([Validators.required, Validators.password]);
+    this.$inputPassword.addValidation([
+      Validators.required,
+      Validators.password,
+      Validators.lengthValidator("min", 8),
+      Validators.lengthValidator("max", 8),
+    ]);
     this.$inputConfirmPassword.addValidation([
       Validators.required,
       Validators.password,
       Validators.passwordMatch(this.$inputPassword),
-      Validators.minLength(8),
+      Validators.lengthValidator("min", 8),
+      Validators.lengthValidator("max", 8),
     ]);
 
     this.$inputPassword.addEventListener("input", () => {
