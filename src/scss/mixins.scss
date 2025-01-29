@@ -16,3 +16,28 @@
     display: flex;
   }
 }
+@mixin btn-simple() {
+  @include display-align-content(center);
+  font-weight: 600;
+  color: var(--color-pink);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-pink);
+  transition: background-color ease-in-out 0.5s;
+  &:hover {
+    border: 1px solid var(--color-pink);
+    color: var(--color-pink);
+    filter: brightness(110%);
+    background-color: var(--color-pink-light);
+  }
+}
+@mixin btn-filled() {
+  color: var(--color-white);
+  font-weight: 600;
+  background-color: var(--color-pink);
+  transition: background-color ease-in-out 0.5s;
+  &:hover {
+    border: 1px solid var(--color-pink);
+    color: var(--color-white);
+    filter: brightness(90%);
+  }
+}

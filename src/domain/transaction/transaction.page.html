@@ -28,12 +28,12 @@
       <div class="modal-body">
         <form class="was-validated">
           <div class="form-input">
-            <label class="form-label">Valor </label>
+            <label class="form-label required" for="value" >Valor </label>
             <input type="text" class="form-control" autocomplete="transaction-currency"
               pattern="[0-9]+,[0-9]{2}||[0-9]+(.[0-9]{3})*,[0-9]{2}" required />
           </div>
           <div class="form-input form-of-payment">
-            <label class="form-label required">Forma de pagamento </label>
+            <label class="form-label required" for="form-of-payment">Forma de pagamento </label>
             <form-select class="form-control is-invalid" required placeholder="Selecione">
               <div class="option" value="">
                 Selecione
@@ -62,12 +62,13 @@
             </form-select>
           </div>
           <div class="form-input">
-            <label class="form-label">Data </label>
+            <label class="form-label required" for="date" >Data </label>
             <input type="text" pattern="^(3[01]|[12][0-9]|0[1-9])/(1[0-2]|0[1-9])/[0-9]{4}$"
               class="form-control icon-calendar" required />
+             
           </div>
           <div class="form-input client">
-            <label class="form-label required">Cliente </label>
+            <label class="form-label required" for="client">Cliente </label>
             <form-select class="form-control is-invalid" required placeholder="Selecione">
               <span>
                 {{
@@ -85,7 +86,7 @@
           }}
           </span>
           {{
-          clients.length <= 1 ? "" : this.clients.filter((client)=> client.id != this.clientLogged?.id)
+          clients.length <= 1 ? "" : this.clients.filter((client)=> client.id != this.clientLogged?.id && client.active )
             .map((client) => this.createFormOption(client))
             .join("")
             }}
@@ -93,7 +94,7 @@
             </form-select>
       </div>
       <div class="form-input description">
-        <label class="form-label required">Descrição</label>
+        <label class="form-label required" for="description">Descrição</label>
         <form-select class="form-control is-invalid" required placeholder="Selecione">
           <div class="option" value="">
             Selecione

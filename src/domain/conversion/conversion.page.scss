@@ -9,19 +9,22 @@ conversion-page {
     flex-wrap: wrap;
     justify-content: space-between;
     .btn-search {
-      background-color: var(--color-white);
-      color: var(--color-red-border);
-      &:hover {
-        background-color: var(--color-pink-medium);
-        border: 1px solid var(--color-red-border);
-      }
+      @include btn-simple();
     }
     .btn-clean {
-      color: var(--color-white);
-      background-color: var(--color-red-border);
+      @include btn-filled();
     }
   }
 
+  .btn-alt {
+    background-color: var(--color-white);
+    transition: background-color ease-out 0.5s;
+    border: 1px solid var(--color-gray-light);
+    &:hover {
+      background-color: var(--color-gray-light);
+      border: 1px solid var(--color-gray-dark);
+    }
+  }
   .row-content {
     display: flex;
     gap: 10px;

@@ -7,4 +7,10 @@ payment-of-card-page {
     display: flex;
     gap: 10px;
   }
+  .btn-add {
+    @include btn-simple();
+  }
+  .btn-pay {
+    @include btn-filled();
+  }
 }

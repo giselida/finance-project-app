@@ -148,7 +148,7 @@ export class AccountPage extends HTMLElement {
   removeClient(id: number) {
     Swal.fire({
       title: `<img src="${warningImage}" />Você tem certeza?`,
-      html: "Esta é uma <b>ação irreversível</b> <br>será aplicada imediatamente",
+      html: "Esta é uma ação <b>irreversível</b> <br>será aplicada imediatamente",
       showCancelButton: true,
       confirmButtonColor: "#ffff",
       cancelButtonColor: "#fe5e71",

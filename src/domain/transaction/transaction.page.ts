@@ -506,7 +506,7 @@ export class TransactionPage extends HTMLElement {
     <img src="${warningImage}" />
     Você tem certeza?
     `,
-      html: "Esta é uma <b>ação irreversível</b> <br>será aplicada imediatamente",
+      html: "Esta é uma ação <b>irreversível</b> <br>será aplicada imediatamente",
       showCancelButton: true,
       confirmButtonColor: "#ffff",
       cancelButtonColor: "#fe5e71",

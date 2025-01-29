@@ -53,13 +53,7 @@ transaction-page {
     font-size: 16px;
   }
   .btn-transaction {
-    max-width: 200px;
-    background-color: var(--color-white);
-    color: var(--color-pink);
-    &:hover {
-      color: var(--color-pink);
-      background-color: var(--color-pink-light);
-    }
+    @include btn-simple();
   }
 
   .row-header {
