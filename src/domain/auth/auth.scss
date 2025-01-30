@@ -3,11 +3,12 @@
 login-page,
 register-page {
   button.btn-add {
+    @include btn-filled();
     width: 100%;
-    justify-content: center;
-    color: white;
-    background-color: var(--color-pink);
   }
+}
+.btn-account {
+  @include btn-simple();
 }
 
 a {

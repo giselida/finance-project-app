@@ -18,26 +18,39 @@
 }
 @mixin btn-simple() {
   @include display-align-content(center);
-  font-weight: 600;
+  border: 1px solid var(--color-pink);
   color: var(--color-pink);
   background-color: var(--color-white);
-  border: 1px solid var(--color-pink);
   transition: background-color ease-in-out 0.5s;
+  font-weight: 600;
   &:hover {
     border: 1px solid var(--color-pink);
     color: var(--color-pink);
-    filter: brightness(110%);
     background-color: var(--color-pink-light);
+    filter: brightness(110%);
+  }
+  &:active {
+    border: 1px solid var(--color-pink) !important;
+    color: var(--color-pink) !important;
+    background-color: var(--color-pink-light) !important;
+    filter: brightness(90%);
   }
 }
 @mixin btn-filled() {
   color: var(--color-white);
-  font-weight: 600;
   background-color: var(--color-pink);
   transition: background-color ease-in-out 0.5s;
+  font-weight: 600;
   &:hover {
     border: 1px solid var(--color-pink);
     color: var(--color-white);
+    background-color: var(--color-pink);
     filter: brightness(90%);
+  }
+  &:active {
+    border: 1px solid var(--color-pink) !important;
+    color: var(--color-white) !important;
+    background-color: var(--color-pink) !important;
+    filter: brightness(110%);
   }
 }
