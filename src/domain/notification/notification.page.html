@@ -14,26 +14,41 @@
         });
         const operationTitle = !isCurrentUser ? "recebida" : "enviada";
         const operationMessage = !isCurrentUser ? "Você recebeu uma transação de" : "Você enviou uma transação para ";
-        const shortDate = transaction.date.convertStringDate().toLocaleDateString("pt-BR", {
+        const shortDate = transaction.dateOfPayDay.convertStringDate().toLocaleDateString("pt-BR", {
           day: "2-digit",
-          month: "long",
+          month: "2-digit",
           year: "numeric",
+        });
+        const time = transaction.dateOfPayDay.convertStringDate().toLocaleTimeString("pt-BR", {
+        hour: '2-digit',
+         minute: '2-digit'
         });
 
         return /*html*/ `  
     <div class="list-group-item list-group-item-action ${
       !transaction.view.includes(this.clientLogged.id) ? "active" : ""
     }" aria-current="true" id="${transaction.id}" >
-       <div class="d-flex w-100 justify-content-between">
-          <h5 class="title mb-2">Transferência ${operationTitle} com sucesso !</h5>
-          </div>
-        <div class="current-date">${transaction.date}</div>
-       <p class="description mb-2">
-       ${operationMessage} ${transactionClient?.name}-${transactionClient?.accountNumber} no valor
-        <b>R$ ${transaction.value.toFixed(2)} </b> em ${transaction.date} 
-       </p>
-       <small>${shortDate}</small>
-    </div>`;
+    <h5 class="title mb-2">Transferência ${operationTitle} com sucesso !</h5>
+       <div class="description-container">
+          <p class="description mb-2">
+            ${operationMessage} ${transactionClient?.name} no valor
+             <b>R$ ${transaction.value.toFixed(2)} </b> 
+            </p>
+            <div class="current-date"> 
+              <small class="date">${shortDate}</small>
+             <small class="time">${time}</small>
+            </div>
+      </div>  
+  
+    </div>    
+    <div class="menu-notification">
+  <ul class="menu-options">
+    <li class="menu-option show-active">Marcar como lida</li>
+    <li class="menu-option  delete-notification" >Apagar</li>
+
+  </ul>
+</div>
+  `;
       })
       .join("")}}
 </div>
