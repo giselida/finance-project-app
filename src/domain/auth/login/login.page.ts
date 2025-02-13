@@ -40,7 +40,6 @@ export class LoginComponent extends HTMLElement {
       if (!client) {
         return Toasts.error("Você não possui um cadastro!");
       }
-      document.querySelector(".current-user").innerHTML = client.name;
       StorageService.setItem("client", client);
       const controls = [this.$inputName, this.$inputPassword];
 

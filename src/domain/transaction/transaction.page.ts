@@ -11,6 +11,8 @@ import { StorageService } from "../../components/storage/storage";
 import { Toasts } from "../../components/toasts/toast";
 import { OPTIONS_PAYMENT } from "../../constants/charts";
 import { PT_BR_LOCALE } from "../../constants/date-picker-locale";
+import { descriptionOptions } from "../../constants/options-description";
+import { formOfPaymentOptions } from "../../constants/options-form-payment";
 import { eDescription, SVG_ICONS_DESCRIPTION } from "../../constants/svg-icons-description";
 import { eFormOfPayment, SVG_ICONS } from "../../constants/svg-icons-form-payment";
 import { getNameById } from "../../functions/name-by-id/name-by-id";
@@ -21,43 +23,6 @@ import { CardClient } from "../card-account/interface/card-client";
 import { Transaction } from "./interface/transaction.interface";
 import html from "./transaction.page.html?raw";
 import "./transaction.page.scss";
-
-export const formOfPaymentOptions = [
-  {
-    id: eFormOfPayment.CREDITO,
-    name: "Crédito",
-  },
-  {
-    id: eFormOfPayment.DEBITO,
-    name: "Debito",
-  },
-  {
-    id: eFormOfPayment.DINHEIRO,
-    name: "Dinheiro",
-  },
-  {
-    id: eFormOfPayment.PIX,
-    name: "Pix",
-  },
-];
-export const descriptionOptions = [
-  {
-    id: eDescription.FOOD,
-    name: "Comida",
-  },
-  {
-    id: eDescription.CAR,
-    name: "Transporte",
-  },
-  {
-    id: eDescription.DRINK,
-    name: "Lazer",
-  },
-  {
-    id: eDescription.OTHERS,
-    name: "Outros",
-  },
-];
 
 export enum eTransactionClassName {
   SALDO_ATUAL = "current-balance",
@@ -91,11 +56,14 @@ export class TransactionPage extends HTMLElement {
   $chart: ApexCharts;
   originalList: Transaction[];
   clientCard: CardClient;
+
   public eTransactionClassName = eTransactionClassName;
-  public SVG_ICONS = SVG_ICONS;
-  public SVG_ICONS_DESCRIPTION = SVG_ICONS_DESCRIPTION;
   public eDescription = eDescription;
   public eFormOfPayment = eFormOfPayment;
+
+  public SVG_ICONS = SVG_ICONS;
+  public SVG_ICONS_DESCRIPTION = SVG_ICONS_DESCRIPTION;
+
   public formOfPaymentOptions = formOfPaymentOptions;
   public descriptionOptions = descriptionOptions;
 
@@ -389,7 +357,13 @@ export class TransactionPage extends HTMLElement {
   private sendListener() {
     const isValidDate = this.$inputDate.value && this.$inputDate.value.length === 10 && this.compareDate(this.$inputDate.value) > 0;
 
-    if (!this.$inputValue.value || !this.$inputFormOfPayment.value || !this.$clientID.value || !isValidDate) {
+    if (
+      !this.$inputValue.value ||
+      !this.$inputFormOfPayment.value ||
+      !this.$clientID.value ||
+      !isValidDate ||
+      !this.$inputDescription.value
+    ) {
       Toasts.error("Por favor preencha os campos obrigatórios!");
       throw new Error("Por favor preencha os campos obrigatórios!");
     }

@@ -14,8 +14,7 @@
 
     <div class="dropdown">
       <div class="user account">
-        <span class="material-symbols-outlined"> account_circle </span>
-        <span class="current-user" title="{{client.name}}">{{client.name ?? ""}}</span>
+        <span class="material-symbols-outlined"> more_vert </span>
       </div>
 
       <div class="account-menu dropdown-menu">
@@ -25,13 +24,15 @@
             Conta
           </div>
         </a>
+        <a href="#login" target="_self" title="sair">
+          <div class="option-menu dropdown-item">
+            <span class="material-symbols-outlined"> logout </span>
+
+            Sair
+          </div>
+        </a>
       </div>
     </div>
-    <a href="#login" target="_self" title="sair">
-      <div class="log-out">
-        <span class="material-symbols-outlined"> logout </span>
-      </div>
-    </a>
   </div>
 </header>
 <nav class="side-nav">

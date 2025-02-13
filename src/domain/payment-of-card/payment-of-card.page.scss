@@ -5,12 +5,61 @@ payment-of-card-page {
 
   .row-content {
     display: flex;
+    align-items: center;
     gap: 10px;
+    .description {
+      font-weight: bold;
+      font-size: 14px;
+    }
   }
   .btn-add {
     @include btn-simple();
   }
+  .btn-history {
+    @include btn-simple();
+    margin-bottom: 10px;
+  }
   .btn-pay {
     @include btn-filled();
+  }
+  .payment-history {
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+
+    &.visible {
+      max-height: 500px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .month-divider {
+      padding: 5px;
+      margin: 10px 0;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .payment-item {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--color-silver-gray);
+    }
+  }
+
+  .details {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    gap: 5px;
+    .date {
+      font-weight: bold;
+      color: var(--color-line-gray);
+      font-size: 14px;
+    }
+    .amount {
+      font-weight: bold;
+      color: rgb(24, 158, 24);
+    }
   }
 }

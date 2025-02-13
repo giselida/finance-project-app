@@ -9,6 +9,6 @@ export interface Transaction {
   date: string;
   view: number[];
   active: boolean;
+  idDescription: number;
   dateOfPayDay?: string;
-  idDescription?: number;
 }

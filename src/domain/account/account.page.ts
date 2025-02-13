@@ -33,10 +33,6 @@ export class AccountPage extends HTMLElement {
     this.clientCardList = StorageService.getItem<CardClient[]>("listOfCards", []);
   }
 
-  get $currentUser() {
-    return document.querySelector(".current-user");
-  }
-
   get maxPage(): number {
     const activeClients = this.clientList.filter((client) => client.active);
     return Math.ceil(activeClients.length / this.pageSize);
@@ -161,7 +157,6 @@ export class AccountPage extends HTMLElement {
         if (client) {
           client.active = false;
           if (this.clientSelected.id === client.id) {
-            this.$currentUser.innerHTML = "";
             this.clientSelected = {} as Cliente;
           }
           this.setStorage();
@@ -178,7 +173,6 @@ export class AccountPage extends HTMLElement {
 
     if (client) {
       this.clientSelected = client;
-      this.$currentUser.innerHTML = client.name;
       client.selected = true;
       if (this.clientList.length <= 1) {
         if (client.accountAmount == 0) client.accountAmount = 10000;

@@ -55,7 +55,6 @@ export class Client {
         value.selected = false;
       });
 
-      document.querySelector(".current-user").innerHTML = client.name;
       StorageService.setItem("client", client);
     }
   }

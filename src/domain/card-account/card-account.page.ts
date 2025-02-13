@@ -243,7 +243,7 @@ export class CardAccountPage extends HTMLElement {
       limitCredit: 0,
       limitCreditUsed: 0,
       limitCreditCurrent: 0,
-      color: this.generateRandomGradient(),
+      color: this.generateRandomColor(),
       clientID: this.client.id,
       isActive: false,
     };
@@ -252,20 +252,13 @@ export class CardAccountPage extends HTMLElement {
     this.setStorage();
   }
 
-  private generateRandomGradient(): string {
-    const generateColor = () => {
-      const letters = "0123456789ABCDEF";
-      let color = "#";
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-      }
-      return color;
-    };
-
-    const color1 = generateColor();
-    const color2 = generateColor();
-
-    return `linear-gradient(135deg, ${color1}, ${color2})`;
+  private generateRandomColor(): string {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
   }
 
   private resetCreditValues() {
