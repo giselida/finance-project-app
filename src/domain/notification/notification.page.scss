@@ -13,7 +13,7 @@ notification-page {
       background-color: var(--color-pink);
       border: 1px solid var(--color-red);
       color: var(--color-white);
-      .current-date {
+      .description-container .current-date .time {
         border: 1px solid white;
         color: var(--color-white);
       }
@@ -21,22 +21,57 @@ notification-page {
     .title {
       font-weight: 600;
     }
-    @media screen and (max-width: 900px) {
+    .description-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
       .current-date {
-        display: none;
-      }
-      small {
-        font-weight: bold;
+        position: relative;
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: flex-end;
+        gap: 5px;
+        .date {
+          font-size: 12px;
+          font-weight: bold;
+        }
+        .time {
+          border: 1px solid var(--color-pink);
+          color: var(--color-pink);
+          padding: 5px 5px;
+          border-radius: 4px;
+          font-size: 10px;
+          max-width: 38px;
+        }
       }
     }
-    .current-date {
-      position: absolute;
-      right: 15px;
-      top: 25px;
-      border: 1px solid var(--color-pink);
-      color: var(--color-pink);
-      padding: 5px 10px;
-      border-radius: 4px;
+    // @media screen and (max-width: 600px) {
+
+    // }
+  }
+  .menu-notification {
+    z-index: 99;
+    min-width: 120px;
+    box-shadow: 0 4px 5px 3px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    display: none;
+    background-color: white;
+
+    .menu-options {
+      list-style: none;
+      padding: 10px 0;
+
+      .menu-option {
+        font-weight: 500;
+        font-size: 14px;
+        padding: 10px 40px 10px 20px;
+        cursor: pointer;
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.2);
+        }
+      }
     }
   }
 }
