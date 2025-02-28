@@ -1,7 +1,67 @@
 @import "mixins";
 @import "reset";
 payment-of-card-page {
+  [class^="status-"] {
+    padding: 5px;
+    font-size: 12px;
+    border-radius: 5px;
+    font-weight: bold;
+    color: #ffffff;
+
+    &.status-pago {
+      background-color: #189e18;
+    }
+
+    &.status-vencida {
+      background-color: #ff0000;
+    }
+
+    &.status-fechada {
+      background-color: #fbff00;
+      color: black;
+    }
+
+    &.status-aberta {
+      background-color: #0099ff;
+    }
+  }
+
   @include pageStyle(column);
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+  }
+  .card-body {
+    .value-title {
+      font-size: 45px;
+      font-weight: bolder;
+      color: var(--color-pink);
+      margin-bottom: 15px;
+    }
+  }
+  .content-row {
+    .card-title .info {
+      font-weight: bold;
+    }
+  }
+
+  .invoice-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    .card {
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+      }
+      &:hover {
+        opacity: 1 !important;
+        transform: scale(1);
+      }
+    }
+  }
 
   .row-content {
     display: flex;
@@ -59,7 +119,7 @@ payment-of-card-page {
     }
     .amount {
       font-weight: bold;
-      color: rgb(24, 158, 24);
+      color: #189e18;
     }
   }
 }

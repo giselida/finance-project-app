@@ -1,3 +1,4 @@
+import { Carousel } from "../../components/carousel/carousel";
 import { StorageService } from "../../components/storage/storage";
 import { Toasts } from "../../components/toasts/toast";
 import { generatePropertyBind } from "../../functions/property-bind";
@@ -11,18 +12,15 @@ export class CardAccountPage extends HTMLElement {
   clientCard: CardClient;
 
   $buttonAdd: HTMLButtonElement;
-  $previous: HTMLButtonElement;
-  $next: HTMLButtonElement;
-
-  $carousel: HTMLElement;
-  $container: HTMLElement;
+  $inputRange: HTMLInputElement;
   $cards: HTMLElement;
   $availableCreditValue: HTMLElement;
   $usedCreditValue: HTMLElement;
   $creditValue: HTMLElement;
-  $inputRange: HTMLInputElement;
-  scrollAmount: number = 250;
+  $menu: HTMLElement;
+  $deleteNotification: HTMLElement;
 
+  carousel: Carousel;
   connectedCallback() {
     this.client = StorageService.getItem<Cliente>("client", {} as Cliente);
     this.clientCardList = StorageService.getItem<CardClient[]>("listOfCards", []);
@@ -32,13 +30,13 @@ export class CardAccountPage extends HTMLElement {
     this.recoveryElementRef();
     this.createCardCredit();
     this.updateCreditLimit();
-    this.checkBUttonVisible();
 
     if (this.clientCard.clientID !== this.client.id) {
       StorageService.removeItem("cardClient");
       this.clientCard = {} as CardClient;
       this.resetCreditValues();
     }
+    this.carousel = new Carousel(".card-container", ".previous", ".next");
   }
 
   private createInnerHTML() {
@@ -46,28 +44,16 @@ export class CardAccountPage extends HTMLElement {
   }
 
   recoveryElementRef() {
-    this.$carousel = document.querySelector(".carousel");
-    this.$container = document.querySelector(".card-container");
     this.$buttonAdd = document.querySelector(".circle .add-card-credit");
     this.$cards = document.querySelector(".card-container .cards");
 
-    this.$previous = document.querySelector(".previous");
-    this.$next = document.querySelector(".next");
     this.$creditValue = document.querySelector(".limit-credit-value");
     this.$usedCreditValue = document.querySelector(".limit-credit-used");
     this.$availableCreditValue = document.querySelector(".available-credit-value");
     this.$inputRange = document.querySelector("input[type='range']");
-
+    this.$menu = document.querySelector(".menu-notification");
+    this.$deleteNotification = document.querySelector(".delete-notification");
     this.sendListener();
-  }
-
-  private checkBUttonVisible() {
-    if (!this.$cards?.children?.[0]) return;
-    const $creditCard = this.$cards.children[0];
-    const width = $creditCard.clientWidth * this.$cards.children.length;
-    const isGreater = width <= this.$container.clientWidth - 225;
-    this.$previous.hidden = isGreater;
-    this.$next.hidden = isGreater;
   }
 
   private sendListener() {
@@ -75,11 +61,8 @@ export class CardAccountPage extends HTMLElement {
       if (!this.client.id) return Toasts.error("selecione uma conta");
       this.addCardClient();
       this.createCardCredit();
-      this.checkBUttonVisible();
     });
 
-    this.$next.addEventListener("click", () => this.scrollNext());
-    this.$previous.addEventListener("click", () => this.scrollPrevious());
     this.rangeListener();
     this.setRangeColor();
   }
@@ -100,7 +83,6 @@ export class CardAccountPage extends HTMLElement {
       this.$creditValue.textContent = formRangeValue.formatToBRL();
 
       const client = this.clientCardList.find((card) => card.id === this.clientCard.id);
-      console.log(client);
       this.clientCard = client;
       client.limitCredit = formRangeValue;
       client.limitCreditCurrent = limitCredit;
@@ -132,20 +114,12 @@ export class CardAccountPage extends HTMLElement {
     );
   }
 
-  private scrollNext() {
-    this.$container.scrollBy({ left: this.scrollAmount, behavior: "smooth" });
-  }
-
-  private scrollPrevious() {
-    this.$container.scrollBy({ left: -this.scrollAmount, behavior: "smooth" });
-  }
-
   createCardCredit() {
     this.$cards.innerHTML = "";
     const cardCredit = this.clientCardList.filter((card) => card.clientID == this.client.id);
 
     cardCredit.forEach((card) => {
-      const isActiveClass = card.isActive ? "selected" : "";
+      const isActiveClass = card.selected ? "selected" : "";
       this.$cards.innerHTML += `
       <div class="card-credit ${isActiveClass}" style="background: ${card.color}">
       <div class="flip">
@@ -206,19 +180,18 @@ export class CardAccountPage extends HTMLElement {
     }, 200);
   }
 
-  private onCardClick($creditCard: Element) {
+  private onCardClick($creditCard: HTMLElement) {
     const cards = [...this.$cards.children];
 
-    cards.forEach((card) => card.classList.remove("selected"));
+    cards.forEach((card) => {
+      card.classList.remove("selected");
+    });
     const index = cards.findIndex((element) => element == $creditCard);
     $creditCard.classList.add("selected");
-    this.$container.scrollTo({
-      left: $creditCard.clientWidth * index,
-      behavior: "smooth",
-    });
+
     const cardCredit = this.clientCardList.filter((card) => card.clientID == this.client.id);
-    cardCredit.forEach((card) => (card.isActive = false));
-    cardCredit[index].isActive = true;
+    cardCredit.forEach((card) => (card.selected = false));
+    cardCredit[index].selected = true;
 
     this.clientCard = cardCredit[index];
 
@@ -245,7 +218,7 @@ export class CardAccountPage extends HTMLElement {
       limitCreditCurrent: 0,
       color: this.generateRandomColor(),
       clientID: this.client.id,
-      isActive: false,
+      selected: false,
     };
 
     this.clientCardList.push(objectClient);

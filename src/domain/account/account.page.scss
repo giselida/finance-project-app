@@ -49,6 +49,14 @@ account-page {
       }
     }
   }
+  .card-body {
+    .card-title {
+      margin-bottom: 10px;
+      .info {
+        font-weight: bold;
+      }
+    }
+  }
   .table-container {
     overflow-y: auto;
     border-radius: 5px;

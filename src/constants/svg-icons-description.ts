@@ -4,6 +4,25 @@ export enum eDescription {
   DRINK = 3,
   OTHERS = 4,
 }
+
+export const descriptionOptions = [
+  {
+    id: eDescription.FOOD,
+    name: "Comida",
+  },
+  {
+    id: eDescription.CAR,
+    name: "Transporte",
+  },
+  {
+    id: eDescription.DRINK,
+    name: "Lazer",
+  },
+  {
+    id: eDescription.OTHERS,
+    name: "Outros",
+  },
+];
 export const SVG_ICONS_DESCRIPTION: {
   [key: string]: string;
 } = {

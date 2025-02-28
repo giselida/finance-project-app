@@ -5,6 +5,7 @@ import { LoginComponent } from "./domain/auth/login/login.page";
 import { RegisterComponent } from "./domain/auth/register/register.page";
 import { CardAccountPage } from "./domain/card-account/card-account.page";
 import { ConversionPage } from "./domain/conversion/conversion.page";
+import { InvoiceOfCardPage } from "./domain/invoice-of-card/invoice-of-card.page";
 import { Notification } from "./domain/notification/notification.page";
 import { PaymentOfCardPage } from "./domain/payment-of-card/payment-of-card.page";
 import { TransactionPage } from "./domain/transaction/transaction.page";
@@ -23,6 +24,11 @@ String.prototype.convertStringDate = function (): Date | null {
   const dateString = this.replace(/(\d{2})\/(\d{2})\/(\d{4})/g, "$2-$1-$3");
   const date = new Date(dateString);
   return isNaN(date.getTime()) ? null : date;
+};
+
+String.prototype.capitalizeFirstLetter = function (): string {
+  if (!this) return "";
+  return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase();
 };
 
 export const options = [
@@ -53,6 +59,10 @@ export const options = [
   {
     selector: "card-account-page",
     class: CardAccountPage,
+  },
+  {
+    selector: "invoice-of-card-page",
+    class: InvoiceOfCardPage,
   },
   {
     selector: "payment-of-card-page",

@@ -1,0 +1,25 @@
+<div class="card text-center">
+  <div class="card-header">
+    {{invoice.date?.convertStringDate().toLocaleDateString("pt-BR", { month: "long" }).capitalizeFirstLetter() ?? new
+    Date().toLocaleDateString("pt-BR", { month: "long" }).capitalizeFirstLetter()}}
+  </div>
+  <div class="card-body">
+    <h5 class="value-title">{{ invoice.value?.formatToBRL() ?? (0).formatToBRL()}}</h5>
+
+    <div class="content-row">
+      <div class="card-title">
+        <span class="info">Fechamento: </span>{{ invoice.closingDate?.convertStringDate().toLocaleDateString("pt-BR", { day: "2-digit",
+        month: "short" }).capitalizeFirstLetter() ?? ""}}
+      </div>
+      <div class="card-title">
+        <span class="info">Vencimento: </span> {{ invoice.date?.convertStringDate().toLocaleDateString("pt-BR", { day: "2-digit", month:
+        "short" }).capitalizeFirstLetter() ??""}}
+      </div>
+    </div>
+  </div>
+  <div class="card-footer text-body-secondary">
+    <button class="btn btn-pay" type="button">Pagar</button>
+  </div>
+</div>
+
+<div class="payment-history"></div>

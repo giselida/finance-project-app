@@ -33,6 +33,22 @@ declare global {
      * console.log(dataConvertida); // Date object: Mon Dec 25 2023
      */
     convertStringDate(): Date | null;
+    /**
+     * Converte a primeira letra da string para maiúscula e o restante para minúscula.
+     *
+     * @method
+     * @name String#capitalizeFirstLetter
+     *
+     * @returns {string} A string com a primeira letra maiúscula e o restante minúsculo.
+     *
+     * @example
+     * const palavra = "exemplo";
+     * console.log(palavra.capitalizeFirstLetter()); // "Exemplo"
+     *
+     * const palavra2 = "tEXTO";
+     * console.log(palavra2.capitalizeFirstLetter()); // "Texto"
+     */
+    capitalizeFirstLetter(): string;
   }
 }
 

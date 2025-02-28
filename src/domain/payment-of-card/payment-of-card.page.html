@@ -1,36 +1,41 @@
 <div class="card text-center">
-  <div class="card-header">Fatura atual</div>
+  <div class="card-header">
+    {{invoice.date?.convertStringDate().toLocaleDateString("pt-BR", { month: "long" }).capitalizeFirstLetter() ?? new
+    Date().toLocaleDateString("pt-BR", { month: "long" }).capitalizeFirstLetter()}}
+  </div>
   <div class="card-body">
-    <h5 class="card-title">Setembro - 2025</h5>
-    <h5 class="card-title">800,00</h5>
-    <div class="card-title"><span class="info">Limite disponível: </span>500,00</div>
-    <div class="card-title"><span class="info">Fechamento: </span>18 set</div>
+    <h5 class="value-title">{{ invoice.value?.formatToBRL() ?? (0).formatToBRL()}}</h5>
 
     <div class="content-row">
-      <button class="btn btn-pay" type="button">Pagar</button>
-      <button class="btn btn-add" type="button">Ver fatura</button>
+      <div class="card-title">
+        <span class="info">Fechamento: </span>{{ invoice.closingDate?.convertStringDate().toLocaleDateString("pt-BR", { day: "2-digit",
+        month: "short" }).capitalizeFirstLetter() ?? ""}}
+      </div>
+      <div class="card-title">
+        <span class="info">Vencimento: </span> {{ invoice.date?.convertStringDate().toLocaleDateString("pt-BR", { day: "2-digit", month:
+        "short" }).capitalizeFirstLetter() ??""}}
+      </div>
     </div>
   </div>
-  <div class="card-footer text-body-secondary">Vencimento 12/12/2025</div>
+  <div class="card-footer text-body-secondary">
+    <button class="btn btn-pay" type="button">Pagar</button>
+    <a href="#invoiceOfCard" target="_self" class="anchors" title="Pagamento">
+      <button class="btn btn-add" type="button">Ver fatura</button>
+    </a>
+  </div>
 </div>
 
-<div class="row-content">
-  <div class="card text-center" style="width: 250px">
-    <div class="card-header">Fatura paga</div>
-    <div class="card-body">
-      <h5 class="card-title">Setembro - 2025</h5>
-      <h5 class="card-title">800,00</h5>
-    </div>
-    <div class="card-footer text-body-secondary">Vencimento 12/12/2025</div>
+<div class="carousel">
+  <button class="previous" hidden>
+    <span class="icon-previous">&laquo;</span>
+  </button>
+  <div class="card-container">
+    <div class="invoice-container"></div>
   </div>
-  <div class="card text-center" style="width: 250px">
-    <div class="card-header">Fatura paga</div>
-    <div class="card-body">
-      <h5 class="card-title">Setembro - 2025</h5>
-      <h5 class="card-title">800,00</h5>
-    </div>
-    <div class="card-footer text-body-secondary">Vencimento 12/12/2025</div>
-  </div>
+
+  <button class="next" hidden>
+    <span class="icon-next">&raquo;</span>
+  </button>
 </div>
 
 <button class="btn btn-history" type="button">Mostrar todas as compras</button>

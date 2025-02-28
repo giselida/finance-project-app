@@ -27,6 +27,54 @@ body {
   font-family: "Open Sans", sans-serif;
 }
 
+.carousel {
+  display: flex;
+  align-items: center;
+  height: 200px;
+  position: relative;
+  width: 100%;
+  .next,
+  .previous {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 1;
+    transition: background-color 0.5s ease-in-out, 0.5s ease-in-out, transform 0.5s ease-in-out;
+    border-radius: 50%;
+    span {
+      position: relative;
+      top: -2px;
+    }
+    &:hover {
+      color: white;
+      transform: scale(1.2);
+      background-color: #505050;
+    }
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  .next {
+    right: 0;
+  }
+
+  .previous {
+    left: 0;
+  }
+  .card-container {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    overflow: hidden;
+    transition: transform 0.5s ease-in-out;
+  }
+}
+
 .was-validated :has(label + input:required, .required) {
   .form-label {
     display: inline-flex !important;
@@ -61,10 +109,6 @@ body {
     border-bottom: 1px solid var(--color-gray-dark);
     font-size: 18px;
     padding: 12px;
-  }
-
-  .card-title {
-    margin-bottom: 15px;
   }
 }
 
@@ -238,10 +282,11 @@ router-app {
       }
 
       &:has(.dropdown-item:active) {
+        color: var(--color-white);
         background-color: var(--color-pink);
       }
       &:hover {
-        background-color: var(--color-violet-light);
+        background-color: var(--color-pink-light);
       }
       &.active {
         display: block;
@@ -264,7 +309,7 @@ router-app {
           color: var(--color-black);
         }
         &:hover {
-          background-color: var(--color-violet-light);
+          background-color: var(--color-pink-light);
           color: var(--color-pink);
           .material-symbols-outlined {
             color: var(--color-pink);

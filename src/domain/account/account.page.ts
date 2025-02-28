@@ -40,7 +40,7 @@ export class AccountPage extends HTMLElement {
 
   connectedCallback() {
     const clientCards = this.clientCardList.filter((value) => value.clientID === this.clientSelected.id);
-    this.clientCard = clientCards.find((card) => card.isActive) || ({} as CardClient);
+    this.clientCard = clientCards.find((card) => card.selected) || ({} as CardClient);
     StorageService.setItem("cardClient", this.clientCard);
 
     this.createInnerHTML();

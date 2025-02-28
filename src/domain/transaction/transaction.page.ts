@@ -11,19 +11,19 @@ import { StorageService } from "../../components/storage/storage";
 import { Toasts } from "../../components/toasts/toast";
 import { OPTIONS_PAYMENT } from "../../constants/charts";
 import { PT_BR_LOCALE } from "../../constants/date-picker-locale";
-import { descriptionOptions } from "../../constants/options-description";
-import { formOfPaymentOptions } from "../../constants/options-form-payment";
-import { eDescription, SVG_ICONS_DESCRIPTION } from "../../constants/svg-icons-description";
-import { eFormOfPayment, SVG_ICONS } from "../../constants/svg-icons-form-payment";
+
+import { InvoiceStatus } from "../../constants/invoice-status.options";
+import { descriptionOptions, eDescription, SVG_ICONS_DESCRIPTION } from "../../constants/svg-icons-description";
+import { eFormOfPayment, formOfPaymentOptions, SVG_ICONS } from "../../constants/svg-icons-form-payment";
 import { getNameById } from "../../functions/name-by-id/name-by-id";
 import { badgeUpdate } from "../../functions/notification/notification";
 import { generatePropertyBind, ngIf } from "../../functions/property-bind";
 import { Cliente } from "../auth/interface/client.interface";
 import { CardClient } from "../card-account/interface/card-client";
+import { Invoice } from "../invoice-of-card/interface/invoice";
 import { Transaction } from "./interface/transaction.interface";
 import html from "./transaction.page.html?raw";
 import "./transaction.page.scss";
-
 export enum eTransactionClassName {
   SALDO_ATUAL = "current-balance",
   SALDO_LIMITE = "current-limit",
@@ -81,6 +81,12 @@ export class TransactionPage extends HTMLElement {
 
   get clientLogged(): Cliente {
     return StorageService.getItem<Cliente>("client", {} as Cliente);
+  }
+  get invoiceList(): Invoice[] {
+    return StorageService.getItem<Invoice[]>("listOfInvoices", []);
+  }
+  get invoice(): Invoice {
+    return StorageService.getItem<Invoice>("invoice", {} as Invoice);
   }
 
   get clientCardList(): CardClient[] {
@@ -606,6 +612,8 @@ export class TransactionPage extends HTMLElement {
       listOfCardsUpdated.push(cardSelected);
       StorageService.setItem("cardClient", this.clientCard);
       StorageService.setItem("listOfCards", listOfCardsUpdated);
+
+      this.addTransactionToInvoice(transaction, cardSelected, transaction.clientID);
     } else {
       const accountAmount = clientLogged.accountAmount;
       clientLogged.accountAmount = accountAmount - inputValue;
@@ -617,6 +625,54 @@ export class TransactionPage extends HTMLElement {
 
     this.saveClientes(clients, clientLogged);
     return { clientSelected, clients, clientLogged };
+  }
+
+  private addTransactionToInvoice(transaction: Transaction, card: CardClient, clientID: number) {
+    const list = this.invoiceList;
+    const today = new Date();
+
+    let invoice = list.find((inv) => {
+      const closingDate = inv.closingDate.convertStringDate();
+      const isCurrentCard = inv.cardID === card.id && inv.clientID === clientID;
+      const isOpen = closingDate.getTime() > today.getTime();
+      return isCurrentCard && isOpen;
+    });
+
+    list.forEach((inv) => {
+      const dueDate = inv.date.convertStringDate();
+      const closingDate = inv.closingDate.convertStringDate();
+
+      if (today.getTime() > dueDate.getTime()) {
+        inv.status = InvoiceStatus.VENCIDA; // 3
+      } else if (today.getTime() > closingDate.getTime()) {
+        inv.status = InvoiceStatus.FECHADA; // 2
+      }
+    });
+
+    if (!invoice) {
+      const dueDate = new Date(today.getFullYear(), today.getMonth() + 1, 22);
+      const closingDate = new Date(dueDate);
+      closingDate.setDate(closingDate.getDate() - 7);
+
+      invoice = {
+        id: Math.max(0, ...list.map((inv) => inv.id)) + 1,
+        value: transaction.value,
+        date: dueDate.toLocaleDateString("pt-BR"),
+        closingDate: closingDate.toLocaleDateString("pt-BR"),
+        cardID: card.id,
+        clientID,
+        transactions: [transaction.id],
+        status: InvoiceStatus.ABERTA, // 1
+      };
+      list.push(invoice);
+    } else if (!invoice.transactions.includes(transaction.id)) {
+      invoice.transactions.push(transaction.id);
+      invoice.value += transaction.value;
+    }
+
+    StorageService.setItem("invoice", invoice);
+    StorageService.setItem("listOfInvoices", list);
+    return { list };
   }
 
   private saveClientes(clients: Cliente[], clientLogged: Cliente) {
@@ -638,6 +694,7 @@ export class TransactionPage extends HTMLElement {
       active: true,
       idDescription: +this.$inputDescription.value,
     };
+
     this.validTransaction(newTransaction);
 
     this.transactionList.push(newTransaction);

@@ -13,7 +13,6 @@ export class Notification extends HTMLElement {
   $accountInfo: HTMLElement;
   $menu: HTMLElement;
   $showActive: HTMLElement;
-  $deleteNotification: HTMLElement;
 
   get clientLogged(): Cliente {
     return StorageService.getItem<Cliente>("client", {} as Cliente);
@@ -27,7 +26,6 @@ export class Notification extends HTMLElement {
     this.$accountInfo = document.querySelector(".account-info");
     this.$menu = document.querySelector(".menu-notification");
     this.$showActive = document.querySelector(".show-active");
-    this.$deleteNotification = document.querySelector(".delete-notification");
   }
 
   connectedCallback() {
@@ -72,28 +70,17 @@ export class Notification extends HTMLElement {
       this.$menu.style.left = `${mouseEvent.pageX}px`;
       this.$menu.style.display = "block";
       this.$showActive.addEventListener("click", () => this.markAsRead($item));
-      this.$deleteNotification.addEventListener("click", () => this.deleteNotification($item));
     });
   }
   markAsRead($item: Element) {
     const transactionID = $item.getAttribute("id");
     const transactionItem = this.transactionList.find((transaction) => transaction.id == +transactionID);
     if (transactionItem) {
-      console.log(transactionItem);
       const viewList = transactionItem.view.filter((item) => item !== +transactionID);
       transactionItem.view = viewList;
-      console.log(viewList);
       $item.classList.add("active");
       StorageService.setItem("transactionList", this.transactionList);
       badgeUpdate();
     }
-  }
-
-  deleteNotification($item: HTMLElement) {
-    // const transactionID = $item.getAttribute("id");
-    // this.transactionList = this.transactionList.filter((transaction) => transaction.id !== +transactionID);
-    // StorageService.setItem("transactionList", this.transactionList);
-    $item.remove();
-    badgeUpdate();
   }
 }

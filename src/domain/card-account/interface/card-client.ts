@@ -8,5 +8,5 @@ export interface CardClient {
   limitCreditUsed: number;
   limitCreditCurrent: number;
   clientID: number;
-  isActive: boolean;
+  selected: boolean;
 }

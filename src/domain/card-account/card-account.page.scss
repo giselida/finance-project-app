@@ -2,61 +2,15 @@
 card-account-page {
   @include pageStyle(column);
   gap: 10px;
+
   .rotate {
     transform: rotateY(180deg) !important;
   }
-  .carousel {
-    display: flex;
-    align-items: center;
-    height: 200px;
-    position: relative;
-    width: 100%;
-  }
 
-  .next,
-  .previous {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    background-color: transparent;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    z-index: 1;
-    transition: background-color 0.5s ease-in-out, 0.5s ease-in-out, transform 0.5s ease-in-out;
-    border-radius: 50%;
-    span {
-      position: relative;
-      top: -2px;
-    }
-    &:hover {
-      color: white;
-      transform: scale(1.2);
-      background-color: #505050;
-    }
-    &:disabled {
-      cursor: not-allowed;
-    }
-  }
-
-  .next {
-    right: 0;
-  }
-
-  .previous {
-    left: 0;
-  }
   .signature-name {
     font-family: "Rock Salt", cursive;
   }
 
-  .card-container {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    overflow: hidden;
-    transition: transform 0.5s ease-in-out;
-  }
   .add-card {
     display: flex;
     flex-direction: column;

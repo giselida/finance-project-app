@@ -4,6 +4,7 @@ import { LoginComponent } from "../../domain/auth/login/login.page";
 import { RegisterComponent } from "../../domain/auth/register/register.page";
 import { CardAccountPage } from "../../domain/card-account/card-account.page";
 import { ConversionPage } from "../../domain/conversion/conversion.page";
+import { InvoiceOfCardPage } from "../../domain/invoice-of-card/invoice-of-card.page";
 import { Notification } from "../../domain/notification/notification.page";
 import { PaymentOfCardPage } from "../../domain/payment-of-card/payment-of-card.page";
 import { TransactionPage } from "../../domain/transaction/transaction.page";
@@ -29,7 +30,8 @@ const PAGE_TITLES: { [key: string]: string } = {
   "#cardAccount": createMaterialSymbol("credit_score", "Cartão de crédito"),
   "#login": createMaterialSymbol("", ""),
   "#register": createMaterialSymbol("", ""),
-  "#paymentOfCard": createMaterialSymbol("payments", "Pagamento da fatura"),
+  "#invoiceOfCard": createMaterialSymbol("payments", "Fatura"),
+  "#paymentOfCard": createMaterialSymbol("payments", "Pagamento do Cartão"),
 };
 
 const client = StorageService.getItem<Cliente>("client", {} as Cliente);
@@ -98,6 +100,7 @@ export class RouterOutlet extends HTMLElement {
       "#notifications": Notification,
       "#conversion": ConversionPage,
       "#cardAccount": CardAccountPage,
+      "#invoiceOfCard": InvoiceOfCardPage,
       "#paymentOfCard": PaymentOfCardPage,
     };
 
