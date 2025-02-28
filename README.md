@@ -1,13 +1,50 @@
-## 🔧 Configuração do Ambiente
+## 🚀 Guia de Instalação
 
-Instalar dependências
-npm install
-Iniciar servidor de desenvolvimento
-npm run dev
-Construir para produção
-npm run build
-Executar testes
-npm run test
+### Pré-requisitos
+
+Antes de começar, certifique-se de ter instalado em sua máquina:
+
+- Node.js (versão 14.0.0 ou superior)
+- npm (versão 6.0.0 ou superior)
+- Git
+
+### 📥 Instalação
+
+1. **Clone o repositório**
+   ```bash
+   # Clone via HTTPS
+   git clone https://github.com/seu-usuario/sistema-gestao-financeira.git
+
+   # Entre no diretório
+   cd sistema-gestao-financeira
+   ```
+
+2. **Instale as dependências**
+   ```bash
+   # Usando npm
+   npm install
+
+   # OU usando yarn
+   yarn install
+   ```
+
+3. **Configure as variáveis de ambiente**
+   ```bash
+   # Copie o arquivo de exemplo
+   cp .env.example .env
+
+   # Edite o arquivo .env com suas configurações
+   nano .env
+   ```
+
+4. **Inicie o servidor de desenvolvimento**
+   ```bash
+   # Usando npm
+   npm run dev
+
+   # OU usando yarn
+   yarn dev
+   ```
 
 ## 📋 Sobre o Projeto
 
