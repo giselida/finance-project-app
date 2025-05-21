@@ -50,6 +50,7 @@ payment-of-card-page {
     align-items: center;
     gap: 10px;
     .card {
+      cursor: pointer;
       .card-header {
         display: flex;
         align-items: center;
